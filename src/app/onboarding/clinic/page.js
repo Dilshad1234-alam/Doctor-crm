@@ -1,10 +1,22 @@
-export default function ClinicOnboardingPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow">
-        <h2 className="text-center text-3xl font-extrabold text-gray-900">Clinic Onboarding</h2>
-        <p className="text-center text-gray-600">Clinic onboarding process will be implemented later.</p>
-      </div>
-    </div>
-  );
+import ClinicOnboardingClient from "./ClinicOnboardingClient";
+import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
+import { redirect } from "next/navigation";
+
+export const metadata = {
+  title: "Setup Your Clinic | Doctor CRM",
+  description: "Complete your clinic profile to get started with Doctor CRM.",
+};
+
+export default async function ClinicOnboardingPage() {
+  const user = await getAuthenticatedUser();
+  
+  if (!user) {
+    redirect("/login");
+  }
+  
+  if (user.onboardingCompleted || user.clinicId) {
+    redirect("/dashboard");
+  }
+
+  return <ClinicOnboardingClient />;
 }

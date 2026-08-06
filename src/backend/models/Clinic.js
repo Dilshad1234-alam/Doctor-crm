@@ -1,0 +1,60 @@
+import mongoose from "mongoose";
+
+const clinicSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Clinic name is required"],
+      trim: true,
+    },
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Owner ID is required"],
+    },
+    email: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      default: null,
+    },
+    phone: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    address: {
+      line1: { type: String, trim: true, default: "" },
+      line2: { type: String, trim: true, default: "" },
+      city: { type: String, trim: true, default: "" },
+      state: { type: String, trim: true, default: "" },
+      pincode: { type: String, trim: true, default: "" },
+      country: { type: String, trim: true, default: "India" },
+    },
+    logo: {
+      type: String,
+      default: null,
+    },
+    consultationDuration: {
+      type: Number,
+      default: 15,
+    },
+    timezone: {
+      type: String,
+      default: "Asia/Kolkata",
+    },
+    onboardingCompleted: {
+      type: Boolean,
+      default: false,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export default mongoose.models.Clinic || mongoose.model("Clinic", clinicSchema);
