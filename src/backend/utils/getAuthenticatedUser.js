@@ -14,12 +14,12 @@ export async function getAuthenticatedUser() {
   if (!user || !user.isActive) return null;
 
   return {
-    id: user._id,
+    id: user._id.toString(),
     name: user.name,
     email: user.email,
     role: user.role,
-    clinicId: user.clinicId,
-    doctorId: user.doctorId,
+    clinicId: user.clinicId ? user.clinicId.toString() : null,
+    doctorId: user.doctorId ? user.doctorId.toString() : null,
     onboardingCompleted: !!user.clinicId,
   };
 }

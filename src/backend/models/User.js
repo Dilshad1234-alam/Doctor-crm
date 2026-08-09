@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
     },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Doctor", // Future reference
+      ref: "DoctorProfile",
       default: null,
     },
     isActive: {

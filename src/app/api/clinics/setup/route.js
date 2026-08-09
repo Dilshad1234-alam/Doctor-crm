@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAuthTokenFromRequest, setAuthCookie } from "@/backend/utils/authCookie";
+import { getAuthTokenFromCookies, setAuthCookie } from "@/backend/utils/authCookie";
 import { verifyAuthToken } from "@/backend/utils/auth";
 import { clinicSetupSchema } from "@/backend/validations/authValidation";
 import { setupClinicForOwner } from "@/backend/services/clinicService";
@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 
 export async function POST(request) {
   try {
-    const token = getAuthTokenFromRequest(request);
+    const token = await getAuthTokenFromCookies();
     
     if (!token) {
       return NextResponse.json(
@@ -43,7 +43,7 @@ export async function POST(request) {
   } catch (error) {
     if (error?.name === "ZodError") {
       return NextResponse.json(
-        { success: false, message: error.errors?.[0]?.message || "Validation failed" },
+        { success: false, message: error.issues?.[0]?.message || error.errors?.[0]?.message || "Validation failed" },
         { status: 400 }
       );
     }

@@ -23,7 +23,7 @@ export async function POST(request) {
   } catch (error) {
     if (error?.name === "ZodError") {
       return NextResponse.json(
-        { success: false, message: error.errors?.[0]?.message || "Validation failed" },
+        { success: false, message: error.issues?.[0]?.message || error.errors?.[0]?.message || "Validation failed" },
         { status: 400 }
       );
     }

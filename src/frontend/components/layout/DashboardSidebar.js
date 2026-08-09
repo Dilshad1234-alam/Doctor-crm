@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { dashboardNavigation } from "@/frontend/constants/navigation";
+import { getNavigationForRole } from "@/frontend/constants/navigation";
 
-export default function DashboardSidebar() {
+export default function DashboardSidebar({ user }) {
   const pathname = usePathname();
+  
+  // Use a fallback empty array if user is undefined to prevent crashes during initial render
+  const navItems = user ? getNavigationForRole(user.role) : [];
 
   return (
     <div className="flex h-full w-64 flex-col overflow-y-auto border-r border-gray-200 bg-white">
@@ -13,7 +16,7 @@ export default function DashboardSidebar() {
         <span className="text-xl font-bold text-teal-600">Doctor CRM</span>
       </div>
       <nav className="flex-1 space-y-1 px-4 py-4">
-        {dashboardNavigation.map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link

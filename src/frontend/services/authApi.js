@@ -48,6 +48,7 @@ export async function getCurrentUser() {
     headers: {
       "Cache-Control": "no-cache",
     },
+    credentials: "include",
   });
 
   const data = await response.json();
@@ -63,6 +64,7 @@ export async function setupClinic(payload) {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify(payload),
   });
 

@@ -1,36 +1,39 @@
 import { NextResponse } from "next/server";
-import { getAuthTokenFromRequest } from "@/backend/utils/authCookie";
+import { getAuthTokenFromCookies } from "@/backend/utils/authCookie";
 import { verifyAuthToken } from "@/backend/utils/auth";
-import { getCurrentUser } from "@/backend/services/authService";
+import { getCurrentUser as fetchCurrentUser } from "@/backend/services/authService";
 
 export const runtime = "nodejs";
 
 export async function GET(request) {
   try {
-    const token = getAuthTokenFromRequest(request);
+    const token = await getAuthTokenFromCookies();
+    console.log("Token from request:", token ? "Exists" : "Null");
     
     if (!token) {
       return NextResponse.json(
-        { success: false, message: "Not authenticated" },
-        { status: 401 }
+        { success: true, user: null, message: "Not authenticated" },
+        { status: 200 }
       );
     }
     
     const decoded = verifyAuthToken(token);
+    console.log("Decoded token:", decoded);
     
     if (!decoded || !decoded.userId) {
       return NextResponse.json(
-        { success: false, message: "Invalid or expired token" },
-        { status: 401 }
+        { success: true, user: null, message: "Invalid or expired token" },
+        { status: 200 }
       );
     }
     
-    const user = await getCurrentUser(decoded.userId);
+    const user = await fetchCurrentUser(decoded.userId);
+    console.log("Found user:", user ? "Exists" : "Null");
     
     if (!user) {
       return NextResponse.json(
-        { success: false, message: "User not found or inactive" },
-        { status: 401 }
+        { success: true, user: null, message: "User not found or inactive" },
+        { status: 200 }
       );
     }
     
