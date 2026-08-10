@@ -152,3 +152,59 @@ export function canViewConsultation(user, appointment = null) {
   // List view permission
   return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR]);
 }
+
+// Prescription Permissions
+export function canCreatePrescription(user, consultation) {
+  return hasRole(user, ROLES.DOCTOR) && user.doctorId?.toString() === consultation.doctorId?._id?.toString();
+}
+
+export function canViewPrescription(user, prescription) {
+  if (hasRole(user, ROLES.CLINIC_OWNER) && user.clinicId?.toString() === prescription.clinicId?.toString()) {
+    return true; // clinic owner can view
+  }
+  if (hasRole(user, ROLES.RECEPTIONIST) && user.clinicId?.toString() === prescription.clinicId?.toString()) {
+    return prescription.status === "finalized"; // receptionist only finalized
+  }
+  if (hasRole(user, ROLES.DOCTOR)) {
+    return user.doctorId?.toString() === prescription.doctorId?._id?.toString() || user.doctorId?.toString() === prescription.doctorId?.toString();
+  }
+  return false;
+}
+
+export function canEditPrescription(user, prescription) {
+  return hasRole(user, ROLES.DOCTOR) && 
+         (user.doctorId?.toString() === prescription.doctorId?._id?.toString() || user.doctorId?.toString() === prescription.doctorId?.toString()) &&
+         prescription.status === "draft";
+}
+
+export function canFinalizePrescription(user, prescription) {
+  return canEditPrescription(user, prescription);
+}
+
+export function canPrintPrescription(user, prescription) {
+  return canViewPrescription(user, prescription) && prescription.status === "finalized";
+}
+
+// Medical Report / Test Permissions
+export function canUploadReport(user, patient) {
+  // Clinic Owner, Doctor, Receptionist, Assistant can upload reports if patient is in their clinic
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR, ROLES.RECEPTIONIST, ROLES.ASSISTANT]) &&
+         user.clinicId?.toString() === patient?.clinicId?.toString();
+}
+
+export function canViewReport(user, report) {
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR, ROLES.RECEPTIONIST, ROLES.ASSISTANT]) &&
+         user.clinicId?.toString() === report?.clinicId?.toString();
+}
+
+export function canReviewReport(user, report) {
+  // Only Doctors can clinically review reports
+  // Either they are the assigned doctor (consultation/appointment) or a generic clinic doctor
+  // For strictness: limit to any doctor in the same clinic (some clinics allow cross-coverage)
+  return hasRole(user, ROLES.DOCTOR) && user.clinicId?.toString() === report?.clinicId?.toString();
+}
+
+export function canManageTests(user, consultation) {
+  // Usually tests are recommended by the doctor handling the consultation
+  return hasRole(user, ROLES.DOCTOR) && user.doctorId?.toString() === consultation.doctorId?._id?.toString();
+}

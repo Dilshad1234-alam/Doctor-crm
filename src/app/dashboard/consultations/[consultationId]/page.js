@@ -170,6 +170,11 @@ export default function ConsultationRoomPage({ params }) {
           description={`Consultation: ${consultation.consultationCode}`} 
         />
         <div className="flex gap-3">
+          <Link href={`/dashboard/consultations/${consultationId}/prescription`}>
+            <Button variant="outline">
+              Manage Prescription
+            </Button>
+          </Link>
           <Button variant="outline" onClick={() => router.back()}>Back</Button>
           {!isCompleted && (
             <>

@@ -6,6 +6,7 @@ const ownerNavigation = [
   { label: "Queue", href: "/dashboard/queue" },
   { label: "Consultations", href: "/dashboard/consultations" },
   { label: "Prescriptions", href: "/dashboard/prescriptions" },
+  { label: "Medical Reports", href: "/dashboard/medical-reports" },
   { label: "Billing", href: "/dashboard/billing" },
   { label: "Reports", href: "/dashboard/reports" },
   { label: "Settings", href: "/dashboard/settings" },
@@ -18,6 +19,7 @@ const doctorNavigation = [
   { label: "Appointments", href: "/dashboard/appointments" },
   { label: "Consultations", href: "/dashboard/consultations" },
   { label: "Prescriptions", href: "/dashboard/prescriptions" },
+  { label: "Medical Reports", href: "/dashboard/medical-reports" },
 ];
 
 export function getNavigationForRole(role) {

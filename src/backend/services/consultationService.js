@@ -16,6 +16,7 @@ import { generateConsultationCode } from "../utils/generateConsultationCode.js";
 import AuditLog from "../models/AuditLog.js";
 import { APPOINTMENT_STATUSES } from "../utils/appointmentStatus.js";
 import { canManageConsultation, canViewConsultation } from "../utils/permissions.js";
+import { createTestsFromConsultation } from "./testService.js";
 
 export async function startConsultation(authUser, appointmentId) {
   await connectDB();
@@ -176,6 +177,9 @@ export async function completeConsultation(authUser, consultationId, input) {
       entityId: consultation._id,
       details: { appointmentId: existingNote.appointmentId._id }
     }], { session });
+
+    // Sync Recommended Tests
+    await createTestsFromConsultation(authUser, consultation, session);
 
     await session.commitTransaction();
   } catch (error) {
