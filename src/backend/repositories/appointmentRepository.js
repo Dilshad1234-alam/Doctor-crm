@@ -1,4 +1,7 @@
 import Appointment from "../models/Appointment.js";
+import "../models/Patient.js";
+import "../models/DoctorProfile.js";
+import "../models/User.js";
 import { ACTIVE_STATUSES } from "../utils/appointmentStatus.js";
 
 export async function createAppointment(data) {
@@ -88,11 +91,11 @@ export async function findDoctorAppointmentConflict(clinicId, doctorId, date, st
   });
 }
 
-export async function updateAppointmentById(appointmentId, clinicId, updateData) {
+export async function updateAppointmentById(appointmentId, clinicId, updateData, session = null) {
   return Appointment.findOneAndUpdate(
     { _id: appointmentId, clinicId },
     { $set: updateData },
-    { new: true }
+    { new: true, session }
   );
 }
 

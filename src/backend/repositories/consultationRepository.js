@@ -1,0 +1,90 @@
+import Consultation from "../models/Consultation.js";
+import Appointment from "../models/Appointment.js";
+import "../models/Patient.js";
+import "../models/DoctorProfile.js";
+import "../models/User.js";
+
+export async function createConsultation(data, session = null) {
+  const [consultation] = await Consultation.create([data], session ? { session } : {});
+  return consultation;
+}
+
+export async function findConsultationById(consultationId, clinicId) {
+  return Consultation.findOne({ _id: consultationId, clinicId })
+    .populate("patientId", "firstName lastName fullName patientCode age gender phone bloodGroup")
+    .populate({
+       path: "doctorId",
+       select: "specialization title",
+       populate: { path: "userId", select: "name" }
+    })
+    .populate("appointmentId", "appointmentCode startTime endTime visitType status appointmentDate reason")
+    .populate("createdByDoctorId", "specialization")
+    .populate("lastUpdatedByUserId", "name role")
+    .populate("vitalsId");
+}
+
+export async function findConsultationByAppointment(appointmentId, clinicId) {
+  return Consultation.findOne({ appointmentId, clinicId })
+    .populate("patientId", "firstName lastName fullName patientCode age gender phone bloodGroup")
+    .populate({
+       path: "doctorId",
+       select: "specialization title",
+       populate: { path: "userId", select: "name" }
+    })
+    .populate("appointmentId", "appointmentCode startTime endTime visitType status appointmentDate reason")
+    .populate("vitalsId");
+}
+
+export async function updateConsultationById(consultationId, clinicId, updateData, session = null) {
+  return Consultation.findOneAndUpdate(
+    { _id: consultationId, clinicId },
+    { $set: updateData },
+    session ? { session, new: true } : { new: true }
+  ).populate("patientId", "firstName lastName fullName patientCode age gender phone")
+   .populate({
+       path: "doctorId",
+       select: "specialization title",
+       populate: { path: "userId", select: "name" }
+   });
+}
+
+export async function findConsultationsByClinic(clinicId, query = {}) {
+  let filter = { clinicId };
+
+  if (query.doctorId) filter.doctorId = query.doctorId;
+  if (query.patientId) filter.patientId = query.patientId;
+  if (query.status && query.status !== "all") filter.status = query.status;
+  
+  if (query.search) {
+     filter.$or = [
+       { consultationCode: { $regex: query.search, $options: "i" } }
+       // Can add more complex searching if needed by looking up Patient
+     ];
+  }
+
+  if (query.date) {
+    const targetDate = new Date(query.date);
+    targetDate.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    filter.createdAt = { $gte: targetDate, $lte: endOfDay };
+  }
+
+  return Consultation.find(filter)
+    .populate("patientId", "firstName lastName fullName patientCode phone")
+    .populate({
+       path: "doctorId",
+       select: "specialization title",
+       populate: { path: "userId", select: "name" }
+    })
+    .populate("appointmentId", "appointmentCode startTime endTime visitType status appointmentDate")
+    .sort({ createdAt: -1 });
+}
+
+export async function findConsultationsByDoctor(clinicId, doctorId, query = {}) {
+  return findConsultationsByClinic(clinicId, { ...query, doctorId });
+}
+
+export async function findConsultationsByPatient(clinicId, patientId, query = {}) {
+  return findConsultationsByClinic(clinicId, { ...query, patientId });
+}

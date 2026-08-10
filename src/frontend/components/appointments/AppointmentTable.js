@@ -2,7 +2,7 @@ import Link from "next/link";
 import AppointmentStatusBadge from "./AppointmentStatusBadge";
 import { Eye, Calendar, XCircle, UserX } from "lucide-react";
 
-export default function AppointmentTable({ appointments, role, onReschedule, onCancel, onNoShow }) {
+export default function AppointmentTable({ appointments, role, onReschedule, onCancel, onNoShow, onCheckIn }) {
   if (!appointments || appointments.length === 0) {
     return (
       <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
@@ -68,6 +68,11 @@ export default function AppointmentTable({ appointments, role, onReschedule, onC
                   </Link>
                   {["scheduled", "confirmed"].includes(apt.status) && (
                     <>
+                      {onCheckIn && (
+                        <button onClick={() => onCheckIn(apt)} className="text-teal-600 hover:text-teal-900" title="Check In">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
+                      )}
                       <button onClick={() => onReschedule && onReschedule(apt)} className="text-indigo-600 hover:text-indigo-900" title="Reschedule">
                         <Calendar className="w-5 h-5" />
                       </button>

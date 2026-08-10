@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getPatientById, getPatientSummary, getPatientHistory } from "@/frontend/services/patientApi";
+import { getPatientVitals } from "@/frontend/services/vitalsApi";
 import { ChevronLeft, Edit, Calendar, User, Phone, Droplet, Clock, FileText, Activity } from "lucide-react";
 
 
@@ -15,6 +16,7 @@ export default function PatientDetailsPage({ params }) {
   const [patient, setPatient] = useState(null);
   const [summary, setSummary] = useState(null);
   const [history, setHistory] = useState([]);
+  const [vitalsHistory, setVitalsHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -26,10 +28,11 @@ export default function PatientDetailsPage({ params }) {
   const fetchPatientData = async () => {
     setLoading(true);
     try {
-      const [patientRes, summaryRes, historyRes] = await Promise.all([
+      const [patientRes, summaryRes, historyRes, vitalsRes] = await Promise.all([
         getPatientById(patientId),
         getPatientSummary(patientId),
-        getPatientHistory(patientId)
+        getPatientHistory(patientId),
+        getPatientVitals(patientId).catch(() => ({ vitals: [] }))
       ]);
 
       if (patientRes.success) setPatient(patientRes.patient);
@@ -37,6 +40,7 @@ export default function PatientDetailsPage({ params }) {
 
       if (summaryRes.success) setSummary(summaryRes.metrics);
       if (historyRes.success) setHistory(historyRes.history);
+      if (vitalsRes && vitalsRes.vitals) setVitalsHistory(vitalsRes.vitals);
     } catch (err) {
       setError("Failed to load patient details");
     }
@@ -123,7 +127,7 @@ export default function PatientDetailsPage({ params }) {
       {/* Tabs */}
       <div className="border-b border-gray-200 overflow-x-auto">
         <nav className="flex space-x-8 min-w-max px-1" aria-label="Tabs">
-          {['overview', 'history', 'visits', 'prescriptions'].map(tab => (
+          {['overview', 'vitals', 'history', 'visits', 'prescriptions'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -260,6 +264,38 @@ export default function PatientDetailsPage({ params }) {
               </div>
             ) : (
               <p className="text-center text-gray-500 py-8 text-sm">No history events found.</p>
+            )}
+          </div>
+        )}
+        
+        {activeTab === 'vitals' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Vitals History</h3>
+            
+            {vitalsHistory.length > 0 ? (
+              <div className="space-y-4">
+                {vitalsHistory.map((vital, idx) => (
+                  <div key={idx} className="bg-gray-50 border border-gray-200 rounded-lg p-5">
+                    <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
+                      <span className="font-medium text-gray-900">
+                        {new Date(vital.recordedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', '')}
+                      </span>
+                      {vital.recordedBy && <span className="text-sm text-gray-500 font-medium">By: {vital.recordedBy.name}</span>}
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                      <div><p className="text-gray-500 text-xs uppercase mb-1">BP (mmHg)</p><p className="font-medium text-gray-900">{vital.bloodPressure?.systolic ? `${vital.bloodPressure.systolic}/${vital.bloodPressure.diastolic}` : '-'}</p></div>
+                      <div><p className="text-gray-500 text-xs uppercase mb-1">Pulse (bpm)</p><p className="font-medium text-gray-900">{vital.pulseRate || '-'}</p></div>
+                      <div><p className="text-gray-500 text-xs uppercase mb-1">SpO2 (%)</p><p className="font-medium text-gray-900">{vital.oxygenSaturation ? `${vital.oxygenSaturation}%` : '-'}</p></div>
+                      <div><p className="text-gray-500 text-xs uppercase mb-1">Weight / BMI</p><p className="font-medium text-gray-900">{vital.weightKg ? `${vital.weightKg} kg` : '-'} / {vital.bmi || '-'}</p></div>
+                      <div><p className="text-gray-500 text-xs uppercase mb-1">Temp (°C)</p><p className="font-medium text-gray-900">{vital.temperatureC || '-'}</p></div>
+                      <div><p className="text-gray-500 text-xs uppercase mb-1">Resp. Rate</p><p className="font-medium text-gray-900">{vital.respiratoryRate || '-'}</p></div>
+                      <div className="col-span-2"><p className="text-gray-500 text-xs uppercase mb-1">Blood Sugar</p><p className="font-medium text-gray-900">{vital.bloodSugar?.value ? `${vital.bloodSugar.value} mg/dL (${vital.bloodSugar.type})` : '-'}</p></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-8 text-sm">No vitals history found.</p>
             )}
           </div>
         )}

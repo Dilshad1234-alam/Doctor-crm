@@ -83,3 +83,72 @@ export function canCancelAppointment(user, appointment) {
 export function canMarkNoShow(user, appointment) {
   return canViewAppointment(user, appointment);
 }
+
+// Queue Permissions
+export function canCheckInPatient(user, appointment) {
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST, ROLES.DOCTOR]) && 
+         canViewAppointment(user, appointment);
+}
+
+export function canViewClinicQueue(user) {
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST]);
+}
+
+export function canViewDoctorQueue(user, doctorId) {
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST])) return true;
+  if (hasRole(user, ROLES.DOCTOR)) return user.doctorId?.toString() === doctorId?.toString();
+  return false;
+}
+
+export function canCallQueuePatient(user, queueEntry) {
+  if (hasRole(user, ROLES.DOCTOR)) {
+    return user.doctorId?.toString() === queueEntry.doctorId?._id?.toString() || 
+           user.doctorId?.toString() === queueEntry.doctorId?.toString();
+  }
+  if (hasRole(user, ROLES.RECEPTIONIST)) return true; // Optionally allow receptionist to call
+  return false;
+}
+
+export function canStartQueueConsultation(user, queueEntry) {
+  if (hasRole(user, ROLES.DOCTOR)) {
+    return user.doctorId?.toString() === queueEntry.doctorId?._id?.toString() || 
+           user.doctorId?.toString() === queueEntry.doctorId?.toString();
+  }
+  return false;
+}
+
+export function canSkipQueuePatient(user, queueEntry) {
+  return canCallQueuePatient(user, queueEntry) || hasRole(user, ROLES.CLINIC_OWNER);
+}
+
+export function canRemoveQueuePatient(user, queueEntry) {
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST]);
+}
+
+// Vitals Permissions
+export function canViewVitals(user, appointment) {
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST, ROLES.DOCTOR, ROLES.ASSISTANT]) && 
+         canViewAppointment(user, appointment);
+}
+
+export function canRecordVitals(user, appointment) {
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR, ROLES.ASSISTANT]) && 
+         canViewAppointment(user, appointment);
+}
+
+export function canUpdateVitals(user, appointment) {
+  return canRecordVitals(user, appointment);
+}
+
+// Consultation Permissions
+export function canManageConsultation(user, appointment) {
+  return hasRole(user, ROLES.DOCTOR) && canViewAppointment(user, appointment);
+}
+
+export function canViewConsultation(user, appointment = null) {
+  if (appointment) {
+    return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR]) && canViewAppointment(user, appointment);
+  }
+  // List view permission
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR]);
+}
