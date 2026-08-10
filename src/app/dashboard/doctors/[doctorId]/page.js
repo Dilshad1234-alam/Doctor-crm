@@ -87,7 +87,10 @@ export default function DoctorDetailsPage() {
             {doctor.specialization} • {doctor.employeeId}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Link href={`/dashboard/appointments?doctorId=${doctor.id}`}>
+            <Button variant="outline">View Appointments</Button>
+          </Link>
           <Link href={`/dashboard/doctors/${doctor.id}/edit`}>
             <Button variant="outline">Edit Profile</Button>
           </Link>

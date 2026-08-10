@@ -1,4 +1,5 @@
 import PageHeader from "@/frontend/components/dashboard/PageHeader";
+import Link from "next/link";
 
 export default function DashboardPage() {
   return (
@@ -14,10 +15,10 @@ export default function DashboardPage() {
           <h3 className="text-sm font-medium text-gray-500">Total Patients</h3>
           <p className="mt-2 text-3xl font-bold text-gray-900">3,456</p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-gray-500">Today&apos;s Appointments</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-900">48</p>
-        </div>
+        <Link href="/dashboard/appointments" className="rounded-lg border border-blue-200 bg-blue-50 p-6 shadow-sm hover:shadow-md transition-shadow">
+          <h3 className="text-sm font-medium text-blue-800">Appointments</h3>
+          <p className="mt-2 text-3xl font-bold text-blue-600">Manage</p>
+        </Link>
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h3 className="text-sm font-medium text-gray-500">Today&apos;s Revenue</h3>
           <p className="mt-2 text-3xl font-bold text-gray-900">$2,340</p>

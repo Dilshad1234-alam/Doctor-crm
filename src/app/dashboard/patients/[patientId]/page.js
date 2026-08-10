@@ -82,9 +82,9 @@ export default function PatientDetailsPage({ params }) {
           <Link href={`/dashboard/patients/${patientId}/edit`} className="flex-1 md:flex-none justify-center flex items-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-colors text-sm shadow-sm">
             <Edit className="w-4 h-4 mr-2" /> Edit Patient
           </Link>
-          <button disabled className="flex-1 md:flex-none justify-center flex items-center px-4 py-2 bg-blue-600 opacity-70 cursor-not-allowed text-white rounded-lg font-medium text-sm shadow-sm" title="Available in Appointment Phase">
+          <Link href={`/dashboard/appointments/new?patientId=${patientId}`} className="flex-1 md:flex-none justify-center flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm shadow-sm transition-colors">
             <Calendar className="w-4 h-4 mr-2" /> Book Appointment
-          </button>
+          </Link>
         </div>
       </div>
 

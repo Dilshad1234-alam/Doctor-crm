@@ -1,0 +1,123 @@
+import DoctorProfile from "../models/DoctorProfile.js";
+import DoctorScheduleException from "../models/DoctorScheduleException.js";
+import Appointment from "../models/Appointment.js";
+import { ACTIVE_STATUSES } from "../utils/appointmentStatus.js";
+
+const DAYS_OF_WEEK = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+function getDayString(dateStr) {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return DAYS_OF_WEEK[date.getDay()];
+}
+
+function generateTimeSlots(startTime, endTime, durationMinutes) {
+  const slots = [];
+  let [startHour, startMin] = startTime.split(":").map(Number);
+  const [endHour, endMin] = endTime.split(":").map(Number);
+
+  let currentTotalMins = startHour * 60 + startMin;
+  const endTotalMins = endHour * 60 + endMin;
+
+  while (currentTotalMins + durationMinutes <= endTotalMins) {
+    const h = Math.floor(currentTotalMins / 60);
+    const m = currentTotalMins % 60;
+    const slotStart = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+
+    const nextMins = currentTotalMins + durationMinutes;
+    const nh = Math.floor(nextMins / 60);
+    const nm = nextMins % 60;
+    const slotEnd = `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`;
+
+    slots.push({ startTime: slotStart, endTime: slotEnd });
+    currentTotalMins += durationMinutes;
+  }
+
+  return slots;
+}
+
+export async function getDoctorAvailableSlots(clinicId, doctorId, dateStr) {
+  // 1. Fetch Doctor Profile
+  const doctor = await DoctorProfile.findOne({ _id: doctorId, clinicId, isActive: true });
+  if (!doctor || !doctor.isAcceptingAppointments) {
+    return { success: false, slots: [], message: "Doctor is unavailable." };
+  }
+
+  // 2. Determine Day of Week
+  const dayStr = getDayString(dateStr);
+  const availability = doctor.availability.find((a) => a.day === dayStr);
+
+  let isAvailable = availability ? availability.isAvailable : false;
+  let scheduleSlots = availability ? availability.slots : [];
+
+  // Fallback for testing: if doctor has NO availability configured at all, assume Mon-Fri 9 AM to 5 PM
+  if (doctor.availability.length === 0 && dayStr !== "sunday" && dayStr !== "saturday") {
+    isAvailable = true;
+    scheduleSlots = [{ startTime: "09:00", endTime: "17:00" }];
+  }
+
+  // 3. Apply Schedule Exceptions
+  const [tYear, tMonth, tDay] = dateStr.split("-").map(Number);
+  const targetDate = new Date(tYear, tMonth - 1, tDay);
+  
+  // Find exception for this specific date
+  const exception = await DoctorScheduleException.findOne({ doctorId, clinicId, date: targetDate });
+
+  if (exception) {
+    isAvailable = exception.isAvailable;
+    if (exception.type === "custom_hours" && exception.customSlots && exception.customSlots.length > 0) {
+      scheduleSlots = exception.customSlots;
+    } else if (exception.type === "leave" || exception.type === "holiday" || exception.type === "emergency_unavailable") {
+      scheduleSlots = [];
+    }
+  }
+
+  if (!isAvailable || scheduleSlots.length === 0) {
+    return { success: true, slots: [], message: "Doctor has no available hours on this date." };
+  }
+
+  // 4. Generate all discrete slots
+  const duration = doctor.defaultSlotDuration || 15;
+  let allSlots = [];
+  for (const block of scheduleSlots) {
+    const generated = generateTimeSlots(block.startTime, block.endTime, duration);
+    allSlots.push(...generated);
+  }
+
+  // 5. Fetch existing appointments
+  const endOfDay = new Date(targetDate);
+  endOfDay.setHours(23, 59, 59, 999);
+  
+  const existingAppointments = await Appointment.find({
+    clinicId,
+    doctorId,
+    appointmentDate: { $gte: targetDate, $lte: endOfDay },
+    status: { $in: ACTIVE_STATUSES }
+  });
+
+  const bookedStartTimes = new Set(existingAppointments.map(a => a.startTime));
+
+  // 6. Filter out booked slots
+  let availableSlots = allSlots.filter(slot => !bookedStartTimes.has(slot.startTime));
+
+  // 7. Filter out past slots if the date is today
+  // Assumes Asia/Kolkata for clinic timezone
+  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+
+  if (targetDate.getTime() === today.getTime()) {
+    const currentHour = now.getHours();
+    const currentMin = now.getMinutes();
+    const currentTotalMins = currentHour * 60 + currentMin;
+
+    availableSlots = availableSlots.filter(slot => {
+      const [sh, sm] = slot.startTime.split(":").map(Number);
+      return (sh * 60 + sm) > currentTotalMins;
+    });
+  } else if (targetDate.getTime() < today.getTime()) {
+    return { success: false, slots: [], message: "Cannot book appointments in the past." };
+  }
+
+  return { success: true, slots: availableSlots };
+}

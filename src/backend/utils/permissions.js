@@ -55,3 +55,31 @@ export function canUpdateDoctorAvailability(user, doctorProfile) {
 export function canManageDoctorSchedule(user, doctorProfile) {
   return canViewDoctor(user, doctorProfile); // Both owner and the doctor themselves can manage schedule exceptions
 }
+
+// Appointment Permissions
+export function canCreateAppointment(user) {
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST, ROLES.DOCTOR]);
+}
+
+export function canViewAppointment(user, appointment) {
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST])) {
+    return user.clinicId?.toString() === appointment.clinicId?.toString();
+  }
+  if (hasRole(user, ROLES.DOCTOR)) {
+    const docId = appointment.doctorId._id || appointment.doctorId;
+    return user.doctorId?.toString() === docId.toString();
+  }
+  return false;
+}
+
+export function canRescheduleAppointment(user, appointment) {
+  return canViewAppointment(user, appointment);
+}
+
+export function canCancelAppointment(user, appointment) {
+  return canViewAppointment(user, appointment);
+}
+
+export function canMarkNoShow(user, appointment) {
+  return canViewAppointment(user, appointment);
+}
