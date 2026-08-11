@@ -26,8 +26,12 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["clinic_owner", "doctor", "receptionist", "assistant", "accountant", "super_admin"],
-      default: "clinic_owner",
+      enum: ["unassigned", "clinic_owner", "doctor", "receptionist", "assistant", "accountant", "super_admin", "patient"],
+      default: "unassigned",
+    },
+    onboardingCompleted: {
+      type: Boolean,
+      default: false,
     },
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,

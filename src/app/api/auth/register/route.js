@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { registerSchema } from "@/backend/validations/authValidation";
-import { registerClinicOwner } from "@/backend/services/authService";
-import { setAuthCookie } from "@/backend/utils/authCookie";
+import { registerUser } from "@/backend/services/authService";
 import { ZodError } from "zod";
 
 export const runtime = "nodejs";
@@ -14,7 +13,7 @@ export async function POST(request) {
     const validatedData = registerSchema.parse(body);
     
     // Process registration
-    const { user } = await registerClinicOwner(validatedData);
+    const { user } = await registerUser(validatedData);
     
     return NextResponse.json(
       { success: true, message: "Account created successfully", user },

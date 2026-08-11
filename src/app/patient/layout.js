@@ -3,7 +3,7 @@ import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import DashboardSidebar from "@/frontend/components/layout/DashboardSidebar";
 import DashboardHeader from "@/frontend/components/layout/DashboardHeader";
 
-export default async function DashboardLayout({ children }) {
+export default async function PatientLayout({ children }) {
   const user = await getAuthenticatedUser();
 
   if (!user) {
@@ -13,22 +13,13 @@ export default async function DashboardLayout({ children }) {
   if (user.role === "unassigned") {
     redirect("/onboarding/select-role");
   }
-  
-  if (user.role === "patient") {
-    if (!user.onboardingCompleted) {
-      redirect("/onboarding/patient");
-    } else {
-      // Patient has their own layout/dashboard, they shouldn't access the clinic dashboard
-      redirect("/patient/dashboard");
-    }
+
+  if (user.role !== "patient") {
+    redirect("/dashboard");
   }
 
-  if (user.role === "doctor" && !user.onboardingCompleted) {
-    redirect("/onboarding/doctor");
-  }
-
-  if (user.role === "clinic_owner" && !user.onboardingCompleted) {
-    redirect("/onboarding/clinic");
+  if (!user.onboardingCompleted) {
+    redirect("/onboarding/patient");
   }
 
   return (

@@ -23,6 +23,16 @@ const doctorNavigation = [
   { label: "Medical Reports", href: "/dashboard/medical-reports" },
 ];
 
+const patientNavigation = [
+  { label: "Dashboard", href: "/patient/dashboard" },
+  { label: "Book Appointment", href: "/patient/book" },
+  { label: "My Appointments", href: "/patient/appointments" },
+  { label: "Prescriptions", href: "/patient/prescriptions" },
+  { label: "Medical Reports", href: "/patient/medical-reports" },
+  { label: "Billing & Payments", href: "/patient/billing" },
+  { label: "Profile", href: "/patient/profile" },
+];
+
 const receptionistNavigation = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Patients", href: "/dashboard/patients" },
@@ -51,6 +61,7 @@ export function getNavigationForRole(role) {
   if (role === "receptionist") return receptionistNavigation;
   if (role === "assistant") return assistantNavigation;
   if (role === "accountant") return accountantNavigation;
+  if (role === "patient") return patientNavigation;
   return ownerNavigation;
 }
 

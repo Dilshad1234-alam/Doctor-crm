@@ -3,7 +3,7 @@ import { hashPassword, comparePassword, createAuthToken } from "@/backend/utils/
 import { ROLES } from "@/backend/utils/permissions";
 import StaffProfile from "@/backend/models/StaffProfile";
 
-export async function registerClinicOwner(input) {
+export async function registerUser(input) {
   const { name, email, password } = input;
   const normalizedEmail = email.toLowerCase().trim();
 
@@ -18,10 +18,11 @@ export async function registerClinicOwner(input) {
     name: name.trim(),
     email: normalizedEmail,
     password: hashedPassword,
-    role: ROLES.CLINIC_OWNER,
+    role: "unassigned",
     clinicId: null,
     doctorId: null,
     isActive: true,
+    onboardingCompleted: false,
   });
 
   const token = createAuthToken({
@@ -40,7 +41,7 @@ export async function registerClinicOwner(input) {
       role: newUser.role,
       clinicId: newUser.clinicId,
       doctorId: newUser.doctorId,
-      onboardingCompleted: false, // Clinic owners without a clinic haven't onboarded
+      onboardingCompleted: newUser.onboardingCompleted,
     },
     token,
   };
@@ -94,7 +95,9 @@ export async function loginUser(input) {
       doctorId: user.doctorId,
       staffId: user.staffId,
       permissions,
-      onboardingCompleted: !!user.clinicId, // True if they have a clinic
+      onboardingCompleted: user.onboardingCompleted !== undefined 
+        ? user.onboardingCompleted 
+        : !!(user.clinicId || user.doctorId || user.staffId),
     },
     token,
   };
@@ -120,7 +123,9 @@ export async function getCurrentUser(userId) {
     doctorId: user.doctorId,
     staffId: user.staffId,
     permissions,
-    onboardingCompleted: !!user.clinicId,
+    onboardingCompleted: user.onboardingCompleted !== undefined 
+      ? user.onboardingCompleted 
+      : !!(user.clinicId || user.doctorId || user.staffId),
   };
 }
 
