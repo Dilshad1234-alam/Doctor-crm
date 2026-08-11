@@ -14,10 +14,7 @@ export async function POST(request) {
     const validatedData = registerSchema.parse(body);
     
     // Process registration
-    const { user, token } = await registerClinicOwner(validatedData);
-    
-    // Set cookie
-    await setAuthCookie(token);
+    const { user } = await registerClinicOwner(validatedData);
     
     return NextResponse.json(
       { success: true, message: "Account created successfully", user },

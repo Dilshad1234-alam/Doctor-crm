@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAuthTokenFromCookies } from "@/backend/utils/authCookie";
+import { getAuthTokenFromRequest } from "@/backend/utils/authCookie";
 import { verifyAuthToken } from "@/backend/utils/auth";
 import { getCurrentUser as fetchCurrentUser } from "@/backend/services/authService";
 
@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 export async function GET(request) {
   try {
-    const token = await getAuthTokenFromCookies();
+    const token = getAuthTokenFromRequest(request);
     console.log("Token from request:", token ? "Exists" : "Null");
     
     if (!token) {

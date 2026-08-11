@@ -3,12 +3,14 @@ import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { updatePatientSchema } from "@/backend/validations/patientValidation";
 import { getPatientDetails, updatePatientForClinic } from "@/backend/services/patientService";
 
+import { hasPermission } from "@/backend/utils/permissions";
+
 export async function GET(request, { params }) {
   try {
     const { patientId } = await params;
     const authUser = await getAuthenticatedUser(request);
     
-    if (!authUser || !["clinic_owner", "doctor", "receptionist", "assistant"].includes(authUser.role)) {
+    if (!authUser || !hasPermission(authUser, "patients.view")) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
     }
 
@@ -27,7 +29,7 @@ export async function PATCH(request, { params }) {
     const { patientId } = await params;
     const authUser = await getAuthenticatedUser(request);
     
-    if (!authUser || !["clinic_owner", "doctor", "receptionist", "assistant"].includes(authUser.role)) {
+    if (!authUser || !hasPermission(authUser, "patients.update")) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
     }
 

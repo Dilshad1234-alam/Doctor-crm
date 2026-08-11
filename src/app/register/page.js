@@ -36,7 +36,7 @@ export default function RegisterPage() {
 
     try {
       await registerUser(formData);
-      router.push("/onboarding/clinic");
+      router.push("/login");
     } catch (err) {
       setError(err.message || "Registration failed");
     } finally {

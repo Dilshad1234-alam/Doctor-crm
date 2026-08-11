@@ -1,6 +1,7 @@
 import { createUser, findUserByEmail, findUserById, updateUserById } from "@/backend/repositories/userRepository";
 import { hashPassword, comparePassword, createAuthToken } from "@/backend/utils/auth";
 import { ROLES } from "@/backend/utils/permissions";
+import StaffProfile from "@/backend/models/StaffProfile";
 
 export async function registerClinicOwner(input) {
   const { name, email, password } = input;
@@ -73,7 +74,14 @@ export async function loginUser(input) {
     role: user.role,
     clinicId: user.clinicId,
     doctorId: user.doctorId,
+    staffId: user.staffId,
   });
+
+  let permissions = [];
+  if (user.staffId) {
+    const staff = await StaffProfile.findById(user.staffId).lean();
+    if (staff && staff.permissions) permissions = staff.permissions;
+  }
 
   return {
     user: {
@@ -84,6 +92,8 @@ export async function loginUser(input) {
       role: user.role,
       clinicId: user.clinicId,
       doctorId: user.doctorId,
+      staffId: user.staffId,
+      permissions,
       onboardingCompleted: !!user.clinicId, // True if they have a clinic
     },
     token,
@@ -94,6 +104,12 @@ export async function getCurrentUser(userId) {
   const user = await findUserById(userId);
   if (!user || !user.isActive) return null;
 
+  let permissions = [];
+  if (user.staffId) {
+    const staff = await StaffProfile.findById(user.staffId).lean();
+    if (staff && staff.permissions) permissions = staff.permissions;
+  }
+
   return {
     id: user._id,
     name: user.name,
@@ -102,6 +118,32 @@ export async function getCurrentUser(userId) {
     role: user.role,
     clinicId: user.clinicId,
     doctorId: user.doctorId,
+    staffId: user.staffId,
+    permissions,
     onboardingCompleted: !!user.clinicId,
   };
+}
+
+export async function changePassword(userId, currentPassword, newPassword) {
+  const user = await findUserById(userId, { includePassword: true });
+  if (!user || !user.isActive) {
+    throw new Error("User not found or inactive");
+  }
+
+  const isPasswordValid = await comparePassword(currentPassword, user.password);
+  if (!isPasswordValid) {
+    throw new Error("Incorrect current password");
+  }
+
+  const hashedPassword = await hashPassword(newPassword);
+  await updateUserById(userId, { password: hashedPassword });
+
+  // Add audit log
+  const { default: AuditLog } = await import("@/backend/models/AuditLog");
+  await AuditLog.create({
+    clinicId: user.clinicId,
+    userId: user._id,
+    action: "user.password_changed",
+    details: "User changed their password",
+  });
 }

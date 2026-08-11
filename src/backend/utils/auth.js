@@ -25,6 +25,7 @@ export function createAuthToken(payload) {
       role: payload.role,
       clinicId: payload.clinicId,
       doctorId: payload.doctorId,
+      staffId: payload.staffId,
     },
     secret,
     { expiresIn }

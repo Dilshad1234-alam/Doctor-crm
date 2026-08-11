@@ -1,6 +1,7 @@
 const ownerNavigation = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Doctors", href: "/dashboard/doctors" },
+  { label: "Staff", href: "/dashboard/staff" },
   { label: "Patients", href: "/dashboard/patients" },
   { label: "Appointments", href: "/dashboard/appointments" },
   { label: "Queue", href: "/dashboard/queue" },
@@ -22,10 +23,34 @@ const doctorNavigation = [
   { label: "Medical Reports", href: "/dashboard/medical-reports" },
 ];
 
+const receptionistNavigation = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Patients", href: "/dashboard/patients" },
+  { label: "Appointments", href: "/dashboard/appointments" },
+  { label: "Queue", href: "/dashboard/queue" },
+  { label: "Billing", href: "/dashboard/billing" },
+];
+
+const assistantNavigation = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Patients", href: "/dashboard/patients" },
+  { label: "Appointments", href: "/dashboard/appointments" },
+  { label: "Queue", href: "/dashboard/queue" },
+  { label: "Medical Reports", href: "/dashboard/medical-reports" },
+];
+
+const accountantNavigation = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Billing", href: "/dashboard/billing" },
+  { label: "Reports", href: "/dashboard/reports" },
+];
+
 export function getNavigationForRole(role) {
   if (role === "clinic_owner") return ownerNavigation;
   if (role === "doctor") return doctorNavigation;
-  // Fallback for receptionist etc.
+  if (role === "receptionist") return receptionistNavigation;
+  if (role === "assistant") return assistantNavigation;
+  if (role === "accountant") return accountantNavigation;
   return ownerNavigation;
 }
 

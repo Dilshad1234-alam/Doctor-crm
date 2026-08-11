@@ -22,6 +22,30 @@ export function requireRole(user, allowedRoles) {
   return true;
 }
 
+export function hasPermission(user, permissionString) {
+  if (!user) return false;
+  
+  // Clinic Owner inherently has all permissions for their clinic
+  if (hasRole(user, ROLES.CLINIC_OWNER)) return true;
+  
+  // Super Admin inherently has all permissions
+  if (hasRole(user, ROLES.SUPER_ADMIN)) return true;
+
+  // Staff granular permissions
+  if (user.permissions && Array.isArray(user.permissions)) {
+    return user.permissions.includes(permissionString);
+  }
+
+  return false;
+}
+
+export function requirePermission(user, permissionString) {
+  if (!hasPermission(user, permissionString)) {
+    throw new Error(`Unauthorized: Missing permission '${permissionString}'`);
+  }
+  return true;
+}
+
 // Doctor Management Permissions
 export function canCreateDoctor(user) {
   return hasRole(user, ROLES.CLINIC_OWNER);
@@ -58,7 +82,8 @@ export function canManageDoctorSchedule(user, doctorProfile) {
 
 // Appointment Permissions
 export function canCreateAppointment(user) {
-  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST, ROLES.DOCTOR]);
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR])) return true;
+  return hasPermission(user, "appointments.create");
 }
 
 export function canViewAppointment(user, appointment) {
@@ -73,11 +98,13 @@ export function canViewAppointment(user, appointment) {
 }
 
 export function canRescheduleAppointment(user, appointment) {
-  return canViewAppointment(user, appointment);
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR])) return canViewAppointment(user, appointment);
+  return hasPermission(user, "appointments.reschedule") && canViewAppointment(user, appointment);
 }
 
 export function canCancelAppointment(user, appointment) {
-  return canViewAppointment(user, appointment);
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR])) return canViewAppointment(user, appointment);
+  return hasPermission(user, "appointments.cancel") && canViewAppointment(user, appointment);
 }
 
 export function canMarkNoShow(user, appointment) {
@@ -91,7 +118,8 @@ export function canCheckInPatient(user, appointment) {
 }
 
 export function canViewClinicQueue(user) {
-  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST]);
+  if (hasRole(user, [ROLES.CLINIC_OWNER])) return true;
+  return hasPermission(user, "queue.view");
 }
 
 export function canViewDoctorQueue(user, doctorId) {
@@ -123,7 +151,8 @@ export function canSkipQueuePatient(user, queueEntry) {
 }
 
 export function canRemoveQueuePatient(user, queueEntry) {
-  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST]);
+  if (hasRole(user, [ROLES.CLINIC_OWNER])) return true;
+  return hasPermission(user, "queue.manage");
 }
 
 // Vitals Permissions
@@ -133,12 +162,13 @@ export function canViewVitals(user, appointment) {
 }
 
 export function canRecordVitals(user, appointment) {
-  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR, ROLES.ASSISTANT]) && 
-         canViewAppointment(user, appointment);
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR])) return canViewAppointment(user, appointment);
+  return hasPermission(user, "vitals.create") && canViewAppointment(user, appointment);
 }
 
 export function canUpdateVitals(user, appointment) {
-  return canRecordVitals(user, appointment);
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR])) return canViewAppointment(user, appointment);
+  return hasPermission(user, "vitals.update") && canViewAppointment(user, appointment);
 }
 
 // Consultation Permissions
@@ -190,9 +220,10 @@ export function canPrintPrescription(user, prescription) {
 
 // Medical Report / Test Permissions
 export function canUploadReport(user, patient) {
-  // Clinic Owner, Doctor, Receptionist, Assistant can upload reports if patient is in their clinic
-  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR, ROLES.RECEPTIONIST, ROLES.ASSISTANT]) &&
-         user.clinicId?.toString() === patient?.clinicId?.toString();
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR])) {
+    return user.clinicId?.toString() === patient?.clinicId?.toString();
+  }
+  return hasPermission(user, "medical_reports.upload") && user.clinicId?.toString() === patient?.clinicId?.toString();
 }
 
 export function canViewReport(user, report) {
@@ -235,7 +266,16 @@ export function canViewBilling(user, invoice = null) {
 }
 
 export function canRecordPayment(user, invoice) {
-  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.ACCOUNTANT, ROLES.RECEPTIONIST]) &&
-         user.clinicId?.toString() === invoice.clinicId?.toString();
+  if (hasRole(user, [ROLES.CLINIC_OWNER])) return user.clinicId?.toString() === invoice.clinicId?.toString();
+  return hasPermission(user, "billing.record_payment") && user.clinicId?.toString() === invoice.clinicId?.toString();
+}
+
+// Settings Permissions
+export function canManageClinicSettings(user) {
+  return hasRole(user, ROLES.CLINIC_OWNER);
+}
+
+export function canViewClinicSettings(user) {
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR, ROLES.RECEPTIONIST, ROLES.ASSISTANT, ROLES.ACCOUNTANT]);
 }
 

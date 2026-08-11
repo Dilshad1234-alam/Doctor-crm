@@ -3,12 +3,19 @@ import DoctorScheduleException from "../models/DoctorScheduleException.js";
 import Appointment from "../models/Appointment.js";
 import { ACTIVE_STATUSES } from "../utils/appointmentStatus.js";
 
+import ClinicSettings from "../models/ClinicSettings.js";
+
 const DAYS_OF_WEEK = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 function getDayString(dateStr) {
   const [year, month, day] = dateStr.split("-").map(Number);
   const date = new Date(year, month - 1, day);
   return DAYS_OF_WEEK[date.getDay()];
+}
+
+function timeToMins(timeStr) {
+  const [h, m] = timeStr.split(":").map(Number);
+  return h * 60 + m;
 }
 
 function generateTimeSlots(startTime, endTime, durationMinutes) {
@@ -76,11 +83,52 @@ export async function getDoctorAvailableSlots(clinicId, doctorId, dateStr) {
     return { success: true, slots: [], message: "Doctor has no available hours on this date." };
   }
 
-  // 4. Generate all discrete slots
-  const duration = doctor.defaultSlotDuration || 15;
+  // 4. Fetch Clinic Settings to enforce clinic working hours
+  const settings = await ClinicSettings.findOne({ clinicId }).lean();
+  let clinicWorkingHours = null;
+  let clinicDuration = 15;
+
+  if (settings) {
+    clinicWorkingHours = settings.workingHours?.find(w => w.day === dayStr);
+    if (settings.appointmentSettings?.defaultSlotDuration) {
+      clinicDuration = settings.appointmentSettings.defaultSlotDuration;
+    }
+  }
+
+  // If clinic is closed, no slots
+  if (clinicWorkingHours && !clinicWorkingHours.isOpen) {
+    return { success: true, slots: [], message: "Clinic is closed on this date." };
+  }
+
+  const duration = doctor.defaultSlotDuration || clinicDuration;
   let allSlots = [];
+
   for (const block of scheduleSlots) {
-    const generated = generateTimeSlots(block.startTime, block.endTime, duration);
+    let blockStart = block.startTime;
+    let blockEnd = block.endTime;
+
+    // Enforce clinic working hours bounds
+    if (clinicWorkingHours && clinicWorkingHours.isOpen) {
+      const clinicStartMins = timeToMins(clinicWorkingHours.openingTime);
+      const clinicEndMins = timeToMins(clinicWorkingHours.closingTime);
+      const blockStartMins = timeToMins(blockStart);
+      const blockEndMins = timeToMins(blockEnd);
+
+      const boundedStartMins = Math.max(clinicStartMins, blockStartMins);
+      const boundedEndMins = Math.min(clinicEndMins, blockEndMins);
+
+      if (boundedStartMins >= boundedEndMins) continue; // Out of bounds
+
+      const sh = Math.floor(boundedStartMins / 60);
+      const sm = boundedStartMins % 60;
+      blockStart = `${String(sh).padStart(2, "0")}:${String(sm).padStart(2, "0")}`;
+
+      const eh = Math.floor(boundedEndMins / 60);
+      const em = boundedEndMins % 60;
+      blockEnd = `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
+    }
+
+    const generated = generateTimeSlots(blockStart, blockEnd, duration);
     allSlots.push(...generated);
   }
 

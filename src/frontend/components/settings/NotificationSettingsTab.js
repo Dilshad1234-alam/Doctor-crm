@@ -1,0 +1,81 @@
+"use client";
+import { useState } from "react";
+import Button from "@/frontend/components/ui/Button";
+
+export default function NotificationSettingsTab({ settings, onSave }) {
+  const [formData, setFormData] = useState({
+    appointmentConfirmation: settings?.appointmentConfirmation ?? true,
+    appointmentReminder: settings?.appointmentReminder ?? true,
+    appointmentCancellation: settings?.appointmentCancellation ?? true,
+    followUpReminder: settings?.followUpReminder ?? true,
+    paymentReceipt: settings?.paymentReceipt ?? true,
+  });
+
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleChange = (e) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage(null);
+    setError(null);
+    try {
+      await onSave({ notificationSettings: formData });
+      setMessage("Notification settings updated successfully.");
+    } catch (err) {
+      setError("Unable to update settings.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+      <h3 className="text-lg font-bold text-gray-900 border-b pb-2">Notification Preferences</h3>
+      
+      {message && <div className="p-3 bg-green-50 text-green-700 rounded-md border border-green-200 text-sm">{message}</div>}
+      {error && <div className="p-3 bg-red-50 text-red-700 rounded-md border border-red-200 text-sm">{error}</div>}
+
+      <div className="bg-yellow-50 text-yellow-800 p-4 rounded-md border border-yellow-200 text-sm mb-6">
+        Note: Notifications will be sent via Email by default. SMS and WhatsApp integrations require a third-party provider to be configured.
+      </div>
+
+      <div className="space-y-4">
+        <label className="flex items-center">
+          <input type="checkbox" name="appointmentConfirmation" checked={formData.appointmentConfirmation} onChange={handleChange} className="rounded text-indigo-600 mr-3" />
+          <span className="text-sm font-medium text-gray-700">Send Appointment Confirmation</span>
+        </label>
+        
+        <label className="flex items-center">
+          <input type="checkbox" name="appointmentReminder" checked={formData.appointmentReminder} onChange={handleChange} className="rounded text-indigo-600 mr-3" />
+          <span className="text-sm font-medium text-gray-700">Send Appointment Reminders (24h before)</span>
+        </label>
+
+        <label className="flex items-center">
+          <input type="checkbox" name="appointmentCancellation" checked={formData.appointmentCancellation} onChange={handleChange} className="rounded text-indigo-600 mr-3" />
+          <span className="text-sm font-medium text-gray-700">Send Appointment Cancellation Notice</span>
+        </label>
+
+        <label className="flex items-center">
+          <input type="checkbox" name="followUpReminder" checked={formData.followUpReminder} onChange={handleChange} className="rounded text-indigo-600 mr-3" />
+          <span className="text-sm font-medium text-gray-700">Send Follow-up Reminders</span>
+        </label>
+
+        <label className="flex items-center">
+          <input type="checkbox" name="paymentReceipt" checked={formData.paymentReceipt} onChange={handleChange} className="rounded text-indigo-600 mr-3" />
+          <span className="text-sm font-medium text-gray-700">Send Payment Receipts</span>
+        </label>
+      </div>
+
+      <div className="flex justify-end pt-4 border-t">
+        <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save Changes"}</Button>
+      </div>
+    </form>
+  );
+}
