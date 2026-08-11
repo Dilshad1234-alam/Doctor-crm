@@ -21,6 +21,7 @@ export async function registerUser(input) {
     role: "unassigned",
     clinicId: null,
     doctorId: null,
+    patientId: null,
     isActive: true,
     onboardingCompleted: false,
   });
@@ -30,6 +31,7 @@ export async function registerUser(input) {
     role: newUser.role,
     clinicId: newUser.clinicId,
     doctorId: newUser.doctorId,
+    patientId: newUser.patientId,
   });
 
   return {
@@ -41,6 +43,7 @@ export async function registerUser(input) {
       role: newUser.role,
       clinicId: newUser.clinicId,
       doctorId: newUser.doctorId,
+      patientId: newUser.patientId,
       onboardingCompleted: newUser.onboardingCompleted,
     },
     token,
@@ -76,6 +79,7 @@ export async function loginUser(input) {
     clinicId: user.clinicId,
     doctorId: user.doctorId,
     staffId: user.staffId,
+    patientId: user.patientId,
   });
 
   let permissions = [];
@@ -94,10 +98,9 @@ export async function loginUser(input) {
       clinicId: user.clinicId,
       doctorId: user.doctorId,
       staffId: user.staffId,
+      patientId: user.patientId,
       permissions,
-      onboardingCompleted: user.onboardingCompleted !== undefined 
-        ? user.onboardingCompleted 
-        : !!(user.clinicId || user.doctorId || user.staffId),
+      onboardingCompleted: user.onboardingCompleted || !!(user.clinicId || user.doctorId || user.staffId || user.patientId),
     },
     token,
   };
@@ -122,10 +125,9 @@ export async function getCurrentUser(userId) {
     clinicId: user.clinicId,
     doctorId: user.doctorId,
     staffId: user.staffId,
+    patientId: user.patientId,
     permissions,
-    onboardingCompleted: user.onboardingCompleted !== undefined 
-      ? user.onboardingCompleted 
-      : !!(user.clinicId || user.doctorId || user.staffId),
+    onboardingCompleted: user.onboardingCompleted || !!(user.clinicId || user.doctorId || user.staffId || user.patientId),
   };
 }
 

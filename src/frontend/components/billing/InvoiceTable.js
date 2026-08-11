@@ -10,9 +10,10 @@ export default function InvoiceTable({ invoices, loading }) {
 
   if (!invoices || invoices.length === 0) {
     return (
-      <div className="text-center p-8 border rounded-lg bg-gray-50">
-        <p className="text-gray-500 font-medium">No invoices found.</p>
-        <p className="text-sm text-gray-400 mt-1">Create an invoice from a completed consultation or appointment.</p>
+      <div className="text-center p-20 border border-gray-100 rounded-[2rem] bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🧾</div>
+        <p className="text-lg font-bold text-gray-900 tracking-tight">No invoices found.</p>
+        <p className="text-sm font-medium text-gray-500 mt-1">Create an invoice from a completed consultation or appointment.</p>
       </div>
     );
   }
@@ -22,41 +23,41 @@ export default function InvoiceTable({ invoices, loading }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-gray-100">
+        <thead className="bg-gray-50/50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pending</th>
-            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Invoice</th>
+            <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+            <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Patient</th>
+            <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Doctor</th>
+            <th className="px-8 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
+            <th className="px-8 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Paid</th>
+            <th className="px-8 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Pending</th>
+            <th className="px-8 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+            <th className="px-8 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-gray-50">
           {invoices.map((inv) => (
-            <tr key={inv._id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                <Link href={`/dashboard/billing/invoices/${inv._id}`}>{inv.invoiceCode}</Link>
+            <tr key={inv._id} className="hover:bg-blue-50/50 transition-colors group">
+              <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-indigo-600">
+                <Link href={`/dashboard/billing/invoices/${inv._id}`} className="hover:text-indigo-800 transition-colors">{inv.invoiceCode}</Link>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(inv.createdAt)}</td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{inv.patientId?.fullName}</div>
-                <div className="text-xs text-gray-500">{inv.patientId?.patientCode}</div>
+              <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-900">{formatDate(inv.createdAt)}</td>
+              <td className="px-8 py-5 whitespace-nowrap">
+                <div className="text-sm font-bold text-gray-900 group-hover:text-[#15558d] transition-colors">{inv.patientId?.fullName}</div>
+                <div className="text-xs font-medium text-gray-500 mt-0.5">{inv.patientId?.patientCode}</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Dr. {inv.doctorId?.userId?.name || inv.doctorId?.specialization || "Unknown"}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">{formatCurrency(inv.totalAmount)}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 text-right">{formatCurrency(inv.paidAmount)}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right">{formatCurrency(inv.pendingAmount)}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-center">
+              <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-900">Dr. {inv.doctorId?.userId?.name || inv.doctorId?.specialization || "Unknown"}</td>
+              <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-gray-900 text-right">{formatCurrency(inv.totalAmount)}</td>
+              <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-green-600 text-right">{formatCurrency(inv.paidAmount)}</td>
+              <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-red-600 text-right">{formatCurrency(inv.pendingAmount)}</td>
+              <td className="px-8 py-5 whitespace-nowrap text-center">
                 <InvoiceStatusBadge status={inv.status} />
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <Link href={`/dashboard/billing/invoices/${inv._id}`}>
-                  <Button variant="secondary" size="sm">View</Button>
+              <td className="px-8 py-5 whitespace-nowrap text-right text-sm font-bold">
+                <Link href={`/dashboard/billing/invoices/${inv._id}`} className="text-[#15558d] hover:text-[#2ab5e1] transition-colors">
+                  View
                 </Link>
               </td>
             </tr>

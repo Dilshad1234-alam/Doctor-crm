@@ -35,6 +35,7 @@ export async function POST(request) {
       phone: phone || "",
       address: { city: "Pending", state: "Pending" },
       isActive: true,
+      ownerId: dbUser._id,
     });
 
     // 2. Create the Doctor Profile

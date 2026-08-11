@@ -27,7 +27,7 @@ export async function POST(request) {
     }
 
     // Create the Patient Profile
-    await PatientProfile.create({
+    const patientProfile = await PatientProfile.create({
       userId: dbUser._id,
       dateOfBirth: new Date(dateOfBirth),
       gender: gender,
@@ -36,6 +36,7 @@ export async function POST(request) {
     // Update User
     await updateUserById(dbUser._id, {
       phone: phone || dbUser.phone,
+      patientId: patientProfile._id,
       onboardingCompleted: true
     });
 
@@ -46,6 +47,7 @@ export async function POST(request) {
       clinicId: dbUser.clinicId,
       doctorId: dbUser.doctorId,
       staffId: dbUser.staffId,
+      patientId: patientProfile._id,
     });
 
     await setAuthCookie(newToken);

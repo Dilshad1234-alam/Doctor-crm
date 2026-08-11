@@ -117,50 +117,56 @@ export default function ReportsPage() {
   const renderSummaryCards = () => {
     if (!summaryData) return null;
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Total Appointments</p>
-            <p className="text-2xl font-bold text-gray-900">{summaryData.totalAppointments}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-1">Total Appointments</p>
+            <p className="text-4xl font-black text-gray-900">{summaryData.totalAppointments}</p>
           </div>
-          <div className="bg-blue-100 p-3 rounded-full text-blue-600"><Calendar size={24} /></div>
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-2xl text-blue-600 shadow-sm relative z-10 border border-blue-200"><Calendar size={28} /></div>
         </div>
-        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Completed Consults</p>
-            <p className="text-2xl font-bold text-gray-900">{summaryData.completedConsultations}</p>
+        <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-green-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-1">Completed Consults</p>
+            <p className="text-4xl font-black text-gray-900">{summaryData.completedConsultations}</p>
           </div>
-          <div className="bg-green-100 p-3 rounded-full text-green-600"><Stethoscope size={24} /></div>
+          <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-2xl text-green-600 shadow-sm relative z-10 border border-green-200"><Stethoscope size={28} /></div>
         </div>
-        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-500 mb-1">New Patients</p>
-            <p className="text-2xl font-bold text-gray-900">{summaryData.newPatients}</p>
+        <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-purple-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-1">New Patients</p>
+            <p className="text-4xl font-black text-gray-900">{summaryData.newPatients}</p>
           </div>
-          <div className="bg-purple-100 p-3 rounded-full text-purple-600"><Users size={24} /></div>
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-2xl text-purple-600 shadow-sm relative z-10 border border-purple-200"><Users size={28} /></div>
         </div>
-        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Cancelled / No Show</p>
-            <p className="text-2xl font-bold text-gray-900">{summaryData.cancelledAppointments} / {summaryData.noShows}</p>
+        <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-red-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="relative z-10">
+            <p className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-1">Cancelled / No Show</p>
+            <p className="text-4xl font-black text-gray-900">{summaryData.cancelledAppointments} <span className="text-gray-300 text-2xl">/</span> {summaryData.noShows}</p>
           </div>
-          <div className="bg-red-100 p-3 rounded-full text-red-600"><XCircle size={24} /></div>
+          <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-2xl text-red-600 shadow-sm relative z-10 border border-red-200"><XCircle size={28} /></div>
         </div>
         {canViewRevenue && (
           <>
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">₹{summaryData.totalRevenue?.toLocaleString() || 0}</p>
+            <div className="bg-gradient-to-br from-[#0f3d69] to-[#15558d] p-6 rounded-[1.5rem] border-none shadow-md flex items-center justify-between relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+              <div className="relative z-10">
+                <p className="text-xs font-bold tracking-widest text-blue-100 uppercase mb-1">Total Revenue</p>
+                <p className="text-4xl font-black text-white">₹{summaryData.totalRevenue?.toLocaleString() || 0}</p>
               </div>
-              <div className="bg-emerald-100 p-3 rounded-full text-emerald-600"><IndianRupee size={24} /></div>
+              <div className="bg-white/10 p-4 rounded-2xl text-white backdrop-blur-sm relative z-10 border border-white/20"><IndianRupee size={28} /></div>
             </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Pending Payments</p>
-                <p className="text-2xl font-bold text-gray-900">₹{summaryData.pendingPayments?.toLocaleString() || 0}</p>
+            <div className="bg-white p-6 rounded-[1.5rem] border border-orange-100 bg-orange-50/30 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between relative overflow-hidden group">
+              <div className="absolute -right-4 -top-4 w-20 h-20 bg-orange-100 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+              <div className="relative z-10">
+                <p className="text-xs font-bold tracking-widest text-orange-500 uppercase mb-1">Pending Payments</p>
+                <p className="text-4xl font-black text-orange-600">₹{summaryData.pendingPayments?.toLocaleString() || 0}</p>
               </div>
-              <div className="bg-orange-100 p-3 rounded-full text-orange-600"><AlertCircle size={24} /></div>
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-2xl text-orange-600 shadow-sm relative z-10 border border-orange-200"><AlertCircle size={28} /></div>
             </div>
           </>
         )}
@@ -174,28 +180,31 @@ export default function ReportsPage() {
     const maxRev = trend?.length ? Math.max(...trend.map(t => t.revenue)) : 0;
 
     return (
-      <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Revenue Overview</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-8">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight mb-6 flex items-center gap-3">
+          <div className="p-2 bg-emerald-50 rounded-lg text-emerald-500"><IndianRupee size={20} /></div>
+          Revenue Overview
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8 bg-gray-50/50 p-6 rounded-[1.5rem] border border-gray-100">
           <div>
-            <p className="text-sm text-gray-500">Total Collected</p>
-            <p className="text-lg font-bold text-emerald-600">₹{summary.totalCollected?.toLocaleString() || 0}</p>
+            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Total Collected</p>
+            <p className="text-2xl font-black text-emerald-600">₹{summary.totalCollected?.toLocaleString() || 0}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Total Invoiced</p>
-            <p className="text-lg font-bold text-gray-800">₹{summary.totalInvoiced?.toLocaleString() || 0}</p>
+            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Total Invoiced</p>
+            <p className="text-2xl font-black text-gray-800">₹{summary.totalInvoiced?.toLocaleString() || 0}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Pending Amount</p>
-            <p className="text-lg font-bold text-orange-500">₹{summary.totalPending?.toLocaleString() || 0}</p>
+            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Pending Amount</p>
+            <p className="text-2xl font-black text-orange-500">₹{summary.totalPending?.toLocaleString() || 0}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Paid Invoices</p>
-            <p className="text-lg font-bold text-gray-800">{summary.paidInvoices}</p>
+            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Paid Invoices</p>
+            <p className="text-2xl font-black text-gray-800">{summary.paidInvoices}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Partially Paid</p>
-            <p className="text-lg font-bold text-gray-800">{summary.partiallyPaidInvoices}</p>
+            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Partially Paid</p>
+            <p className="text-2xl font-black text-gray-800">{summary.partiallyPaidInvoices}</p>
           </div>
         </div>
 
@@ -233,28 +242,31 @@ export default function ReportsPage() {
     const maxAppts = trend?.length ? Math.max(...trend.map(t => t.appointments)) : 0;
 
     return (
-      <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Appointment Overview</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-8">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight mb-6 flex items-center gap-3">
+          <div className="p-2 bg-blue-50 rounded-lg text-blue-500"><Calendar size={20} /></div>
+          Appointment Overview
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8 bg-gray-50/50 p-6 rounded-[1.5rem] border border-gray-100">
           <div>
-            <p className="text-sm text-gray-500">Scheduled</p>
-            <p className="text-lg font-bold text-blue-600">{summary.scheduled || 0}</p>
+            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Scheduled</p>
+            <p className="text-2xl font-black text-blue-600">{summary.scheduled || 0}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Confirmed</p>
-            <p className="text-lg font-bold text-indigo-600">{summary.confirmed || 0}</p>
+            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Confirmed</p>
+            <p className="text-2xl font-black text-indigo-600">{summary.confirmed || 0}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Completed</p>
-            <p className="text-lg font-bold text-green-600">{summary.completed || 0}</p>
+            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Completed</p>
+            <p className="text-2xl font-black text-green-600">{summary.completed || 0}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Cancelled</p>
-            <p className="text-lg font-bold text-red-500">{summary.cancelled || 0}</p>
+            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Cancelled</p>
+            <p className="text-2xl font-black text-red-500">{summary.cancelled || 0}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">No Show</p>
-            <p className="text-lg font-bold text-gray-500">{summary.no_show || 0}</p>
+            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">No Show</p>
+            <p className="text-2xl font-black text-gray-500">{summary.no_show || 0}</p>
           </div>
         </div>
 
@@ -290,37 +302,42 @@ export default function ReportsPage() {
     if (!doctorPerformanceData || !canViewDoctorReport) return null;
 
     return (
-      <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Doctor Performance</h3>
+      <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-8">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight mb-6 flex items-center gap-3">
+          <div className="p-2 bg-indigo-50 rounded-lg text-indigo-500"><Activity size={20} /></div>
+          Doctor Performance
+        </h3>
         {doctorPerformanceData.length > 0 ? (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-gray-100">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="p-3 text-sm font-semibold text-gray-600">Doctor</th>
-                  <th className="p-3 text-sm font-semibold text-gray-600">Appointments</th>
-                  <th className="p-3 text-sm font-semibold text-gray-600">Completed</th>
-                  <th className="p-3 text-sm font-semibold text-gray-600">Patients Seen</th>
-                  <th className="p-3 text-sm font-semibold text-gray-600">No Shows</th>
-                  {canViewRevenue && <th className="p-3 text-sm font-semibold text-gray-600">Revenue</th>}
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Doctor</th>
+                  <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Appointments</th>
+                  <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Completed</th>
+                  <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Patients Seen</th>
+                  <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">No Shows</th>
+                  {canViewRevenue && <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Revenue</th>}
                 </tr>
               </thead>
               <tbody>
                 {doctorPerformanceData.map((doc, i) => (
-                  <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="p-3 text-sm font-medium text-gray-800">{doc.doctorName}</td>
-                    <td className="p-3 text-sm text-gray-600">{doc.appointments}</td>
-                    <td className="p-3 text-sm text-gray-600">{doc.completedConsultations}</td>
-                    <td className="p-3 text-sm text-gray-600">{doc.patientsSeen}</td>
-                    <td className="p-3 text-sm text-gray-600">{doc.noShows}</td>
-                    {canViewRevenue && <td className="p-3 text-sm text-gray-600">₹{doc.revenue?.toLocaleString()}</td>}
+                  <tr key={i} className="border-b border-gray-50 hover:bg-blue-50/50 transition-colors group">
+                    <td className="p-4 text-sm font-bold text-gray-900 group-hover:text-[#15558d]">{doc.doctorName}</td>
+                    <td className="p-4 text-sm font-bold text-gray-600">{doc.appointments}</td>
+                    <td className="p-4 text-sm font-bold text-green-600">{doc.completedConsultations}</td>
+                    <td className="p-4 text-sm font-bold text-gray-600">{doc.patientsSeen}</td>
+                    <td className="p-4 text-sm font-bold text-red-500">{doc.noShows}</td>
+                    {canViewRevenue && <td className="p-4 text-sm font-black text-emerald-600">₹{doc.revenue?.toLocaleString()}</td>}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="text-sm text-gray-400 text-center py-4">No doctor data for the selected period.</p>
+          <div className="text-center py-10 bg-gray-50/50 rounded-xl border border-gray-100">
+            <p className="text-sm font-bold text-gray-400">No doctor data for the selected period.</p>
+          </div>
         )}
       </div>
     );
@@ -330,47 +347,54 @@ export default function ReportsPage() {
     if (!patientData) return null;
 
     return (
-      <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Patient Overview</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 flex items-center justify-between">
+      <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-8">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight mb-6 flex items-center gap-3">
+          <div className="p-2 bg-purple-50 rounded-lg text-purple-500"><Users size={20} /></div>
+          Patient Overview
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-[1.5rem] border border-gray-100 flex items-center justify-between shadow-sm">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Total Patients (Seen)</p>
-              <p className="text-2xl font-bold text-gray-900">{patientData.totalPatients}</p>
+              <p className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-1">Total Patients (Seen)</p>
+              <p className="text-4xl font-black text-gray-900">{patientData.totalPatients}</p>
             </div>
-            <Users className="text-blue-400" size={32} />
+            <div className="bg-blue-50 p-4 rounded-2xl text-blue-500"><Users size={32} /></div>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 flex items-center justify-between">
+          <div className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-[1.5rem] border border-gray-100 flex items-center justify-between shadow-sm">
             <div>
-              <p className="text-sm text-gray-500 mb-1">New Registrations</p>
-              <p className="text-2xl font-bold text-gray-900">{patientData.newPatients}</p>
+              <p className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-1">New Registrations</p>
+              <p className="text-4xl font-black text-gray-900">{patientData.newPatients}</p>
             </div>
-            <Users className="text-green-400" size={32} />
+            <div className="bg-green-50 p-4 rounded-2xl text-green-500"><Users size={32} /></div>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 flex items-center justify-between">
+          <div className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-[1.5rem] border border-gray-100 flex items-center justify-between shadow-sm">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Returning Patients</p>
-              <p className="text-2xl font-bold text-gray-900">{patientData.returningPatients}</p>
+              <p className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-1">Returning Patients</p>
+              <p className="text-4xl font-black text-gray-900">{patientData.returningPatients}</p>
             </div>
-            <RefreshCcw className="text-purple-400" size={32} />
+            <div className="bg-purple-50 p-4 rounded-2xl text-purple-500"><RefreshCcw size={32} /></div>
           </div>
         </div>
       </div>
     );
   };
-
   return (
-    <div>
-      <PageHeader title="Clinic Reports & Analytics" description="View detailed reports and insights for your clinic." />
+    <div className="pb-12 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Clinic Reports & Analytics</h1>
+          <p className="mt-2 text-sm font-medium text-gray-500">View detailed reports and insights for your clinic.</p>
+        </div>
+      </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
+      <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-8 flex flex-wrap gap-6 items-end">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+          <label className="block text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">Date Range</label>
           <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-[#15558d]" size={18} />
             <select
-              className="pl-9 pr-8 py-2 w-48 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+              className="pl-10 pr-8 py-3 w-56 bg-gray-50 border-none rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-[#15558d] cursor-pointer"
               value={dateRangeType}
               onChange={handleDateRangeChange}
             >
@@ -386,19 +410,19 @@ export default function ReportsPage() {
         {dateRangeType === "custom" && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+              <label className="block text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">From Date</label>
               <input
                 type="date"
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="px-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-[#15558d]"
                 value={customDateFrom}
                 onChange={(e) => setCustomDateFrom(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+              <label className="block text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">To Date</label>
               <input
                 type="date"
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="px-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-[#15558d]"
                 value={customDateTo}
                 onChange={(e) => setCustomDateTo(e.target.value)}
               />
@@ -408,11 +432,11 @@ export default function ReportsPage() {
 
         {isClinicOwner && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Doctor Filter</label>
+            <label className="block text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">Doctor Filter</label>
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-[#15558d]" size={18} />
               <select
-                className="pl-9 pr-8 py-2 w-48 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="pl-10 pr-8 py-3 w-56 bg-gray-50 border-none rounded-xl text-sm font-bold text-gray-700 focus:ring-2 focus:ring-[#15558d] cursor-pointer"
                 value={doctorId}
                 onChange={(e) => setDoctorId(e.target.value)}
               >
@@ -428,20 +452,24 @@ export default function ReportsPage() {
 
       {/* Content */}
       {error ? (
-        <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-lg flex items-center gap-3">
-          <AlertCircle size={20} />
+        <div className="bg-red-50 border border-red-100 text-red-600 p-5 rounded-[1.5rem] flex items-center gap-3 font-bold shadow-sm">
+          <AlertCircle size={24} />
           <p>{error}</p>
         </div>
       ) : loading ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-          <Loader2 className="animate-spin mb-4 text-blue-500" size={40} />
-          <p>Loading reports...</p>
+        <div className="flex flex-col items-center justify-center py-32 text-gray-400">
+          <div className="p-4 bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-4">
+            <Loader2 className="animate-spin text-[#15558d]" size={40} />
+          </div>
+          <p className="font-bold tracking-wide">Crunching numbers...</p>
         </div>
       ) : (!summaryData || summaryData.totalAppointments === 0) ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 flex flex-col items-center justify-center text-gray-500">
-          <FileText size={48} className="text-gray-300 mb-4" />
-          <p className="text-lg font-medium text-gray-700 mb-1">No report data found</p>
-          <p className="text-sm">There is no data for the selected date range and filters.</p>
+        <div className="bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] p-20 flex flex-col items-center justify-center text-center">
+          <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+            <FileText size={40} className="text-gray-300" />
+          </div>
+          <p className="text-2xl font-black text-gray-900 mb-2">No report data found</p>
+          <p className="text-gray-500 font-medium">There is no data for the selected date range and filters.</p>
         </div>
       ) : (
         <>

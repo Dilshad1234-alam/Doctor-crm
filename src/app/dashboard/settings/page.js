@@ -80,11 +80,16 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="pb-20 max-w-7xl mx-auto">
-        <PageHeader title="Settings" description="Manage your clinic, appointments, billing and account settings." />
+      <div className="pb-12 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Settings</h1>
+            <p className="mt-2 text-sm font-medium text-gray-500">Manage your clinic, appointments, billing and account settings.</p>
+          </div>
+        </div>
         <div className="animate-pulse flex gap-8">
-          <div className="w-64 bg-gray-200 h-96 rounded-lg"></div>
-          <div className="flex-1 bg-gray-200 h-96 rounded-lg"></div>
+          <div className="w-64 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-96 rounded-[2rem]"></div>
+          <div className="flex-1 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-96 rounded-[2rem]"></div>
         </div>
       </div>
     );
@@ -92,26 +97,33 @@ export default function SettingsPage() {
 
   if (error) {
     return (
-      <div className="pb-20 max-w-7xl mx-auto">
-        <PageHeader title="Settings" description="Manage your clinic, appointments, billing and account settings." />
-        <div className="bg-red-50 p-6 rounded-lg border border-red-200 flex flex-col items-center">
-          <p className="text-red-700 font-medium mb-4">{error}</p>
-          <button onClick={fetchSettingsData} className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">Retry</button>
+      <div className="pb-12 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Settings</h1>
+            <p className="mt-2 text-sm font-medium text-gray-500">Manage your clinic, appointments, billing and account settings.</p>
+          </div>
+        </div>
+        <div className="bg-red-50 p-8 rounded-[2rem] border border-red-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center">
+          <p className="text-red-700 font-bold mb-6 text-lg">{error}</p>
+          <button onClick={fetchSettingsData} className="px-6 py-3 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 hover:shadow-md transition-all hover:-translate-y-0.5">Retry</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="pb-20 max-w-7xl mx-auto">
-      <PageHeader 
-        title="Settings" 
-        description="Manage your clinic, appointments, billing and account settings." 
-      />
+    <div className="pb-12 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Settings</h1>
+          <p className="mt-2 text-sm font-medium text-gray-500">Manage your clinic, appointments, billing and account settings.</p>
+        </div>
+      </div>
 
       <div className="flex flex-col md:flex-row gap-8">
         <aside className="w-full md:w-64 flex-shrink-0">
-          <div className="bg-white rounded-lg border shadow-sm p-2 sticky top-4">
+          <div className="bg-white rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 sticky top-4">
             <SettingsNavigation 
               activeTab={activeTab} 
               onTabChange={setActiveTab} 
@@ -120,7 +132,7 @@ export default function SettingsPage() {
           </div>
         </aside>
         
-        <main className="flex-1 bg-white rounded-lg border shadow-sm p-6">
+        <main className="flex-1 bg-white rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8">
           {activeTab === "profile" && <ClinicProfileTab clinic={clinic} onSave={handleUpdateClinicProfile} />}
           {activeTab === "hours" && <WorkingHoursTab workingHours={settings?.workingHours} onSave={handleUpdateWorkingHours} />}
           {activeTab === "appointments" && <AppointmentSettingsTab settings={settings?.appointmentSettings} onSave={handleUpdateAppointmentSettings} />}

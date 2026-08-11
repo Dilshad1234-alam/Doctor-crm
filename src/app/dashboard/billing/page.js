@@ -46,13 +46,15 @@ export default function BillingPage() {
 
   return (
     <div className="pb-20 max-w-7xl mx-auto">
-      <PageHeader 
-        title="Billing" 
-        description="Manage invoices, payments and pending balances." 
-      />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Billing</h1>
+          <p className="mt-2 text-sm font-medium text-gray-500">Manage invoices, payments and pending balances.</p>
+        </div>
+      </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+        <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-100 shadow-sm font-medium">
           {error}
         </div>
       )}
@@ -66,7 +68,7 @@ export default function BillingPage() {
             onFilterChange={handleFilterChange} 
           />
 
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="bg-white rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
             <InvoiceTable invoices={invoices} loading={loading} />
           </div>
         </>

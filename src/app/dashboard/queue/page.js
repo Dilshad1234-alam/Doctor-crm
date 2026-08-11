@@ -129,116 +129,132 @@ export default function QueuePage() {
     const waitingList = queue.filter(q => q.status === "waiting");
 
     return (
-      <div className="pb-10 max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <PageHeader title="My Queue" />
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => fetchQueueData(true)} disabled={refreshing}>
+      <div className="pb-12 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">My Queue</h1>
+            <p className="mt-2 text-sm font-medium text-gray-500">Manage your patient queue for today.</p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => fetchQueueData(true)} disabled={refreshing} className="shadow-sm rounded-xl">
               {refreshing ? "Refreshing..." : "Refresh"}
             </Button>
             {isDoctor && (
-              <Button onClick={handleCallNext} disabled={waitingList.length === 0 || nextPatient}>
+              <Button onClick={handleCallNext} disabled={waitingList.length === 0 || nextPatient} className="bg-gradient-to-r from-[#0f3d69] to-[#15558d] hover:from-[#15558d] hover:to-[#2ab5e1] text-white rounded-xl shadow-md transition-all hover:-translate-y-0.5 border-none">
                 Call Next Patient
               </Button>
             )}
           </div>
         </div>
 
-        {error && <div className="p-4 bg-red-50 text-red-600 rounded mb-6">{error}</div>}
-        {loading && !refreshing && <div className="p-8 text-center animate-pulse">Loading queue...</div>}
+        {error && <div className="p-4 bg-red-50 text-red-600 rounded-xl mb-6 shadow-sm border border-red-100 font-medium">{error}</div>}
+        {loading && !refreshing && <div className="p-10 text-center animate-pulse text-gray-500 font-bold bg-white rounded-[2rem] shadow-sm border border-gray-100">Loading queue...</div>}
 
         {!loading && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             {/* Now Serving Column */}
             <div className="lg:col-span-1 space-y-6">
-              <div className="bg-white rounded-lg border-2 border-teal-500 shadow p-5">
-                <h2 className="text-sm font-bold text-teal-600 uppercase tracking-wider mb-4">Now Serving</h2>
+              <div className="bg-white rounded-[2rem] border-2 border-teal-500 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-6 relative overflow-hidden">
+                <div className="absolute -right-4 -top-4 w-24 h-24 bg-teal-50 rounded-full opacity-50 pointer-events-none"></div>
+                <h2 className="text-xs font-black text-teal-600 uppercase tracking-widest mb-6 relative z-10 flex items-center gap-2">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
+                  </span>
+                  Now Serving
+                </h2>
                 
                 {currentPatient ? (
-                  <div>
-                    <div className="text-4xl font-black text-gray-900 mb-2">Token {currentPatient.tokenNumber}</div>
-                    <p className="font-semibold text-lg">{currentPatient.patientId?.fullName}</p>
-                    <p className="text-sm text-gray-500 mb-4 capitalize">{currentPatient.appointmentId?.visitType?.replace(/_/g, " ")}</p>
+                  <div className="relative z-10">
+                    <div className="text-5xl font-black text-gray-900 mb-3 tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600">Token {currentPatient.tokenNumber}</div>
+                    <p className="font-bold text-xl text-gray-800">{currentPatient.patientId?.fullName}</p>
+                    <p className="text-sm font-medium text-gray-500 mb-5 capitalize">{currentPatient.appointmentId?.visitType?.replace(/_/g, " ")}</p>
                     <QueueStatusBadge status={currentPatient.status} />
-                    <div className="mt-6">
-                      <Button fullWidth onClick={() => router.push(`/dashboard/consultations`)}>
+                    <div className="mt-8">
+                      <Button fullWidth onClick={() => router.push(`/dashboard/consultations`)} className="rounded-xl shadow-md py-3 text-base">
                         Open Consultation
                       </Button>
                     </div>
                   </div>
                 ) : nextPatient ? (
-                  <div>
-                    <div className="text-4xl font-black text-gray-900 mb-2">Token {nextPatient.tokenNumber}</div>
-                    <p className="font-semibold text-lg">{nextPatient.patientId?.fullName}</p>
-                    <p className="text-sm text-gray-500 mb-4 capitalize">{nextPatient.appointmentId?.visitType?.replace(/_/g, " ")}</p>
+                  <div className="relative z-10">
+                    <div className="text-5xl font-black text-gray-900 mb-3 tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600">Token {nextPatient.tokenNumber}</div>
+                    <p className="font-bold text-xl text-gray-800">{nextPatient.patientId?.fullName}</p>
+                    <p className="text-sm font-medium text-gray-500 mb-5 capitalize">{nextPatient.appointmentId?.visitType?.replace(/_/g, " ")}</p>
                     <QueueStatusBadge status={nextPatient.status} />
-                    <div className="mt-2">
+                    <div className="mt-3">
                       <VitalsStatusBadge hasVitals={nextPatient.hasVitals} />
                     </div>
                     
-                    <div className="mt-6 space-y-3">
-                      <Button variant="outline" fullWidth onClick={() => openVitals(nextPatient)}>
+                    <div className="mt-8 space-y-3">
+                      <Button variant="outline" fullWidth onClick={() => openVitals(nextPatient)} className="rounded-xl py-3 border-gray-200">
                         {nextPatient.hasVitals ? "View/Edit Vitals" : "Record Vitals"}
                       </Button>
-                      <Button fullWidth onClick={() => handleAction("start", nextPatient)}>
+                      <Button fullWidth onClick={() => handleAction("start", nextPatient)} className="rounded-xl shadow-md py-3 bg-gradient-to-r from-[#0f3d69] to-[#15558d] border-none text-base">
                         Start Consultation
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-gray-400">
-                    <p>No patient currently called.</p>
+                  <div className="text-center py-10 relative z-10">
+                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-2xl opacity-50">☕</span>
+                    </div>
+                    <p className="text-gray-400 font-bold">No patient currently called.</p>
                   </div>
                 )}
               </div>
 
               {/* Quick Stats */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded-lg border shadow-sm text-center">
-                  <div className="text-2xl font-bold text-gray-900">{waitingList.length}</div>
-                  <div className="text-xs text-gray-500 uppercase">Waiting</div>
+                <div className="bg-white p-5 rounded-[1.5rem] border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] text-center relative overflow-hidden">
+                  <div className="text-3xl font-black text-gray-900 mb-1 relative z-10">{waitingList.length}</div>
+                  <div className="text-[10px] font-black tracking-widest text-gray-400 uppercase relative z-10">Waiting</div>
                 </div>
-                <div className="bg-white p-4 rounded-lg border shadow-sm text-center">
-                  <div className="text-2xl font-bold text-orange-600">{waitingList.filter(q => q.priority !== "normal").length}</div>
-                  <div className="text-xs text-gray-500 uppercase">Urgent/Emerg.</div>
+                <div className="bg-white p-5 rounded-[1.5rem] border border-orange-100 bg-orange-50/30 shadow-[0_4px_20px_rgb(0,0,0,0.03)] text-center relative overflow-hidden">
+                  <div className="text-3xl font-black text-orange-600 mb-1 relative z-10">{waitingList.filter(q => q.priority !== "normal").length}</div>
+                  <div className="text-[10px] font-black tracking-widest text-orange-600/70 uppercase relative z-10">Urgent</div>
                 </div>
               </div>
             </div>
 
             {/* Waiting List Column */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b bg-gray-50 flex justify-between items-center">
-                  <h2 className="font-semibold text-gray-900">Waiting Patients</h2>
+              <div className="bg-white rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden h-full flex flex-col">
+                <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                  <h2 className="font-bold text-gray-900">Waiting Patients</h2>
                 </div>
                 
                 {waitingList.length === 0 ? (
-                  <div className="p-10 text-center text-gray-500">
-                    No patients are waiting right now.
+                  <div className="flex-1 flex items-center justify-center p-12 text-center">
+                    <div>
+                      <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 opacity-50 text-3xl">👥</div>
+                      <p className="font-bold text-gray-400">No patients are waiting right now.</p>
+                    </div>
                   </div>
                 ) : (
-                  <ul className="divide-y divide-gray-100">
+                  <ul className="divide-y divide-gray-50 flex-1 overflow-y-auto">
                     {waitingList.map((entry) => (
-                      <li key={entry._id} className="p-5 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-full bg-gray-100 border flex items-center justify-center font-bold text-lg text-gray-700">
+                      <li key={entry._id} className="p-6 hover:bg-blue-50/50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 group">
+                        <div className="flex items-center gap-5">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200 flex items-center justify-center font-black text-xl text-gray-700 shadow-sm group-hover:shadow transition-shadow">
                             {entry.tokenNumber}
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{entry.patientId?.fullName}</p>
+                            <p className="font-bold text-lg text-gray-900">{entry.patientId?.fullName}</p>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-gray-500">{entry.appointmentId?.startTime}</span>
+                              <span className="text-xs font-medium text-gray-500">{entry.appointmentId?.startTime}</span>
                               <span className="text-xs text-gray-300">•</span>
-                              <span className="text-xs text-gray-500">Wait: {getWaitingTime(entry.waitingSince)}</span>
+                              <span className="text-xs font-medium text-[#15558d]">Wait: {getWaitingTime(entry.waitingSince)}</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                           <VitalsStatusBadge hasVitals={entry.hasVitals} />
                           <button 
                             onClick={() => openVitals(entry)}
-                            className="text-sm text-indigo-600 hover:text-indigo-900 font-medium whitespace-nowrap"
+                            className="text-sm text-indigo-500 hover:text-indigo-700 font-bold whitespace-nowrap transition-colors"
                           >
                             {entry.hasVitals ? "Vitals" : "Record Vitals"}
                           </button>
@@ -246,7 +262,7 @@ export default function QueuePage() {
                           {isDoctor && (
                             <button 
                               onClick={() => handleAction("call", entry)}
-                              className="text-sm bg-teal-50 text-teal-700 px-3 py-1.5 rounded font-medium hover:bg-teal-100"
+                              className="text-sm bg-gradient-to-br from-teal-50 to-teal-100 text-teal-700 border border-teal-200 px-4 py-2 rounded-xl font-bold hover:shadow-md hover:-translate-y-0.5 transition-all"
                             >
                               Call Patient
                             </button>
@@ -267,62 +283,65 @@ export default function QueuePage() {
 
   // Clinic Queue View (Receptionist / Admin)
   return (
-    <div className="pb-10 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <PageHeader title="Clinic Queue" />
-        <Button variant="outline" onClick={() => fetchQueueData(true)} disabled={refreshing}>
+    <div className="pb-12 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Clinic Queue</h1>
+          <p className="mt-2 text-sm font-medium text-gray-500">Monitor all patients currently in the clinic.</p>
+        </div>
+        <Button variant="outline" onClick={() => fetchQueueData(true)} disabled={refreshing} className="shadow-sm rounded-xl">
           {refreshing ? "Refreshing..." : "Refresh Queue"}
         </Button>
       </div>
 
-      {error && <div className="p-4 bg-red-50 text-red-600 rounded mb-6">{error}</div>}
+      {error && <div className="p-4 bg-red-50 text-red-600 rounded-xl mb-6 shadow-sm border border-red-100 font-medium">{error}</div>}
       
-      <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-100 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-100">
+            <thead className="bg-gray-50/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Token</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wait Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vitals</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Token</th>
+                <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Patient</th>
+                <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Doctor</th>
+                <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Wait Time</th>
+                <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Priority</th>
+                <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Vitals</th>
+                <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-8 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-50">
               {loading && !refreshing ? (
-                <tr><td colSpan="7" className="px-6 py-10 text-center text-gray-500 animate-pulse">Loading queue...</td></tr>
+                <tr><td colSpan="8" className="px-8 py-16 text-center text-gray-500 font-bold animate-pulse">Loading queue...</td></tr>
               ) : queue.length === 0 ? (
-                <tr><td colSpan="7" className="px-6 py-10 text-center text-gray-500">No active queue entries today.</td></tr>
+                <tr><td colSpan="8" className="px-8 py-20 text-center text-gray-500 font-medium text-lg">No active queue entries today.</td></tr>
               ) : (
                 queue.map((entry) => (
-                  <tr key={entry._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900">#{entry.tokenNumber}</div>
+                  <tr key={entry._id} className="hover:bg-blue-50/50 transition-colors group">
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <div className="text-sm font-black text-gray-900 bg-gray-100 inline-flex items-center justify-center w-10 h-10 rounded-xl shadow-sm border border-gray-200 group-hover:bg-white transition-colors">#{entry.tokenNumber}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{entry.patientId?.fullName}</div>
-                      <div className="text-xs text-gray-500">{entry.patientId?.patientIdString}</div>
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <div className="text-sm font-bold text-gray-900 group-hover:text-[#15558d] transition-colors">{entry.patientId?.fullName}</div>
+                      <div className="text-xs font-medium text-gray-500 mt-0.5">{entry.patientId?.patientIdString}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{entry.doctorId?.userId?.name || "Doctor"}</div>
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <div className="text-sm font-bold text-gray-900">{entry.doctorId?.userId?.name || "Doctor"}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-600">
                       {entry.status === "waiting" || entry.status === "called" ? getWaitingTime(entry.waitingSince) : "-"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-8 py-5 whitespace-nowrap">
                       <PriorityBadge priority={entry.priority} />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-8 py-5 whitespace-nowrap">
                       <VitalsStatusBadge hasVitals={entry.hasVitals} />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-8 py-5 whitespace-nowrap">
                       <QueueStatusBadge status={entry.status} />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-8 py-5 whitespace-nowrap text-right text-sm font-bold">
                       {/* Vitals Button - Valid for waiting, called, and some others but maybe not completed/removed if not applicable */}
                       {(entry.status === "waiting" || entry.status === "called") && (
                         <button onClick={() => openVitals(entry)} className="text-indigo-600 hover:text-indigo-900 mr-3">

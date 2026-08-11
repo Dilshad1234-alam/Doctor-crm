@@ -20,6 +20,7 @@ export async function getAuthenticatedUser() {
     role: user.role,
     clinicId: user.clinicId ? user.clinicId.toString() : null,
     doctorId: user.doctorId ? user.doctorId.toString() : null,
-    onboardingCompleted: !!user.clinicId,
+    patientId: user.patientId ? user.patientId.toString() : null,
+    onboardingCompleted: user.onboardingCompleted || !!(user.clinicId || user.doctorId || user.staffId || user.patientId),
   };
 }

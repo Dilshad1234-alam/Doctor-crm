@@ -48,6 +48,11 @@ const userSchema = new mongoose.Schema(
       ref: "StaffProfile",
       default: null,
     },
+    patientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PatientProfile",
+      default: null,
+    },
     isActive: {
       type: Boolean,
       default: true,

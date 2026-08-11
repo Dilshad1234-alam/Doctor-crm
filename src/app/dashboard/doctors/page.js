@@ -47,43 +47,47 @@ export default function DoctorsPage() {
   };
 
   return (
-    <div>
-      <PageHeader 
-        title="Doctors" 
-        description="Manage doctors, schedules, availability and clinic access."
-      >
+    <div className="pb-12 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Doctors</h1>
+          <p className="mt-2 text-sm font-medium text-gray-500">Manage doctors, schedules, availability and clinic access.</p>
+        </div>
         <Link href="/dashboard/doctors/new">
-          <Button>Add Doctor</Button>
+          <Button className="rounded-xl px-6 bg-gradient-to-r from-[#0f3d69] to-[#15558d] hover:from-[#15558d] hover:to-[#2ab5e1] border-none shadow-md hover:-translate-y-0.5 transition-all">Add Doctor</Button>
         </Link>
-      </PageHeader>
+      </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-8">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-gray-500">Total Doctors</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{stats.total}</p>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-10">
+        <div className="rounded-[1.5rem] border border-gray-100 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-gray-50 rounded-full opacity-50"></div>
+          <h3 className="text-sm font-bold tracking-widest text-gray-400 uppercase relative z-10">Total Doctors</h3>
+          <p className="mt-2 text-4xl font-black text-gray-900 relative z-10">{stats.total}</p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-gray-500">Active Doctors</h3>
-          <p className="mt-2 text-3xl font-bold text-teal-600">{stats.active}</p>
+        <div className="rounded-[1.5rem] border border-gray-100 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-teal-50 rounded-full opacity-50"></div>
+          <h3 className="text-sm font-bold tracking-widest text-teal-600/70 uppercase relative z-10">Active Doctors</h3>
+          <p className="mt-2 text-4xl font-black text-teal-600 relative z-10">{stats.active}</p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-medium text-gray-500">Not Accepting Appts</h3>
-          <p className="mt-2 text-3xl font-bold text-amber-600">{stats.notAccepting}</p>
+        <div className="rounded-[1.5rem] border border-gray-100 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-50 rounded-full opacity-50"></div>
+          <h3 className="text-sm font-bold tracking-widest text-amber-600/70 uppercase relative z-10">Not Accepting</h3>
+          <p className="mt-2 text-4xl font-black text-amber-600 relative z-10">{stats.notAccepting}</p>
         </div>
       </div>
 
       {/* Filters & Search */}
-      <div className="mb-6 bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
+      <div className="mb-8 bg-white p-4 rounded-[1.5rem] border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] flex flex-col sm:flex-row gap-4 items-center justify-between relative z-10">
         <form onSubmit={handleSearch} className="w-full sm:max-w-md flex gap-2">
           <input
             type="text"
             placeholder="Search by name, ID, email or specialization..."
-            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+            className="flex-1 rounded-xl border-gray-200 bg-gray-50 shadow-inner focus:border-teal-500 focus:ring-teal-500 focus:bg-white transition-colors sm:text-sm px-4 py-2 font-medium"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <Button type="submit" variant="primary">Search</Button>
+          <Button type="submit" className="rounded-xl px-6 bg-gradient-to-r from-[#0f3d69] to-[#15558d] hover:from-[#15558d] hover:to-[#2ab5e1] border-none shadow-md">Search</Button>
         </form>
       </div>
 
@@ -93,72 +97,75 @@ export default function DoctorsPage() {
       {loading ? (
         <div className="animate-pulse space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-24 bg-gray-200 rounded-lg w-full"></div>
+            <div key={i} className="h-24 bg-gray-100 rounded-[1.5rem] w-full"></div>
           ))}
         </div>
       ) : doctors.length === 0 ? (
-        <div className="text-center py-16 bg-white border border-gray-200 rounded-lg shadow-sm">
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">No doctors added yet</h3>
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="text-center py-20 bg-white border border-gray-100 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="w-20 h-20 mx-auto bg-gray-50 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+          </div>
+          <h3 className="mt-2 text-lg font-bold text-gray-900 tracking-tight">No doctors added yet</h3>
+          <p className="mt-1 text-sm font-medium text-gray-500 max-w-sm mx-auto">
             Add your first doctor to start managing appointments and consultations.
           </p>
-          <div className="mt-6">
+          <div className="mt-8">
             <Link href="/dashboard/doctors/new">
-              <Button>Add Doctor</Button>
+              <Button className="rounded-xl px-6 bg-gradient-to-r from-[#0f3d69] to-[#15558d] border-none shadow-md">Add Doctor</Button>
             </Link>
           </div>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+        <div className="bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50/50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee ID</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialization</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fee</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Doctor</th>
+                  <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Employee ID</th>
+                  <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Specialization</th>
+                  <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Fee</th>
+                  <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="px-8 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-50">
                 {doctors.map((doctor) => (
-                  <tr key={doctor.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={doctor.id} className="hover:bg-blue-50/50 transition-colors group">
+                    <td className="px-8 py-5 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">
+                        <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-tr from-[#15558d] to-[#2ab5e1] flex items-center justify-center text-white font-black shadow-md group-hover:scale-105 transition-transform">
                           {doctor.name.charAt(0).toUpperCase()}
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{doctor.title ? `${doctor.title} ` : ''}{doctor.name}</div>
-                          <div className="text-sm text-gray-500">{doctor.email}</div>
+                        <div className="ml-5">
+                          <div className="text-sm font-bold text-gray-900">{doctor.title ? `${doctor.title} ` : ''}{doctor.name}</div>
+                          <div className="text-sm font-medium text-gray-500">{doctor.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-8 py-5 whitespace-nowrap text-sm font-medium text-gray-500">
                       {doctor.employeeId}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{doctor.specialization}</div>
-                      <div className="text-xs text-gray-500">{doctor.subSpecialization}</div>
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <div className="text-sm font-bold text-gray-900">{doctor.specialization}</div>
+                      <div className="text-xs font-medium text-gray-500">{doctor.subSpecialization}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-900">
                       ${doctor.consultationFee}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${doctor.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <td className="px-8 py-5 whitespace-nowrap">
+                      <span className={`px-3 py-1 inline-flex text-xs font-bold rounded-full ${doctor.isActive ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                         {doctor.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link href={`/dashboard/doctors/${doctor.id}`} className="text-teal-600 hover:text-teal-900 mr-4">
+                    <td className="px-8 py-5 whitespace-nowrap text-right text-sm font-bold">
+                      <Link href={`/dashboard/doctors/${doctor.id}`} className="text-[#15558d] hover:text-[#2ab5e1] mr-4 transition-colors">
                         View
                       </Link>
-                      <Link href={`/dashboard/doctors/${doctor.id}/edit`} className="text-indigo-600 hover:text-indigo-900 mr-4">
+                      <Link href={`/dashboard/doctors/${doctor.id}/edit`} className="text-indigo-500 hover:text-indigo-700 mr-4 transition-colors">
                         Edit
                       </Link>
-                      <Link href={`/dashboard/doctors/${doctor.id}/schedule`} className="text-blue-600 hover:text-blue-900">
+                      <Link href={`/dashboard/doctors/${doctor.id}/schedule`} className="text-teal-500 hover:text-teal-700 transition-colors">
                         Schedule
                       </Link>
                     </td>

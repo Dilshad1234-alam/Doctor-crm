@@ -5,10 +5,12 @@ import { Eye, Calendar, XCircle, UserX } from "lucide-react";
 export default function AppointmentTable({ appointments, role, onReschedule, onCancel, onNoShow, onCheckIn }) {
   if (!appointments || appointments.length === 0) {
     return (
-      <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
-        <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No appointments found</h3>
-        <p className="mt-1 text-sm text-gray-500">Get started by booking a new appointment.</p>
+      <div className="text-center py-20 bg-white rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Calendar className="h-10 w-10 text-gray-400" />
+        </div>
+        <h3 className="mt-2 text-lg font-bold text-gray-900 tracking-tight">No appointments found</h3>
+        <p className="mt-1 text-sm font-medium text-gray-500">Get started by booking a new appointment.</p>
       </div>
     );
   }
@@ -24,44 +26,46 @@ export default function AppointmentTable({ appointments, role, onReschedule, onC
   };
 
   return (
-    <div className="overflow-x-auto bg-white rounded-lg border border-gray-200 shadow-sm">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto bg-white rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <table className="min-w-full divide-y divide-gray-100">
+        <thead className="bg-gray-50/50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appointment ID</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visit Type</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date & Time</th>
+            <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Appointment ID</th>
+            <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Patient</th>
+            <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Doctor</th>
+            <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Visit Type</th>
+            <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+            <th className="px-8 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-gray-50">
           {appointments.map((apt) => (
-            <tr key={apt._id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{formatDate(apt.appointmentDate)}</div>
-                <div className="text-sm text-gray-500">{apt.startTime} - {apt.endTime}</div>
+            <tr key={apt._id} className="hover:bg-blue-50/50 transition-colors group">
+              <td className="px-8 py-5 whitespace-nowrap">
+                <div className="text-sm font-bold text-gray-900">{formatDate(apt.appointmentDate)}</div>
+                <div className="text-xs font-medium text-gray-500 mt-0.5">{apt.startTime} - {apt.endTime}</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {apt.appointmentCode}
+              <td className="px-8 py-5 whitespace-nowrap">
+                <span className="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-600 border border-gray-200">
+                  {apt.appointmentCode}
+                </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{apt.patientId?.fullName || "Unknown"}</div>
-                <div className="text-sm text-gray-500">{apt.patientId?.phone || "N/A"}</div>
+              <td className="px-8 py-5 whitespace-nowrap">
+                <div className="text-sm font-bold text-gray-900 group-hover:text-[#15558d] transition-colors">{apt.patientId?.fullName || "Unknown"}</div>
+                <div className="text-xs font-medium text-gray-500 mt-0.5">{apt.patientId?.phone || "N/A"}</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{apt.doctorId?.userId?.name || "Unknown"}</div>
-                <div className="text-sm text-gray-500">{apt.doctorId?.specialization || "N/A"}</div>
+              <td className="px-8 py-5 whitespace-nowrap">
+                <div className="text-sm font-bold text-gray-900">{apt.doctorId?.userId?.name || "Unknown"}</div>
+                <div className="text-xs font-medium text-gray-500 mt-0.5">{apt.doctorId?.specialization || "N/A"}</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-600">
                 {formatVisitType(apt.visitType)}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-8 py-5 whitespace-nowrap">
                 <AppointmentStatusBadge status={apt.status} />
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td className="px-8 py-5 whitespace-nowrap text-right text-sm font-bold">
                 <div className="flex justify-end space-x-2">
                   <Link href={`/dashboard/appointments/${apt._id}`} className="text-blue-600 hover:text-blue-900" title="View Details">
                     <Eye className="w-5 h-5" />

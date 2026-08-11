@@ -77,14 +77,13 @@ export async function getStaffStats(clinicId) {
 export async function generateStaffCode(clinicId, session = null) {
   await connectDB();
   const options = session ? { session, new: true, upsert: true } : { new: true, upsert: true };
-  const counterId = `staffCode_${clinicId}`;
   
-  const counter = await Counter.findByIdAndUpdate(
-    counterId,
-    { $inc: { seq: 1 } },
+  const counter = await Counter.findOneAndUpdate(
+    { clinicId, key: "staffCode" },
+    { $inc: { sequence: 1 } },
     options
   );
   
-  const seqStr = String(counter.seq).padStart(6, "0");
+  const seqStr = String(counter.sequence).padStart(6, "0");
   return `STF-${seqStr}`;
 }

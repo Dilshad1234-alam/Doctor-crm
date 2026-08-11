@@ -33,72 +33,84 @@ export default function PatientsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Patients</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage clinic patients, contact details and medical profiles.</p>
+          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Patients</h1>
+          <p className="text-gray-500 font-medium mt-2">Manage clinic patients, contact details and medical profiles.</p>
         </div>
-        <Link href="/dashboard/patients/new" className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm shadow-sm">
-          <Plus className="w-4 h-4 mr-2" /> Add Patient
+        <Link href="/dashboard/patients/new" className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#0f3d69] to-[#15558d] hover:from-[#15558d] hover:to-[#2ab5e1] text-white rounded-xl font-bold transition-all shadow-md hover:-translate-y-0.5">
+          <Plus className="w-5 h-5 mr-2" /> Add Patient
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shrink-0">
-            <Users className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Total Patients</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center shrink-0">
-            <Activity className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Active Patients</p>
-            <p className="text-2xl font-bold text-gray-900">{filterStatus === 'active' ? stats.total : '-'}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-center">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full opacity-50"></div>
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+              <Users className="w-7 h-7" />
+            </div>
+            <div>
+              <p className="text-xs font-bold tracking-widest text-gray-400 uppercase">Total</p>
+              <p className="text-3xl font-black text-gray-900 mt-1">{stats.total}</p>
+            </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center shrink-0">
-            <UserPlus className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">New This Month</p>
-            <p className="text-2xl font-bold text-gray-900">--</p>
+        <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-center">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-teal-50 rounded-full opacity-50"></div>
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-teal-100 to-teal-50 text-teal-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+              <Activity className="w-7 h-7" />
+            </div>
+            <div>
+              <p className="text-xs font-bold tracking-widest text-teal-600/70 uppercase">Active</p>
+              <p className="text-3xl font-black text-teal-600 mt-1">{filterStatus === 'active' ? stats.total : '-'}</p>
+            </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center shrink-0">
-            <FileText className="w-6 h-6" />
+        <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-center">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-indigo-50 rounded-full opacity-50"></div>
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-indigo-100 to-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+              <UserPlus className="w-7 h-7" />
+            </div>
+            <div>
+              <p className="text-xs font-bold tracking-widest text-indigo-400 uppercase">New</p>
+              <p className="text-3xl font-black text-indigo-600 mt-1">--</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Profiles Updated</p>
-            <p className="text-2xl font-bold text-gray-900">--</p>
+        </div>
+        <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-center">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-50 rounded-full opacity-50"></div>
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-amber-100 to-amber-50 text-amber-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+              <FileText className="w-7 h-7" />
+            </div>
+            <div>
+              <p className="text-xs font-bold tracking-widest text-amber-600/70 uppercase">Updated</p>
+              <p className="text-3xl font-black text-amber-600 mt-1">--</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between bg-gray-50/30">
+          <div className="relative w-full sm:max-w-md">
+            <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input 
               type="text" 
               placeholder="Search by name, patient ID, phone..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+              className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-inner"
             />
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <select 
               value={filterStatus} 
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="px-4 py-3 border border-gray-200 rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -114,14 +126,14 @@ export default function PatientsPage() {
         ) : patients.length > 0 ? (
           <PatientTable patients={patients} />
         ) : (
-          <div className="p-12 text-center">
-            <div className="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8" />
+          <div className="p-20 text-center">
+            <div className="w-24 h-24 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Users className="w-10 h-10" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-1">No patients found</h3>
-            <p className="text-gray-500 text-sm mb-4">Add your first patient to start managing appointments and medical records.</p>
-            <Link href="/dashboard/patients/new" className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors text-sm shadow-sm">
-              <Plus className="w-4 h-4 mr-2" /> Add Patient
+            <h3 className="text-xl font-black text-gray-900 mb-2">No patients found</h3>
+            <p className="text-gray-500 font-medium mb-8 max-w-sm mx-auto">Add your first patient to start managing appointments and medical records.</p>
+            <Link href="/dashboard/patients/new" className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#0f3d69] to-[#15558d] hover:from-[#15558d] hover:to-[#2ab5e1] text-white rounded-xl font-bold transition-all shadow-md hover:-translate-y-0.5">
+              <Plus className="w-5 h-5 mr-2" /> Add Patient
             </Link>
           </div>
         )}
