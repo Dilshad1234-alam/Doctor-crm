@@ -12,6 +12,7 @@ import { findAppointmentById, updateAppointmentById } from "../repositories/appo
 import PatientVitals from "../models/PatientVitals.js";
 import Counter from "../models/Counter.js";
 import { APPOINTMENT_STATUSES } from "../utils/appointmentStatus.js";
+import { startConsultation } from "./consultationService.js";
 import { 
   requireRole, 
   canCheckInPatient, 
@@ -210,26 +211,11 @@ export async function startConsultationFromQueue(authUser, queueId) {
     throw new Error(`Cannot start consultation from status: ${entry.status}`);
   }
 
-  let session = null;
-  try {
-    session = await mongoose.startSession();
-    session.startTransaction();
-
-    const updatedEntry = await updateQueueEntry(queueId, authUser.clinicId, {
-      status: "in_consultation",
-      consultationStartedAt: new Date()
-    }, session);
-
-    await updateAppointmentById(entry.appointmentId._id, authUser.clinicId, { status: APPOINTMENT_STATUSES.IN_CONSULTATION }, session);
-
-    await session.commitTransaction();
-    return updatedEntry;
-  } catch (error) {
-    if (session) await session.abortTransaction();
-    throw error;
-  } finally {
-    if (session) session.endSession();
-  }
+  // Delegate the actual creation and state updates to consultationService
+  // It handles idempotency, transaction, and audit logging safely.
+  const consultation = await startConsultation(authUser, entry.appointmentId._id);
+  
+  return consultation;
 }
 
 export async function skipQueueEntry(authUser, queueId, input = {}) {

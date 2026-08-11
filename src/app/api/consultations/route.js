@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
-import { getConsultations } from "@/backend/services/consultationService";
+import { getConsultations, getMyConsultations } from "@/backend/services/consultationService";
 import { consultationListQuerySchema } from "@/backend/validations/consultationValidation";
 
 function sanitizeList(list) {
@@ -26,7 +26,12 @@ export async function GET(request) {
     const query = Object.fromEntries(searchParams.entries());
     const validatedQuery = consultationListQuerySchema.parse(query);
 
-    const consultations = await getConsultations(authUser, validatedQuery);
+    let consultations;
+    if (authUser.role === "doctor") {
+      consultations = await getMyConsultations(authUser, validatedQuery);
+    } else {
+      consultations = await getConsultations(authUser, validatedQuery);
+    }
 
     return NextResponse.json({ success: true, consultations: sanitizeList(consultations) });
   } catch (error) {

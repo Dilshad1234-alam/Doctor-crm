@@ -81,8 +81,13 @@ export default function QueuePage() {
       if (action === "call") {
         await callQueuePatient(entry._id);
       } else if (action === "start") {
-        await startQueueConsultation(entry._id);
-        router.push(`/dashboard/consultations/start?appointmentId=${entry.appointmentId._id || entry.appointmentId}`);
+        const result = await startQueueConsultation(entry._id);
+        const consultationId = result.consultation?._id || result.consultation?.id;
+        if (consultationId) {
+          router.push(`/dashboard/consultations/${consultationId}`);
+        } else {
+          router.push(`/dashboard/consultations`);
+        }
       } else if (action === "skip") {
         const reason = prompt("Reason for skipping?");
         if (reason !== null) await skipQueuePatient(entry._id, reason);
@@ -156,6 +161,11 @@ export default function QueuePage() {
                     <p className="font-semibold text-lg">{currentPatient.patientId?.fullName}</p>
                     <p className="text-sm text-gray-500 mb-4 capitalize">{currentPatient.appointmentId?.visitType?.replace(/_/g, " ")}</p>
                     <QueueStatusBadge status={currentPatient.status} />
+                    <div className="mt-6">
+                      <Button fullWidth onClick={() => router.push(`/dashboard/consultations`)}>
+                        Open Consultation
+                      </Button>
+                    </div>
                   </div>
                 ) : nextPatient ? (
                   <div>
@@ -313,10 +323,43 @@ export default function QueuePage() {
                       <QueueStatusBadge status={entry.status} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => openVitals(entry)} className="text-indigo-600 hover:text-indigo-900 mr-3">
-                        {entry.hasVitals ? "Vitals" : "Record Vitals"}
-                      </button>
-                      {canSeeClinicQueue && entry.status !== "removed" && entry.status !== "in_consultation" && (
+                      {/* Vitals Button - Valid for waiting, called, and some others but maybe not completed/removed if not applicable */}
+                      {(entry.status === "waiting" || entry.status === "called") && (
+                        <button onClick={() => openVitals(entry)} className="text-indigo-600 hover:text-indigo-900 mr-3">
+                          {entry.hasVitals ? "Vitals" : "Record Vitals"}
+                        </button>
+                      )}
+
+                      {/* Call Patient Button */}
+                      {entry.status === "waiting" && (
+                         <button onClick={() => handleAction("call", entry)} className="text-teal-600 hover:text-teal-900 mr-3">
+                           Call Patient
+                         </button>
+                      )}
+
+                      {/* Start Consultation Button */}
+                      {entry.status === "called" && (
+                         <button onClick={() => handleAction("start", entry)} className="text-blue-600 hover:text-blue-900 mr-3">
+                           Start Consultation
+                         </button>
+                      )}
+
+                      {/* Open Consultation Button */}
+                      {entry.status === "in_consultation" && (
+                         <button onClick={() => router.push(`/dashboard/consultations`)} className="text-blue-600 hover:text-blue-900 mr-3">
+                           Open Consultation
+                         </button>
+                      )}
+
+                      {/* View Consultation Button */}
+                      {entry.status === "completed" && (
+                         <button onClick={() => router.push(`/dashboard/consultations`)} className="text-gray-600 hover:text-gray-900 mr-3">
+                           View Consultation
+                         </button>
+                      )}
+
+                      {/* Remove Button */}
+                      {canSeeClinicQueue && entry.status === "waiting" && (
                          <button onClick={() => handleAction("remove", entry)} className="text-red-600 hover:text-red-900 ml-3">
                            Remove
                          </button>

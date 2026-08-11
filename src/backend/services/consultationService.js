@@ -55,7 +55,7 @@ export async function startConsultation(authUser, appointmentId) {
       vitalsId: vitals ? vitals._id : null,
       status: "in_progress",
       startedAt: new Date(),
-      createdByDoctorId: authUser.doctorId, // specifically doctorId
+      createdByDoctorId: authUser.doctorId || appointment.doctorId._id || appointment.doctorId,
     }, session);
 
     // Update appointment status
@@ -95,7 +95,8 @@ export async function updateConsultation(authUser, consultationId, input) {
   const existingNote = await findConsultationById(consultationId, authUser.clinicId);
   if (!existingNote) throw new Error("Consultation not found");
 
-  if (existingNote.doctorId._id.toString() !== authUser.doctorId?.toString()) {
+  const mockAppointment = { clinicId: existingNote.clinicId, doctorId: existingNote.doctorId };
+  if (!canManageConsultation(authUser, mockAppointment)) {
     throw new Error("Unauthorized to edit this consultation");
   }
 
@@ -132,7 +133,8 @@ export async function completeConsultation(authUser, consultationId, input) {
   const existingNote = await findConsultationById(consultationId, authUser.clinicId);
   if (!existingNote) throw new Error("Consultation not found");
 
-  if (existingNote.doctorId._id.toString() !== authUser.doctorId?.toString()) {
+  const mockAppointment = { clinicId: existingNote.clinicId, doctorId: existingNote.doctorId };
+  if (!canManageConsultation(authUser, mockAppointment)) {
     throw new Error("Unauthorized to complete this consultation");
   }
 
@@ -163,9 +165,9 @@ export async function completeConsultation(authUser, consultationId, input) {
 
     // Update queue entry
     const queueEntry = await findQueueEntryByAppointment(existingNote.appointmentId._id, authUser.clinicId);
-    if (queueEntry && queueEntry.status !== "removed") { // Or 'completed' if we add it to queue statuses
+    if (queueEntry && queueEntry.status !== "removed" && queueEntry.status !== "completed") {
        await updateQueueEntry(queueEntry._id, authUser.clinicId, {
-         status: "removed"
+         status: "completed"
        }, session);
     }
 

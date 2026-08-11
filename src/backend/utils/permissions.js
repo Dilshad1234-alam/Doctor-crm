@@ -101,15 +101,16 @@ export function canViewDoctorQueue(user, doctorId) {
 }
 
 export function canCallQueuePatient(user, queueEntry) {
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.RECEPTIONIST])) return true;
   if (hasRole(user, ROLES.DOCTOR)) {
     return user.doctorId?.toString() === queueEntry.doctorId?._id?.toString() || 
            user.doctorId?.toString() === queueEntry.doctorId?.toString();
   }
-  if (hasRole(user, ROLES.RECEPTIONIST)) return true; // Optionally allow receptionist to call
   return false;
 }
 
 export function canStartQueueConsultation(user, queueEntry) {
+  if (hasRole(user, ROLES.CLINIC_OWNER)) return true;
   if (hasRole(user, ROLES.DOCTOR)) {
     return user.doctorId?.toString() === queueEntry.doctorId?._id?.toString() || 
            user.doctorId?.toString() === queueEntry.doctorId?.toString();
@@ -142,7 +143,7 @@ export function canUpdateVitals(user, appointment) {
 
 // Consultation Permissions
 export function canManageConsultation(user, appointment) {
-  return hasRole(user, ROLES.DOCTOR) && canViewAppointment(user, appointment);
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR]) && canViewAppointment(user, appointment);
 }
 
 export function canViewConsultation(user, appointment = null) {
@@ -155,6 +156,7 @@ export function canViewConsultation(user, appointment = null) {
 
 // Prescription Permissions
 export function canCreatePrescription(user, consultation) {
+  if (hasRole(user, ROLES.CLINIC_OWNER)) return true;
   return hasRole(user, ROLES.DOCTOR) && user.doctorId?.toString() === consultation.doctorId?._id?.toString();
 }
 
@@ -172,6 +174,7 @@ export function canViewPrescription(user, prescription) {
 }
 
 export function canEditPrescription(user, prescription) {
+  if (hasRole(user, ROLES.CLINIC_OWNER) && prescription.status === "draft") return true;
   return hasRole(user, ROLES.DOCTOR) && 
          (user.doctorId?.toString() === prescription.doctorId?._id?.toString() || user.doctorId?.toString() === prescription.doctorId?.toString()) &&
          prescription.status === "draft";
@@ -208,3 +211,31 @@ export function canManageTests(user, consultation) {
   // Usually tests are recommended by the doctor handling the consultation
   return hasRole(user, ROLES.DOCTOR) && user.doctorId?.toString() === consultation.doctorId?._id?.toString();
 }
+
+// Billing & Payment Permissions
+export function canManageBilling(user, invoice = null) {
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.ACCOUNTANT, ROLES.RECEPTIONIST])) {
+    return invoice ? user.clinicId?.toString() === invoice.clinicId?.toString() : true;
+  }
+  return false;
+}
+
+export function canViewBilling(user, invoice = null) {
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.ACCOUNTANT, ROLES.RECEPTIONIST])) {
+    return invoice ? user.clinicId?.toString() === invoice.clinicId?.toString() : true;
+  }
+  if (hasRole(user, ROLES.DOCTOR)) {
+    // If invoice provided, ensure it belongs to the doctor's appointment
+    if (invoice) {
+      return user.doctorId?.toString() === invoice.doctorId?.toString() || user.doctorId?.toString() === invoice.doctorId?._id?.toString();
+    }
+    return true; // List view (filtered in service to only show their own)
+  }
+  return false;
+}
+
+export function canRecordPayment(user, invoice) {
+  return hasRole(user, [ROLES.CLINIC_OWNER, ROLES.ACCOUNTANT, ROLES.RECEPTIONIST]) &&
+         user.clinicId?.toString() === invoice.clinicId?.toString();
+}
+

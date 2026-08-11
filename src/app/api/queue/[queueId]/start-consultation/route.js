@@ -10,12 +10,12 @@ export async function PATCH(request, { params }) {
     }
 
     const { queueId } = await params;
-    const queueEntry = await startConsultationFromQueue(authUser, queueId);
+    const consultation = await startConsultationFromQueue(authUser, queueId);
 
     return NextResponse.json({ 
       success: true, 
       message: "Consultation started successfully",
-      queueEntry 
+      consultation 
     });
   } catch (error) {
     return NextResponse.json(

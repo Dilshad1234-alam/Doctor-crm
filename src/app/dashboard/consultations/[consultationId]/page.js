@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import PageHeader from "@/frontend/components/dashboard/PageHeader";
 import { getConsultationById, updateConsultation, completeConsultation } from "@/frontend/services/consultationApi";
 import Button from "@/frontend/components/ui/Button";

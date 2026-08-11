@@ -32,7 +32,7 @@ const queueEntrySchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["checked_in", "waiting", "called", "in_consultation", "skipped", "removed"],
+      enum: ["checked_in", "waiting", "called", "in_consultation", "skipped", "removed", "completed"],
       default: "waiting",
       required: true,
     },

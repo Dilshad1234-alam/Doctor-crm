@@ -38,6 +38,11 @@ export async function createOrGetPrescription(authUser, consultationId) {
   let prescription = null;
 
   try {
+    // Ensure collections exist to avoid implicit creation inside transaction error
+    await mongoose.models.Prescription.createCollection().catch(() => {});
+    await mongoose.models.AuditLog.createCollection().catch(() => {});
+    await mongoose.models.Counter.createCollection().catch(() => {});
+
     session = await mongoose.startSession();
     session.startTransaction();
 
@@ -56,7 +61,7 @@ export async function createOrGetPrescription(authUser, consultationId) {
       followUp: consultation.followUp || null,
       
       status: "draft",
-      createdByDoctorId: authUser.doctorId
+      createdByDoctorId: authUser.doctorId || consultation.doctorId._id || consultation.doctorId
     }, session);
 
     await AuditLog.create([{
