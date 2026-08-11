@@ -123,7 +123,13 @@ export default function ConsultationRoomPage({ params }) {
       const updated = await completeConsultation(consultationId, payload);
       setConsultation(updated);
       alert("Consultation completed!");
-      router.push("/dashboard/queue");
+      
+      const aptId = updated.appointment?._id || consultation.appointment?._id || consultation.appointment;
+      if (aptId) {
+        router.push(`/dashboard/appointments/${aptId}/billing`);
+      } else {
+        router.push("/dashboard/queue");
+      }
     } catch (err) {
       alert("Failed to complete: " + err.message);
     } finally {
@@ -182,6 +188,11 @@ export default function ConsultationRoomPage({ params }) {
               <Button variant="secondary" onClick={handleSaveDraft} disabled={saving}>Save Draft</Button>
               <Button onClick={handleComplete} disabled={saving}>Complete Consultation</Button>
             </>
+          )}
+          {isCompleted && (
+            <Link href={`/dashboard/appointments/${consultation.appointment?._id || consultation.appointment}/billing`}>
+              <Button>Proceed to Billing</Button>
+            </Link>
           )}
         </div>
       </div>

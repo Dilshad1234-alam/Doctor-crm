@@ -283,14 +283,13 @@ export default function AppointmentDetailsPage({ params }) {
             <span className="text-lg font-bold text-gray-900">₹{appointment.consultationFee}</span>
           </div>
           
-          <div className="mt-4 pt-4 border-t border-gray-200">
-             <div className="bg-yellow-50 text-yellow-800 p-4 rounded-lg border border-yellow-200 flex items-start">
-               <Clock className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
-               <div className="text-sm">
-                 <p className="font-medium">Future Phase Availability</p>
-                 <p className="mt-1 opacity-90">Consultation note taking will be available in the upcoming phase.</p>
-               </div>
-             </div>
+          <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
+             <div className="text-sm text-gray-500">Manage billing and payments for this appointment.</div>
+             <Link href={`/dashboard/appointments/${appointmentId}/billing`}>
+               <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium text-sm transition-colors shadow-sm">
+                 Create / View Invoice
+               </button>
+             </Link>
           </div>
         </div>
       </div>
