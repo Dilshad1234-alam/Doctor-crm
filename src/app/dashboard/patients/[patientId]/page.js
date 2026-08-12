@@ -9,7 +9,10 @@ import { getPatientPrescriptions } from "@/frontend/services/prescriptionApi";
 import { getPatientReports, getPatientTests } from "@/frontend/services/reportApi";
 import UploadReportModal from "@/frontend/components/reports/UploadReportModal";
 import { ReportStatusBadge, TestStatusBadge } from "@/frontend/components/reports/StatusBadge";
-import { ChevronLeft, Edit, Calendar, User, Phone, Droplet, Clock, FileText, Activity, Upload } from "lucide-react";
+import { ChevronLeft, Edit, Calendar, User, Phone, Droplet, Clock, FileText, Activity, Upload, FileSignature, Receipt } from "lucide-react";
+import PatientConsultations from "@/frontend/components/patients/PatientConsultations";
+import PatientAppointments from "@/frontend/components/patients/PatientAppointments";
+import PatientBilling from "@/frontend/components/patients/PatientBilling";
 
 
 export default function PatientDetailsPage({ params }) {
@@ -28,7 +31,28 @@ export default function PatientDetailsPage({ params }) {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Parse tab from URL if present
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get("tab");
+      if (tabParam && ['overview', 'appointments', 'consultations', 'prescriptions', 'medical-reports', 'billing'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+  }, []);
+
   const [activeTab, setActiveTab] = useState("overview");
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location);
+      url.searchParams.set("tab", tab);
+      window.history.pushState({}, "", url);
+    }
+  };
 
   useEffect(() => {
     fetchPatientData();
@@ -142,10 +166,10 @@ export default function PatientDetailsPage({ params }) {
       {/* Tabs */}
       <div className="border-b border-gray-200 overflow-x-auto">
         <nav className="flex space-x-8 min-w-max px-1" aria-label="Tabs">
-          {['overview', 'vitals', 'history', 'reports', 'prescriptions', 'visits'].map(tab => (
+          {['overview', 'appointments', 'consultations', 'prescriptions', 'medical-reports', 'billing'].map(tab => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => handleTabChange(tab)}
               className={`
                 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize transition-colors
                 ${activeTab === tab 
@@ -258,66 +282,20 @@ export default function PatientDetailsPage({ params }) {
           </div>
         )}
 
-        {activeTab === 'history' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Medical History Timeline</h3>
-            
-            {history.length > 0 ? (
-              <div className="relative border-l-2 border-gray-100 ml-3 md:ml-6 space-y-8 pb-4">
-                {history.map((event, idx) => (
-                  <div key={idx} className="relative pl-6 md:pl-8">
-                    <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-white border-2 border-blue-500"></div>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-1 gap-2">
-                      <h4 className="text-sm font-bold text-gray-900">{event.title}</h4>
-                      <time className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md w-fit border border-gray-200">
-                        {new Date(event.date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', '')}
-                      </time>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">{event.description}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-gray-500 py-8 text-sm">No history events found.</p>
-            )}
-          </div>
-        )}
-        
-        {activeTab === 'vitals' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Vitals History</h3>
-            
-            {vitalsHistory.length > 0 ? (
-              <div className="space-y-4">
-                {vitalsHistory.map((vital, idx) => (
-                  <div key={idx} className="bg-gray-50 border border-gray-200 rounded-lg p-5">
-                    <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
-                      <span className="font-medium text-gray-900">
-                        {new Date(vital.recordedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', '')}
-                      </span>
-                      {vital.recordedBy && <span className="text-sm text-gray-500 font-medium">By: {vital.recordedBy.name}</span>}
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                      <div><p className="text-gray-500 text-xs uppercase mb-1">BP (mmHg)</p><p className="font-medium text-gray-900">{vital.bloodPressure?.systolic ? `${vital.bloodPressure.systolic}/${vital.bloodPressure.diastolic}` : '-'}</p></div>
-                      <div><p className="text-gray-500 text-xs uppercase mb-1">Pulse (bpm)</p><p className="font-medium text-gray-900">{vital.pulseRate || '-'}</p></div>
-                      <div><p className="text-gray-500 text-xs uppercase mb-1">SpO2 (%)</p><p className="font-medium text-gray-900">{vital.oxygenSaturation ? `${vital.oxygenSaturation}%` : '-'}</p></div>
-                      <div><p className="text-gray-500 text-xs uppercase mb-1">Weight / BMI</p><p className="font-medium text-gray-900">{vital.weightKg ? `${vital.weightKg} kg` : '-'} / {vital.bmi || '-'}</p></div>
-                      <div><p className="text-gray-500 text-xs uppercase mb-1">Temp (°C)</p><p className="font-medium text-gray-900">{vital.temperatureC || '-'}</p></div>
-                      <div><p className="text-gray-500 text-xs uppercase mb-1">Resp. Rate</p><p className="font-medium text-gray-900">{vital.respiratoryRate || '-'}</p></div>
-                      <div className="col-span-2"><p className="text-gray-500 text-xs uppercase mb-1">Blood Sugar</p><p className="font-medium text-gray-900">{vital.bloodSugar?.value ? `${vital.bloodSugar.value} mg/dL (${vital.bloodSugar.type})` : '-'}</p></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-gray-500 py-8 text-sm">No vitals history found.</p>
-            )}
-          </div>
+        {activeTab === 'appointments' && (
+          <PatientAppointments patientId={patientId} />
         )}
 
+        {activeTab === 'consultations' && (
+          <PatientConsultations patientId={patientId} />
+        )}
+        
         {activeTab === 'prescriptions' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Prescriptions History</h3>
+          <div className="bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-3">
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><FileSignature size={18} /></div>
+              Prescriptions History
+            </h3>
             
             {prescriptions.length > 0 ? (
               <div className="overflow-x-auto">
@@ -342,7 +320,7 @@ export default function PatientDetailsPage({ params }) {
                           </span>
                         </td>
                         <td className="px-4 py-4 text-right">
-                          <Link href={`/dashboard/prescriptions/${p.id}`} className="text-blue-600 hover:underline">
+                          <Link href={`/dashboard/prescriptions/${p.id}?fromPatient=${patientId}`} className="text-blue-600 hover:underline">
                             View / Print
                           </Link>
                         </td>
@@ -357,11 +335,11 @@ export default function PatientDetailsPage({ params }) {
           </div>
         )}
 
-        {activeTab === 'reports' && (
+        {activeTab === 'medical-reports' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Recommended Tests</h3>
+                <h3 className="text-lg font-bold text-gray-900">Recommended Tests</h3>
               </div>
               {tests.length > 0 ? (
                 <div className="overflow-x-auto">
@@ -391,9 +369,9 @@ export default function PatientDetailsPage({ params }) {
               )}
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Medical Reports</h3>
+                <h3 className="text-lg font-bold text-gray-900">Medical Reports</h3>
                 <button 
                   onClick={() => setIsUploadModalOpen(true)}
                   className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-colors"
@@ -447,14 +425,8 @@ export default function PatientDetailsPage({ params }) {
           />
         )}
 
-        {activeTab === 'visits' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-            <div className="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-8 h-8" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Coming Soon</h3>
-            <p className="text-gray-500 text-sm">This section will be available after the related module is implemented.</p>
-          </div>
+        {activeTab === 'billing' && (
+          <PatientBilling patientId={patientId} />
         )}
       </div>
     </div>

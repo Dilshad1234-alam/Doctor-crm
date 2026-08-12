@@ -1,8 +1,11 @@
-import { Inter } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 import AppProviders from "@/frontend/providers/AppProviders";
 
-const inter = Inter({ subsets: ["latin"] });
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata = {
   title: "Doctor CRM | Clinic and Patient Management",
@@ -12,7 +15,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-full flex flex-col`} suppressHydrationWarning>
+      <body className={`${poppins.className} min-h-full flex flex-col`} suppressHydrationWarning>
         <AppProviders>
           {children}
         </AppProviders>

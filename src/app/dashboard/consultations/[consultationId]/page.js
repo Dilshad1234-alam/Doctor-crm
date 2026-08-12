@@ -7,9 +7,14 @@ import PageHeader from "@/frontend/components/dashboard/PageHeader";
 import { getConsultationById, updateConsultation, completeConsultation } from "@/frontend/services/consultationApi";
 import Button from "@/frontend/components/ui/Button";
 
-export default function ConsultationRoomPage({ params }) {
+export default function ConsultationRoomPage({ params, searchParams }) {
   const unwrappedParams = use(params);
   const consultationId = unwrappedParams.consultationId;
+  
+  // Unwrap searchParams correctly
+  const unwrappedSearchParams = searchParams ? use(searchParams) : {};
+  const fromPatient = unwrappedSearchParams.fromPatient;
+
   const router = useRouter();
 
   const [consultation, setConsultation] = useState(null);
@@ -170,13 +175,31 @@ export default function ConsultationRoomPage({ params }) {
   const apt = consultation.appointment;
 
   return (
-    <div className="pb-20 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <PageHeader 
-          title="Consultation Workspace" 
-          description={`Consultation: ${consultation.consultationCode}`} 
-        />
-        <div className="flex gap-3">
+    <div className="pb-12 max-w-7xl mx-auto">
+      {fromPatient ? (
+        <div className="mb-4">
+          <Link href={`/dashboard/patients/${fromPatient}?tab=consultations`} className="text-blue-600 hover:underline flex items-center text-sm font-medium">
+            &larr; Back to Patient
+          </Link>
+        </div>
+      ) : (
+        <div className="mb-4">
+          <Link href="/dashboard/queue" className="text-blue-600 hover:underline flex items-center text-sm font-medium">
+            &larr; Back to Queue
+          </Link>
+        </div>
+      )}
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">
+            Consultation Workspace
+          </h1>
+          <p className="mt-2 text-sm font-medium text-gray-500">
+            {consultation.patientId?.userId?.name || "Patient"} • {consultation.consultationCode}
+          </p>
+        </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <Link href={`/dashboard/consultations/${consultationId}/prescription`}>
             <Button variant="outline">
               Manage Prescription

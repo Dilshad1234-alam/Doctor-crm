@@ -7,7 +7,7 @@ import {
   updateReportById
 } from "../repositories/reportRepository.js";
 import { findTestById, updateTestById } from "../repositories/testRepository.js";
-import { getPatientById } from "../repositories/patientRepository.js";
+import { findPatientById } from "../repositories/patientRepository.js";
 import { generateReportCode } from "../utils/generateReportCode.js";
 import { canUploadReport, canViewReport, canReviewReport } from "../utils/permissions.js";
 import AuditLog from "../models/AuditLog.js";
@@ -16,7 +16,7 @@ import { uploadMedicalReport, deleteMedicalReport } from "./fileStorageService.j
 export async function uploadReport(authUser, patientId, input, file) {
   await connectDB();
   
-  const patient = await getPatientById(patientId, authUser.clinicId);
+  const patient = await findPatientById(patientId, authUser.clinicId);
   if (!patient) throw new Error("Patient not found");
 
   if (!canUploadReport(authUser, patient)) {
@@ -116,7 +116,7 @@ export async function getReport(authUser, reportId) {
 
 export async function getPatientReports(authUser, patientId, query) {
   await connectDB();
-  const patient = await getPatientById(patientId, authUser.clinicId);
+  const patient = await findPatientById(patientId, authUser.clinicId);
   if (!patient) throw new Error("Patient not found");
 
   if (!canViewReport(authUser, patient)) {

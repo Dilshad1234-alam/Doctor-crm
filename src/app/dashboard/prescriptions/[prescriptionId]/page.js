@@ -8,9 +8,13 @@ import Button from "@/frontend/components/ui/Button";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function PrescriptionPreviewPage({ params }) {
+export default function PrescriptionPreviewPage({ params, searchParams }) {
   const router = useRouter();
   const { prescriptionId } = use(params);
+  
+  const unwrappedSearchParams = searchParams ? use(searchParams) : {};
+  const fromPatient = unwrappedSearchParams.fromPatient;
+
   const [prescription, setPrescription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,6 +54,14 @@ export default function PrescriptionPreviewPage({ params }) {
 
   return (
     <div className="pb-10 max-w-5xl mx-auto print:p-0 print:m-0 print:max-w-none">
+      {fromPatient && (
+        <div className="mb-4 print:hidden">
+          <Link href={`/dashboard/patients/${fromPatient}?tab=prescriptions`} className="text-blue-600 hover:underline flex items-center text-sm font-medium">
+            &larr; Back to Patient
+          </Link>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6 print:hidden">
         <PageHeader 
           title="Prescription Preview" 

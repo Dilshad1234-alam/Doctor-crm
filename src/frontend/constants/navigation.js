@@ -5,8 +5,6 @@ const ownerNavigation = [
   { label: "Patients", href: "/dashboard/patients" },
   { label: "Appointments", href: "/dashboard/appointments" },
   { label: "Queue", href: "/dashboard/queue" },
-  { label: "Consultations", href: "/dashboard/consultations" },
-  { label: "Prescriptions", href: "/dashboard/prescriptions" },
   { label: "Medical Reports", href: "/dashboard/medical-reports" },
   { label: "Billing", href: "/dashboard/billing" },
   { label: "Reports", href: "/dashboard/reports" },
@@ -18,8 +16,6 @@ const doctorNavigation = [
   { label: "My Profile", href: "/dashboard/profile" },
   { label: "My Availability", href: "/dashboard/my-availability" },
   { label: "Appointments", href: "/dashboard/appointments" },
-  { label: "Consultations", href: "/dashboard/consultations" },
-  { label: "Prescriptions", href: "/dashboard/prescriptions" },
   { label: "Medical Reports", href: "/dashboard/medical-reports" },
 ];
 
