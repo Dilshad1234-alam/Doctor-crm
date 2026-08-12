@@ -26,11 +26,12 @@ export default function ClinicDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const { user } = useAuth();
+  const slugOrId = params.slug || params.id;
 
   useEffect(() => {
     const fetchDetail = async () => {
       try {
-        const res = await fetch(`/api/public/clinics/${params.id}`);
+        const res = await fetch(`/api/public/clinics/${slugOrId}`);
         const result = await res.json();
         if (result.success) {
           setData(result.data);
@@ -41,10 +42,10 @@ export default function ClinicDetailPage() {
         setLoading(false);
       }
     };
-    if (params.id) {
+    if (slugOrId) {
       fetchDetail();
     }
-  }, [params.id]);
+  }, [slugOrId]);
 
   if (loading) {
     return (
@@ -69,49 +70,10 @@ export default function ClinicDetailPage() {
     );
   }
 
-  const { clinic, settings, doctors } = data;
+  const { clinic, settings, doctors = [] } = data;
 
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [showSlotsModal, setShowSlotsModal] = useState(false);
-  const [slotsData, setSlotsData] = useState({});
-  const [slotsLoading, setSlotsLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("");
-  const [availableDates, setAvailableDates] = useState([]);
-
-  const handleBook = (doctorId, date = "", time = "") => {
-    let bookUrl = `/patient/book?clinicId=${clinic._id}&doctorId=${doctorId}`;
-    if (date) bookUrl += `&date=${date}`;
-    if (time) bookUrl += `&time=${time}`;
-    
-    if (!user) {
-      router.push(`/login?callbackUrl=${encodeURIComponent(bookUrl)}`);
-    } else {
-      router.push(bookUrl);
-    }
-  };
-
-  const handleViewSlots = async (doctor) => {
-    setSelectedDoctor(doctor);
-    setShowSlotsModal(true);
-    setSlotsLoading(true);
-    
-    const today = new Date().toISOString().split("T")[0];
-    try {
-      const res = await fetch(`/api/public/clinics/${clinic._id}/doctors/${doctor._id}/slots?startDate=${today}`);
-      const result = await res.json();
-      if (result.success) {
-        setSlotsData(result.data);
-        const dates = Object.keys(result.data).sort();
-        setAvailableDates(dates);
-        if (dates.length > 0) {
-          setSelectedDate(dates[0]);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch slots", err);
-    } finally {
-      setSlotsLoading(false);
-    }
+  const handleViewSlots = (doctor) => {
+    router.push(`/doctors/${doctor._id}/slots`);
   };
 
   return (
@@ -151,7 +113,7 @@ export default function ClinicDetailPage() {
                   <div className="flex flex-wrap gap-4 text-sm text-[#64748B]">
                     <div className="flex items-center gap-1.5">
                       <MapPin className="w-4 h-4 shrink-0 text-[#10B981]" />
-                      <span>{clinic.address?.line1} {clinic.address?.area ? `, ${clinic.address?.area}` : ''}, {clinic.address?.city}</span>
+                      <span>{clinic.address?.line1} {clinic.address?.area ? `, ${clinic.address?.area}` : ''}, {clinic.address?.city}, {clinic.address?.state}</span>
                     </div>
                     {clinic.phone && (
                       <div className="flex items-center gap-1.5">
@@ -161,7 +123,7 @@ export default function ClinicDetailPage() {
                     )}
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-4 h-4 shrink-0 text-[#10B981]" />
-                      <span className="text-[#10B981] font-bold">Open Now</span>
+                      <span className="text-[#10B981] font-bold">Open Today</span>
                     </div>
                   </div>
                 </div>
@@ -249,52 +211,58 @@ export default function ClinicDetailPage() {
 
             {/* Doctors Section */}
             <div id="doctors">
-              <h2 className="text-2xl font-bold text-[#0F172A] mb-6">Our Doctors</h2>
-              <div className="space-y-4">
-                {doctors.map((doctor) => (
-                  <div key={doctor._id} className="bg-[#FFFFFF] rounded-2xl p-6 border border-[#E2E8F0] shadow-sm flex flex-col md:flex-row md:items-center gap-6">
-                    {/* Doctor Photo */}
-                    <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 bg-[#F8FAFC]">
-                      {doctor.profileImage ? (
-                        <img src={doctor.profileImage} alt={doctor.user?.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[#2563EB] text-2xl font-bold">
-                          {doctor.user?.name ? doctor.user.name[0] : 'D'}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Details */}
-                    <div className="flex-1">
-                      <h4 className="text-lg font-bold text-[#0F172A] mb-1">{doctor.user?.name || "Doctor"}</h4>
-                      <p className="text-[#10B981] font-bold text-sm mb-2">{doctor.specialization}</p>
-                      <p className="text-xs font-medium text-[#64748B] mb-4">
-                        {doctor.qualification?.join(", ")} • {doctor.experienceYears} Years Experience
-                      </p>
-                      <div className="flex items-center gap-4">
-                        <div>
-                          <p className="text-[10px] text-[#64748B] uppercase tracking-wider font-bold">Consultation Fee</p>
-                          <p className="font-black text-[#0F172A]">₹{doctor.consultationFee}</p>
-                        </div>
-                        <div className="w-px h-8 bg-[#E2E8F0]"></div>
-                        <div>
-                          <p className="text-[10px] text-[#64748B] uppercase tracking-wider font-bold">Next Available</p>
-                          <p className="font-bold text-[#2563EB] text-sm flex items-center gap-1">
-                            Today <Clock className="w-3 h-3" />
-                          </p>
+              <h2 className="text-2xl font-bold text-[#0F172A] mb-6">Available Doctors</h2>
+              {doctors.length === 0 ? (
+                <div className="bg-[#FFFFFF] rounded-2xl p-8 border border-[#E2E8F0] shadow-sm text-center">
+                  <p className="text-[#64748B] font-medium">Doctor listing will be connected in the next step.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {doctors.map((doctor) => (
+                    <div key={doctor._id} className="bg-[#FFFFFF] rounded-2xl p-6 border border-[#E2E8F0] shadow-sm flex flex-col md:flex-row md:items-center gap-6">
+                      {/* Doctor Photo */}
+                      <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 bg-[#F8FAFC]">
+                        {doctor.profileImage ? (
+                          <img src={doctor.profileImage} alt={doctor.user?.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[#2563EB] text-2xl font-bold">
+                            {doctor.user?.name ? doctor.user.name[0] : 'D'}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Details */}
+                      <div className="flex-1">
+                        <h4 className="text-lg font-bold text-[#0F172A] mb-1">{doctor.user?.name || "Doctor"}</h4>
+                        <p className="text-[#10B981] font-bold text-sm mb-2">{doctor.specialization}</p>
+                        <p className="text-xs font-medium text-[#64748B] mb-4">
+                          {doctor.qualification?.join(", ")} • {doctor.experienceYears} Years Experience
+                        </p>
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <p className="text-[10px] text-[#64748B] uppercase tracking-wider font-bold">Consultation Fee</p>
+                            <p className="font-black text-[#0F172A]">₹{doctor.consultationFee}</p>
+                          </div>
+                          <div className="w-px h-8 bg-[#E2E8F0]"></div>
+                          <div>
+                            <p className="text-[10px] text-[#64748B] uppercase tracking-wider font-bold">Next Available</p>
+                            <p className="font-bold text-[#2563EB] text-sm flex items-center gap-1">
+                              Today <Clock className="w-3 h-3" />
+                            </p>
+                          </div>
                         </div>
                       </div>
+                      
+                      {/* Actions */}
+                      <div className="w-full md:w-auto flex flex-col gap-2 shrink-0">
+                        <button onClick={() => handleViewSlots(doctor)} className="px-6 py-3 rounded-xl bg-[#10B981] text-white font-bold shadow-sm hover:bg-[#047857] transition-all text-center">
+                          View Slots
+                        </button>
+                      </div>
                     </div>
-                    
-                    {/* Actions */}
-                    <div className="w-full md:w-auto flex flex-col gap-2 shrink-0">
-                      <button onClick={() => handleViewSlots(doctor)} className="px-6 py-3 rounded-xl bg-[#10B981] text-white font-bold shadow-sm hover:bg-[#047857] transition-all text-center">
-                        Book Appointment
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -325,85 +293,6 @@ export default function ClinicDetailPage() {
           
         </div>
       </div>
-
-      {/* Slots Modal */}
-      {showSlotsModal && selectedDoctor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-[#E2E8F0] flex justify-between items-start bg-[#F8FAFC]">
-              <div>
-                <h3 className="text-xl font-bold text-[#0F172A]">Book Appointment</h3>
-                <p className="text-[#64748B] text-sm mt-1">Select a slot for {selectedDoctor.user?.name || selectedDoctor.specialization}</p>
-              </div>
-              <button onClick={() => setShowSlotsModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A]">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto bg-white">
-              {slotsLoading ? (
-                <div className="flex justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#10B981]"></div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex gap-2 overflow-x-auto pb-4 mb-6 hide-scrollbar">
-                    {availableDates.map(date => {
-                      const d = new Date(date);
-                      const isSelected = selectedDate === date;
-                      const hasSlots = slotsData[date] && slotsData[date].length > 0;
-                      return (
-                        <button
-                          key={date}
-                          onClick={() => setSelectedDate(date)}
-                          className={`shrink-0 flex flex-col items-center justify-center py-3 px-5 rounded-2xl border-2 transition-all ${
-                            isSelected 
-                              ? 'bg-[#10B981] text-white border-[#10B981] shadow-md' 
-                              : 'bg-white text-[#0F172A] border-[#E2E8F0] hover:border-[#10B981]'
-                          }`}
-                        >
-                          <span className="text-xs font-bold uppercase opacity-80">{d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                          <span className="text-xl font-black">{d.getDate()}</span>
-                          <span className="text-[10px] font-bold opacity-80">{d.toLocaleDateString('en-US', { month: 'short' })}</span>
-                          {!hasSlots && <span className="text-[10px] text-red-200 mt-1">Full</span>}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {selectedDate && slotsData[selectedDate] && (
-                    <div>
-                      {slotsData[selectedDate].length === 0 ? (
-                        <div className="text-center py-10 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0]">
-                          <Clock className="w-10 h-10 text-[#94A3B8] mx-auto mb-3" />
-                          <p className="text-[#64748B] font-medium">Doctor is not available on this date.</p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                          {slotsData[selectedDate].map((slot, idx) => (
-                            <button
-                              key={idx}
-                              disabled={slot.isBooked}
-                              onClick={() => handleBook(selectedDoctor._id, selectedDate, slot.startTime)}
-                              className={`py-3 px-2 rounded-xl text-sm font-bold border-2 transition-all ${
-                                slot.isBooked
-                                  ? 'bg-[#F8FAFC] text-[#94A3B8] border-[#E2E8F0] cursor-not-allowed'
-                                  : 'bg-white text-[#0F172A] border-[#E2E8F0] hover:border-[#10B981] hover:text-[#10B981] shadow-sm'
-                              }`}
-                            >
-                              {slot.startTime}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

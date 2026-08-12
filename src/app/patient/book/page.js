@@ -133,8 +133,8 @@ export default function PatientBookAppointmentPage() {
 
       const res = await createAppointment(payload);
       if (res.success) {
-        // Redirect to patient appointments view
-        router.push(`/patient/appointments`);
+        // Redirect to booking success screen
+        router.push(`/patient/book/success/${res.appointment._id}`);
       } else {
         setError(res.message || "Failed to book appointment");
       }

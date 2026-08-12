@@ -4,7 +4,7 @@ import { rescheduleAppointment } from "@/backend/services/appointmentService";
 import { rescheduleAppointmentSchema } from "@/backend/validations/appointmentValidation";
 import { connectDB as connectToDatabase } from "@/backend/database/connectDB";
 
-export async function PATCH(request, { params }) {
+export async function PUT(request, { params }) {
   try {
     await connectToDatabase();
     const authUser = await getAuthenticatedUser();

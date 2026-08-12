@@ -7,6 +7,12 @@ const clinicSchema = new mongoose.Schema(
       required: [true, "Clinic name is required"],
       trim: true,
     },
+    slug: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      index: true,
+    },
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

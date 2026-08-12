@@ -15,6 +15,10 @@ const inputSchema = z.object({
   maxPatientsPerDay: z.coerce.number().optional(),
 });
 
+export async function PUT(request, { params }) {
+  return PATCH(request, { params });
+}
+
 export async function PATCH(request, { params }) {
   try {
     const authUser = await getAuthenticatedUser();

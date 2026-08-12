@@ -245,7 +245,7 @@ export default function ClinicsPage() {
                             <p className="font-bold text-[#0F172A] text-sm">₹500</p>
                           </div>
                         </div>
-                        <Link href={`/clinics/${clinic._id}`} className="w-full sm:w-auto text-center px-6 py-2.5 rounded-xl bg-[#10B981] text-[#FFFFFF] font-bold shadow-sm hover:bg-[#047857] transition-all">
+                        <Link href={`/clinics/${clinic.slug || clinic._id}`} className="w-full sm:w-auto text-center px-6 py-2.5 rounded-xl bg-[#10B981] text-[#FFFFFF] font-bold shadow-sm hover:bg-[#047857] transition-all">
                           View Clinic
                         </Link>
                       </div>

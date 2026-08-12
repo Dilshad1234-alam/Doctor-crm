@@ -36,8 +36,13 @@ export async function GET(request) {
     }
 
     let clinics = await Clinic.find(query)
-      .select("name logo address specialties about consultationDuration")
+      .select("name slug logo address specialties about consultationDuration")
       .lean();
+
+    clinics = clinics.map(c => ({
+      ...c,
+      slug: c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')
+    }));
 
     // Attach basic stats and filter by maxFee / openNow if needed
     const filteredClinics = [];
