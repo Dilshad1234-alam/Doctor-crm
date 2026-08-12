@@ -57,24 +57,10 @@ export default function DoctorsPage() {
             </div>
             
             {/* Right Visual Content */}
-            <div className="lg:col-span-6 relative">
-              <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
+            <div className="lg:col-span-6 relative h-64 lg:h-96">
+              <div className="relative mx-auto w-full h-full max-w-lg lg:max-w-none">
                 
-                {/* Doctor Placeholder (Image) */}
-                <div className="relative rounded-[2rem] bg-blue-900/20 backdrop-blur-sm border border-white/20 aspect-[4/5] md:aspect-[1/1] lg:aspect-[4/5] overflow-hidden shadow-2xl flex items-end justify-center">
-                  <img 
-                    src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=1000&auto=format&fit=crop" 
-                    alt="Doctor" 
-                    className="w-full h-full object-cover object-top opacity-90"
-                  />
-                  
-                  {/* Floating controls inside doctor image */}
-                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md rounded-full px-6 py-3 shadow-xl flex gap-4 items-center border border-gray-100">
-                    <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"><Video size={20} /></button>
-                    <button className="p-3 bg-red-500 text-white rounded-full shadow-lg shadow-red-500/40 hover:bg-red-600 transition-colors"><Phone size={24} fill="currentColor" /></button>
-                    <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"><Mic size={20} /></button>
-                  </div>
-                </div>
+
                 
                 {/* Floating Badge 1 - Patient Reviews */}
                 <div className="absolute top-10 -left-6 sm:-left-12 bg-white p-3 sm:p-4 rounded-2xl shadow-xl border border-gray-100 flex gap-4 items-center">

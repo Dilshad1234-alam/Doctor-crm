@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import Button from "@/frontend/components/ui/Button";
@@ -30,12 +30,12 @@ export default function ReportReviewCard({ report, onSuccess }) {
 
   if (report.reviewStatus === "reviewed") {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-        <h3 className="text-sm font-bold text-green-900 uppercase tracking-wider mb-4">Doctor's Review</h3>
-        <div className="bg-white p-4 rounded-lg text-sm text-gray-800 border border-green-100 mb-4 whitespace-pre-wrap">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider mb-4">Doctor's Review</h3>
+        <div className="bg-white p-4 rounded-lg text-sm text-gray-800 border border-blue-100 mb-4 whitespace-pre-wrap">
           {report.doctorReviewNotes}
         </div>
-        <div className="flex items-center text-xs text-green-700 font-medium">
+        <div className="flex items-center text-xs text-blue-700 font-medium">
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
           Reviewed by Dr. {report.reviewedByDoctorId?.userId?.name || "Unknown"} on {new Date(report.reviewedAt).toLocaleDateString()}
         </div>

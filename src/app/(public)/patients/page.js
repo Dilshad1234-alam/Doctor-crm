@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Calendar, UserCheck, Clock, FileSignature, FileText, CreditCard, HeartPulse, Heart, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 export const metadata = {
@@ -77,7 +77,7 @@ export default function PatientsPage() {
                   <p className="text-sm text-gray-500 font-medium">Digital</p>
                   <p className="text-xl font-black text-gray-900">Prescription Ready</p>
                 </div>
-                <CheckCircle2 size={24} className="text-green-500 ml-2" />
+                <CheckCircle2 size={24} className="text-blue-500 ml-2" />
               </div>
 
               <div className="absolute bottom-0 right-0 sm:right-20 bg-white p-6 rounded-3xl shadow-2xl border border-gray-100 flex gap-4 items-center animate-bounce-slow" style={{ animationDuration: '6s', animationDelay: '0.5s' }}>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import PageHeader from "@/frontend/components/dashboard/PageHeader";
@@ -109,7 +109,7 @@ export default function MyAvailabilityPage() {
       )}
 
       {successMessage && (
-        <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded shadow-sm">
+        <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 text-blue-700 rounded shadow-sm">
           <p className="font-medium">Success</p>
           <p className="text-sm">{successMessage}</p>
         </div>

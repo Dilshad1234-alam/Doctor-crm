@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import Button from "@/frontend/components/ui/Button";
@@ -108,13 +108,13 @@ export default function PrescriptionEditor({ initialPrescription }) {
             <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold uppercase">Draft</span>
           )}
           {prescription.status === "finalized" && (
-            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold uppercase">Finalized</span>
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold uppercase">Finalized</span>
           )}
         </div>
       </div>
 
       {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>}
-      {successMsg && <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md text-sm">{successMsg}</div>}
+      {successMsg && <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-md text-sm">{successMsg}</div>}
 
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">

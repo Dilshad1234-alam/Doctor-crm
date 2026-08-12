@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -58,11 +58,11 @@ export default function PatientBilling({ patientId }) {
                   <td className="px-4 py-4 font-bold text-gray-900">{inv.invoiceCode}</td>
                   <td className="px-4 py-4 font-medium text-gray-600">{new Date(inv.issuedAt).toLocaleDateString()}</td>
                   <td className="px-4 py-4 font-bold text-gray-900 text-right">${inv.totalAmount?.toFixed(2)}</td>
-                  <td className="px-4 py-4 font-medium text-green-600 text-right">${inv.paidAmount?.toFixed(2)}</td>
+                  <td className="px-4 py-4 font-medium text-blue-600 text-right">${inv.paidAmount?.toFixed(2)}</td>
                   <td className="px-4 py-4 font-bold text-red-600 text-right">${inv.pendingAmount?.toFixed(2)}</td>
                   <td className="px-4 py-4">
                     <span className={`px-2.5 py-1 rounded-md text-xs font-bold capitalize border 
-                     ${inv.status === 'paid' ? 'bg-green-50 text-green-700 border-green-200' : 
+                     ${inv.status === 'paid' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
                        inv.status === 'partially_paid' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 
                        'bg-red-50 text-red-700 border-red-200'}`}>
                      {inv.status.replace('_', ' ')}

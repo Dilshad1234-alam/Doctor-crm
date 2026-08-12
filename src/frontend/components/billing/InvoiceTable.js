@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import Link from "next/link";
 import Button from "@/frontend/components/ui/Button";
 import InvoiceStatusBadge from "./InvoiceStatusBadge";
@@ -50,7 +50,7 @@ export default function InvoiceTable({ invoices, loading }) {
               </td>
               <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-900">Dr. {inv.doctorId?.userId?.name || inv.doctorId?.specialization || "Unknown"}</td>
               <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-gray-900 text-right">{formatCurrency(inv.totalAmount)}</td>
-              <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-green-600 text-right">{formatCurrency(inv.paidAmount)}</td>
+              <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-blue-600 text-right">{formatCurrency(inv.paidAmount)}</td>
               <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-red-600 text-right">{formatCurrency(inv.pendingAmount)}</td>
               <td className="px-8 py-5 whitespace-nowrap text-center">
                 <InvoiceStatusBadge status={inv.status} />

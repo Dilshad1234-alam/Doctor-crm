@@ -71,11 +71,11 @@ export async function getMyDoctorProfile() {
   return data.doctor;
 }
 
-export async function updateMyAvailability(payload) {
+export async function updateMyAvailability(availability) {
   const response = await fetch("/api/doctors/me/availability", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ availability }),
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || "Failed to update availability");

@@ -1,36 +1,39 @@
-import React from "react";
+﻿import React from "react";
 
-export function TestStatusBadge({ status }) {
+export function GenericStatusBadge({ status }) {
   const normalized = (status || "").toLowerCase();
-  let colorClass = "bg-gray-100 text-gray-800 border-gray-200";
+  let colorClass = "bg-[#F1F5F9] text-[#64748B]"; // Draft / default (Gray)
 
-  if (normalized === "recommended") colorClass = "bg-blue-100 text-blue-800 border-blue-200";
-  if (normalized === "pending") colorClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
-  if (normalized === "report_uploaded") colorClass = "bg-purple-100 text-purple-800 border-purple-200";
-  if (normalized === "reviewed") colorClass = "bg-green-100 text-green-800 border-green-200";
-  if (normalized === "cancelled") colorClass = "bg-red-100 text-red-800 border-red-200";
+  if (normalized === "scheduled" || normalized === "recommended" || normalized === "report_uploaded") {
+    colorClass = "bg-[#EFF6FF] text-[#2563EB]"; // Blue
+  }
+  if (normalized === "waiting" || normalized === "pending" || normalized === "pending_review") {
+    colorClass = "bg-[#FEF3C7] text-[#F59E0B]"; // Orange
+  }
+  if (normalized === "completed" || normalized === "finalized" || normalized === "paid" || normalized === "reviewed" || normalized === "confirmed") {
+    colorClass = "bg-[#EFF6FF] text-[#2563EB]"; // Green
+  }
+  if (normalized === "cancelled" || normalized === "no_show") {
+    colorClass = "bg-[#FEF2F2] text-[#EF4444]"; // Red
+  }
 
   const label = normalized.replace(/_/g, " ");
 
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize ${colorClass}`}>
+    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${colorClass}`}>
       {label}
     </span>
   );
 }
 
+export function TestStatusBadge({ status }) {
+  return <GenericStatusBadge status={status} />;
+}
+
 export function ReportStatusBadge({ status }) {
-  const normalized = (status || "").toLowerCase();
-  let colorClass = "bg-gray-100 text-gray-800 border-gray-200";
+  return <GenericStatusBadge status={status} />;
+}
 
-  if (normalized === "pending_review") colorClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
-  if (normalized === "reviewed") colorClass = "bg-green-100 text-green-800 border-green-200";
-
-  const label = normalized.replace(/_/g, " ");
-
-  return (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize ${colorClass}`}>
-      {label}
-    </span>
-  );
+export function AppointmentStatusBadge({ status }) {
+  return <GenericStatusBadge status={status} />;
 }

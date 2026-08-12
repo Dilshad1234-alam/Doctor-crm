@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import Button from "@/frontend/components/ui/Button";
 
@@ -53,7 +53,7 @@ export default function SecurityTab({ onSave }) {
     <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
       <h3 className="text-lg font-bold text-gray-900 border-b pb-2">Change Password</h3>
       
-      {message && <div className="p-3 bg-green-50 text-green-700 rounded-md border border-green-200 text-sm">{message}</div>}
+      {message && <div className="p-3 bg-blue-50 text-blue-700 rounded-md border border-blue-200 text-sm">{message}</div>}
       {error && <div className="p-3 bg-red-50 text-red-700 rounded-md border border-red-200 text-sm">{error}</div>}
 
       <div className="space-y-4">

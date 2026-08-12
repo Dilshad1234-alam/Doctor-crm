@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
@@ -221,7 +221,7 @@ export default function ConsultationRoomPage({ params, searchParams }) {
       </div>
 
       {isCompleted && (
-        <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-lg border border-green-200 font-medium">
+        <div className="mb-6 p-4 bg-blue-50 text-blue-800 rounded-lg border border-blue-200 font-medium">
           This consultation has been completed and is now read-only.
         </div>
       )}

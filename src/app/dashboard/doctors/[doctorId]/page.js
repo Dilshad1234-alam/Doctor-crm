@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -99,7 +99,7 @@ export default function DoctorDetailsPage() {
           </Link>
           <Button 
             variant="outline" 
-            className={doctor.isActive ? "text-red-600 hover:bg-red-50" : "text-green-600 hover:bg-green-50"}
+            className={doctor.isActive ? "text-red-600 hover:bg-red-50" : "text-blue-600 hover:bg-blue-50"}
             onClick={toggleStatus}
             disabled={statusLoading}
           >

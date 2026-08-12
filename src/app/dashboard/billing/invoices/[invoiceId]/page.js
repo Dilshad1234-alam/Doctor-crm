@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
@@ -162,7 +162,7 @@ export default function InvoiceDetailsPage({ params }) {
                 <span>Grand Total</span>
                 <span>{formatCurrency(invoice.totalAmount)}</span>
               </div>
-              <div className="flex justify-between text-green-700 pt-2">
+              <div className="flex justify-between text-blue-700 pt-2">
                 <span>Paid</span>
                 <span className="font-medium">{formatCurrency(invoice.paidAmount)}</span>
               </div>
@@ -192,7 +192,7 @@ export default function InvoiceDetailsPage({ params }) {
                       <td className="py-3 px-3 text-sm font-medium text-indigo-600">{pay.paymentCode}</td>
                       <td className="py-3 px-3 text-sm text-gray-600 uppercase">{pay.paymentMethod.replace("_", " ")}</td>
                       <td className="py-3 px-3 text-sm text-gray-600">{pay.referenceNumber || "-"}</td>
-                      <td className="py-3 px-3 text-sm font-bold text-green-700 text-right">{formatCurrency(pay.amount)}</td>
+                      <td className="py-3 px-3 text-sm font-bold text-blue-700 text-right">{formatCurrency(pay.amount)}</td>
                     </tr>
                   ))}
                 </tbody>

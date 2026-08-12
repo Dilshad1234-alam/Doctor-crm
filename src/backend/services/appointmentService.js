@@ -23,9 +23,12 @@ export async function createAppointmentForClinic(authUser, input) {
   const doctor = await DoctorProfile.findOne({ _id: doctorId, clinicId, isActive: true });
   if (!doctor || !doctor.isAcceptingAppointments) throw Object.assign(new Error("Doctor not found or not accepting appointments"), { status: 400 });
 
-  // 2. Verify Doctor Role Rule
+  // 2. Verify Role Rules
   if (role === "doctor" && authUser.doctorId !== doctorId) {
     throw Object.assign(new Error("Doctors can only book their own appointments"), { status: 403 });
+  }
+  if (role === "patient" && authUser.patientId !== patientId) {
+    throw Object.assign(new Error("Patients can only book their own appointments"), { status: 403 });
   }
 
   // 3. Verify Slot Conflict (Double Booking)

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -79,7 +79,7 @@ export default function PrescriptionsListPage() {
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
                        <span className={`px-3 py-1 rounded-md text-xs font-bold capitalize border
-                         ${p.status === 'finalized' ? 'bg-green-50 text-green-700 border-green-200' : 
+                         ${p.status === 'finalized' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
                            p.status === 'draft' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
                          {p.status}
                        </span>

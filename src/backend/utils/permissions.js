@@ -82,7 +82,7 @@ export function canManageDoctorSchedule(user, doctorProfile) {
 
 // Appointment Permissions
 export function canCreateAppointment(user) {
-  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR])) return true;
+  if (hasRole(user, [ROLES.CLINIC_OWNER, ROLES.DOCTOR, "patient"])) return true;
   return hasPermission(user, "appointments.create");
 }
 

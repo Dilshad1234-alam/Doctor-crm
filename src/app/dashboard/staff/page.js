@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/frontend/context/AuthContext";
@@ -82,9 +82,9 @@ export default function StaffPage() {
           <p className="text-3xl font-black text-gray-900 mt-1 relative z-10">{summary.totalStaff || 0}</p>
         </div>
         <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-center">
-          <div className="absolute -right-4 -top-4 w-20 h-20 bg-green-50 rounded-full opacity-50"></div>
-          <p className="text-xs font-bold tracking-widest text-green-600/70 uppercase relative z-10">Active</p>
-          <p className="text-3xl font-black text-green-600 mt-1 relative z-10">{summary.activeStaff || 0}</p>
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full opacity-50"></div>
+          <p className="text-xs font-bold tracking-widest text-blue-600/70 uppercase relative z-10">Active</p>
+          <p className="text-3xl font-black text-blue-600 mt-1 relative z-10">{summary.activeStaff || 0}</p>
         </div>
         <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden flex flex-col justify-center">
           <div className="absolute -right-4 -top-4 w-20 h-20 bg-indigo-50 rounded-full opacity-50"></div>
@@ -177,7 +177,7 @@ export default function StaffPage() {
                     <div className="text-xs font-medium text-gray-500 mt-0.5">{staff.phone || "-"}</div>
                   </td>
                   <td className="px-8 py-5 whitespace-nowrap">
-                    <span className={`px-3 py-1 inline-flex text-xs font-bold rounded-md ${staff.status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                    <span className={`px-3 py-1 inline-flex text-xs font-bold rounded-md ${staff.status === 'active' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                       {staff.status}
                     </span>
                   </td>
@@ -190,7 +190,7 @@ export default function StaffPage() {
                     </button>
                     <button 
                       onClick={() => handleToggleStatus(staff._id, staff.status)}
-                      className={`${staff.status === 'active' ? 'text-red-500 hover:text-red-700' : 'text-green-500 hover:text-green-700'} transition-colors`}
+                      className={`${staff.status === 'active' ? 'text-red-500 hover:text-red-700' : 'text-blue-500 hover:text-blue-700'} transition-colors`}
                     >
                       {staff.status === 'active' ? 'Deactivate' : 'Activate'}
                     </button>

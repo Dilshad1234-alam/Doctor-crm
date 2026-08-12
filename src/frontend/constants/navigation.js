@@ -3,10 +3,6 @@ const ownerNavigation = [
   { label: "Doctors", href: "/dashboard/doctors" },
   { label: "Staff", href: "/dashboard/staff" },
   { label: "Patients", href: "/dashboard/patients" },
-  { label: "Appointments", href: "/dashboard/appointments" },
-  { label: "Queue", href: "/dashboard/queue" },
-  { label: "Medical Reports", href: "/dashboard/medical-reports" },
-  { label: "Billing", href: "/dashboard/billing" },
   { label: "Reports", href: "/dashboard/reports" },
   { label: "Settings", href: "/dashboard/settings" },
 ];

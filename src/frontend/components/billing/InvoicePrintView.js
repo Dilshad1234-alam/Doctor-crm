@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 
 export default function InvoicePrintView({ invoice, clinicInfo }) {
   if (!invoice) return null;
@@ -19,7 +19,7 @@ export default function InvoicePrintView({ invoice, clinicInfo }) {
           <h2 className="text-2xl font-bold text-gray-800 uppercase tracking-widest mb-2">INVOICE</h2>
           <p className="font-medium text-gray-800 text-lg">{invoice.invoiceCode}</p>
           <p className="text-sm text-gray-600">Date: {formatDate(invoice.createdAt)}</p>
-          {invoice.status === "paid" && <p className="text-sm font-bold text-green-600 mt-2 uppercase border-2 border-green-600 inline-block px-2 py-1 transform -rotate-12">PAID</p>}
+          {invoice.status === "paid" && <p className="text-sm font-bold text-blue-600 mt-2 uppercase border-2 border-blue-600 inline-block px-2 py-1 transform -rotate-12">PAID</p>}
         </div>
       </div>
 
@@ -91,8 +91,8 @@ export default function InvoicePrintView({ invoice, clinicInfo }) {
           </div>
           
           <div className="flex justify-between py-2 mt-2">
-            <span className="text-green-700 font-medium">Amount Paid</span>
-            <span className="text-green-700 font-bold">{formatCurrency(invoice.paidAmount)}</span>
+            <span className="text-blue-700 font-medium">Amount Paid</span>
+            <span className="text-blue-700 font-bold">{formatCurrency(invoice.paidAmount)}</span>
           </div>
           <div className="flex justify-between py-2 bg-gray-100 px-2 rounded">
             <span className="text-gray-900 font-bold">Balance Due</span>

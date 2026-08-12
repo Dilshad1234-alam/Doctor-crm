@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import VitalsForm from "./VitalsForm";
 import { recordVitals, updateVitals, getAppointmentVitals } from "@/frontend/services/vitalsApi";
 
@@ -93,7 +93,7 @@ export default function RecordVitalsModal({ isOpen, onClose, appointment }) {
           </div>
 
           {error && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded text-sm">{error}</div>}
-          {success && <div className="mb-4 p-3 bg-green-50 text-green-700 rounded text-sm">Vitals saved successfully!</div>}
+          {success && <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded text-sm">Vitals saved successfully!</div>}
 
           {loading ? (
             <div className="flex justify-center items-center py-12">

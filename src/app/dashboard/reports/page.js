@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import PageHeader from "@/frontend/components/dashboard/PageHeader";
@@ -127,12 +127,12 @@ export default function ReportsPage() {
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-2xl text-blue-600 shadow-sm relative z-10 border border-blue-200"><Calendar size={28} /></div>
         </div>
         <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-20 h-20 bg-green-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
           <div className="relative z-10">
             <p className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-1">Completed Consults</p>
             <p className="text-4xl font-black text-gray-900">{summaryData.completedConsultations}</p>
           </div>
-          <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-2xl text-green-600 shadow-sm relative z-10 border border-green-200"><Stethoscope size={28} /></div>
+          <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-2xl text-blue-600 shadow-sm relative z-10 border border-blue-200"><Stethoscope size={28} /></div>
         </div>
         <div className="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-20 h-20 bg-purple-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
@@ -258,7 +258,7 @@ export default function ReportsPage() {
           </div>
           <div>
             <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Completed</p>
-            <p className="text-2xl font-black text-green-600">{summary.completed || 0}</p>
+            <p className="text-2xl font-black text-blue-600">{summary.completed || 0}</p>
           </div>
           <div>
             <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-1">Cancelled</p>
@@ -325,7 +325,7 @@ export default function ReportsPage() {
                   <tr key={i} className="border-b border-gray-50 hover:bg-blue-50/50 transition-colors group">
                     <td className="p-4 text-sm font-bold text-gray-900 group-hover:text-[#15558d]">{doc.doctorName}</td>
                     <td className="p-4 text-sm font-bold text-gray-600">{doc.appointments}</td>
-                    <td className="p-4 text-sm font-bold text-green-600">{doc.completedConsultations}</td>
+                    <td className="p-4 text-sm font-bold text-blue-600">{doc.completedConsultations}</td>
                     <td className="p-4 text-sm font-bold text-gray-600">{doc.patientsSeen}</td>
                     <td className="p-4 text-sm font-bold text-red-500">{doc.noShows}</td>
                     {canViewRevenue && <td className="p-4 text-sm font-black text-emerald-600">₹{doc.revenue?.toLocaleString()}</td>}
@@ -365,7 +365,7 @@ export default function ReportsPage() {
               <p className="text-xs font-bold tracking-widest text-gray-400 uppercase mb-1">New Registrations</p>
               <p className="text-4xl font-black text-gray-900">{patientData.newPatients}</p>
             </div>
-            <div className="bg-green-50 p-4 rounded-2xl text-green-500"><Users size={32} /></div>
+            <div className="bg-blue-50 p-4 rounded-2xl text-blue-500"><Users size={32} /></div>
           </div>
           <div className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-[1.5rem] border border-gray-100 flex items-center justify-between shadow-sm">
             <div>

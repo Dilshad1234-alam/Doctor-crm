@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -68,7 +68,7 @@ export default function ConsultationsPage() {
                        <div className="text-xs font-medium text-gray-500 mt-0.5">ID: {c.patient?.patientCode || c.patient}</div>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
-                       <span className={`px-3 py-1 rounded-md text-xs font-bold capitalize border ${c.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
+                       <span className={`px-3 py-1 rounded-md text-xs font-bold capitalize border ${c.status === 'completed' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
                          {c.status}
                        </span>
                     </td>

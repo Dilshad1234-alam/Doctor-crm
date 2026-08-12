@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -71,7 +71,7 @@ export default function PatientAppointments({ patientId }) {
                   <td className="px-4 py-4">
                     <span className={`px-2.5 py-1 rounded-md text-xs font-bold capitalize border 
                      ${a.status === 'scheduled' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
-                       a.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' : 
+                       a.status === 'completed' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
                        a.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-200' : 
                        'bg-gray-50 text-gray-700 border-gray-200'}`}>
                      {a.status}

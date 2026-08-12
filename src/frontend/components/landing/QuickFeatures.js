@@ -1,4 +1,4 @@
-import { Stethoscope, Users, Calendar, Clock, FileText, CreditCard } from "lucide-react";
+﻿import { Stethoscope, Users, Calendar, Clock, FileText, CreditCard } from "lucide-react";
 
 export default function QuickFeatures() {
   const features = [
@@ -12,7 +12,7 @@ export default function QuickFeatures() {
       icon: <Users size={24} />,
       title: "Patients",
       description: "Complete patient history and centralized electronic records.",
-      color: "bg-green-100 text-green-600",
+      color: "bg-blue-100 text-blue-600",
     },
     {
       icon: <Calendar size={24} />,

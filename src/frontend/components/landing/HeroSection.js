@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { MessageSquare, Users, Star, Video, Phone, Mic, ShieldCheck } from "lucide-react";
 
 export default function HeroSection() {
@@ -61,7 +61,7 @@ export default function HeroSection() {
               <div className="absolute top-10 -left-6 sm:-left-12 bg-white p-3 sm:p-4 rounded-2xl shadow-xl border border-gray-100 flex gap-4 items-center">
                 <div className="flex -space-x-3">
                   <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-blue-600 font-bold text-xs">JD</div>
-                  <div className="w-10 h-10 rounded-full bg-green-100 border-2 border-white flex items-center justify-center text-green-600 font-bold text-xs">AS</div>
+                  <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-blue-600 font-bold text-xs">AS</div>
                   <div className="w-10 h-10 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center text-purple-600 font-bold text-xs">MW</div>
                 </div>
                 <div>
