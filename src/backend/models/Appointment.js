@@ -12,6 +12,10 @@ const appointmentSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    token: {
+      type: String,
+      trim: true,
+    },
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Patient",

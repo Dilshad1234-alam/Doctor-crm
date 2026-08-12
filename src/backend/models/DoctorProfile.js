@@ -163,9 +163,47 @@ const doctorProfileSchema = new mongoose.Schema(
       default: 30,
       min: 0,
     },
+    // --- New Top-Level Availability Fields (Step 2) ---
+    availableDays: {
+      type: [String],
+      enum: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+      default: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    },
+    startTime: {
+      type: String,
+      default: "09:00",
+    },
+    endTime: {
+      type: String,
+      default: "17:00",
+    },
+    slotDuration: {
+      type: Number,
+      default: 15,
+      min: 5,
+    },
+    breakStart: {
+      type: String,
+    },
+    breakEnd: {
+      type: String,
+    },
+    maxPatientsPerDay: {
+      type: Number,
+      default: 30,
+    },
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
+    // --------------------------------------------------
     isAcceptingAppointments: {
       type: Boolean,
       default: true,
+    },
+    isPublic: {
+      type: Boolean,
+      default: false,
     },
     isActive: {
       type: Boolean,

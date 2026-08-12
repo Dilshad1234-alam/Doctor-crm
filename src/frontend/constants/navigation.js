@@ -3,16 +3,21 @@ const ownerNavigation = [
   { label: "Doctors", href: "/dashboard/doctors" },
   { label: "Staff", href: "/dashboard/staff" },
   { label: "Patients", href: "/dashboard/patients" },
+  { label: "Appointments", href: "/dashboard/appointments" },
+  { label: "Queue", href: "/dashboard/queue" },
+  { label: "Billing", href: "/dashboard/billing" },
   { label: "Reports", href: "/dashboard/reports" },
   { label: "Settings", href: "/dashboard/settings" },
 ];
 
 const doctorNavigation = [
   { label: "Dashboard", href: "/dashboard" },
-  { label: "My Profile", href: "/dashboard/profile" },
-  { label: "My Availability", href: "/dashboard/my-availability" },
-  { label: "Appointments", href: "/dashboard/appointments" },
-  { label: "Medical Reports", href: "/dashboard/medical-reports" },
+  { label: "My Appointments", href: "/dashboard/appointments" },
+  { label: "My Queue", href: "/dashboard/queue" },
+  { label: "Consultations", href: "/dashboard/consultations" },
+  { label: "Prescriptions", href: "/dashboard/prescriptions" },
+  { label: "Follow-ups", href: "/dashboard/follow-ups" }, // we can map this to appointments or a new route later if needed
+  { label: "Profile", href: "/dashboard/profile" },
 ];
 
 const patientNavigation = [
@@ -21,7 +26,7 @@ const patientNavigation = [
   { label: "My Appointments", href: "/patient/appointments" },
   { label: "Prescriptions", href: "/patient/prescriptions" },
   { label: "Medical Reports", href: "/patient/medical-reports" },
-  { label: "Billing & Payments", href: "/patient/billing" },
+  { label: "Billing", href: "/patient/billing" },
   { label: "Profile", href: "/patient/profile" },
 ];
 

@@ -36,11 +36,15 @@ export default function AddDoctorPage() {
     consultationTypes: { inPerson: true, online: false },
     defaultSlotDuration: 15,
     maxAppointmentsPerDay: 30,
-    availability: DAYS.map(day => ({
-      day,
-      isAvailable: day !== "sunday", // Default sunday closed
-      slots: day !== "sunday" ? [{ startTime: "09:00", endTime: "17:00" }] : [],
-    })),
+    // New Top-Level Availability Fields
+    availableDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    startTime: "09:00",
+    endTime: "17:00",
+    slotDuration: 15,
+    breakStart: "13:00",
+    breakEnd: "14:00",
+    maxPatientsPerDay: 30,
+    isAvailable: true,
   });
 
   const handleChange = (e) => {
@@ -74,34 +78,15 @@ export default function AddDoctorPage() {
     setFormData(prev => ({ ...prev, [field]: newArray }));
   };
 
-  const handleAvailabilityChange = (dayIndex, field, value) => {
-    const newAvail = [...formData.availability];
-    newAvail[dayIndex] = { ...newAvail[dayIndex], [field]: value };
-    // If turning off availability, clear slots
-    if (field === "isAvailable" && !value) {
-      newAvail[dayIndex].slots = [];
-    } else if (field === "isAvailable" && value && newAvail[dayIndex].slots.length === 0) {
-      newAvail[dayIndex].slots = [{ startTime: "09:00", endTime: "17:00" }];
-    }
-    setFormData(prev => ({ ...prev, availability: newAvail }));
-  };
-
-  const handleSlotChange = (dayIndex, slotIndex, field, value) => {
-    const newAvail = [...formData.availability];
-    newAvail[dayIndex].slots[slotIndex] = { ...newAvail[dayIndex].slots[slotIndex], [field]: value };
-    setFormData(prev => ({ ...prev, availability: newAvail }));
-  };
-
-  const addSlot = (dayIndex) => {
-    const newAvail = [...formData.availability];
-    newAvail[dayIndex].slots.push({ startTime: "", endTime: "" });
-    setFormData(prev => ({ ...prev, availability: newAvail }));
-  };
-
-  const removeSlot = (dayIndex, slotIndex) => {
-    const newAvail = [...formData.availability];
-    newAvail[dayIndex].slots = newAvail[dayIndex].slots.filter((_, i) => i !== slotIndex);
-    setFormData(prev => ({ ...prev, availability: newAvail }));
+  const handleAvailableDaysChange = (day) => {
+    setFormData(prev => {
+      const days = [...prev.availableDays];
+      if (days.includes(day)) {
+        return { ...prev, availableDays: days.filter(d => d !== day) };
+      } else {
+        return { ...prev, availableDays: [...days, day] };
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -300,44 +285,73 @@ export default function AddDoctorPage() {
           </div>
         </div>
 
-        {/* Section 5: Availability */}
+        {/* Section 5: Availability (Step 2) */}
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">5. Weekly Availability</h2>
+          <div className="flex justify-between items-center mb-4 border-b pb-2">
+            <h2 className="text-lg font-semibold text-gray-900">5. Doctor Availability</h2>
+            <div className="flex items-center">
+              <span className="mr-3 text-sm font-medium text-gray-700">Is Available</span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="isAvailable" className="sr-only peer" checked={formData.isAvailable} onChange={handleChange} />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+              </label>
+            </div>
+          </div>
           
           <div className="space-y-6">
-            {formData.availability.map((dayObj, dayIdx) => (
-              <div key={dayObj.day} className="flex flex-col sm:flex-row sm:items-start gap-4 p-4 border rounded-lg bg-gray-50">
-                <div className="sm:w-1/4 flex items-center justify-between sm:justify-start gap-3">
-                  <span className="capitalize font-medium text-gray-900 w-24">{dayObj.day}</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" checked={dayObj.isAvailable} onChange={(e) => handleAvailabilityChange(dayIdx, "isAvailable", e.target.checked)} />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
-                  </label>
-                </div>
-                
-                <div className="flex-1 space-y-3">
-                  {!dayObj.isAvailable ? (
-                    <span className="text-sm text-gray-500 italic">Not available</span>
-                  ) : (
-                    <>
-                      {dayObj.slots.map((slot, slotIdx) => (
-                        <div key={`slot-${dayIdx}-${slotIdx}`} className="flex items-center gap-3">
-                          <input type="time" required value={slot.startTime} onChange={(e) => handleSlotChange(dayIdx, slotIdx, "startTime", e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm" />
-                          <span className="text-gray-500">to</span>
-                          <input type="time" required value={slot.endTime} onChange={(e) => handleSlotChange(dayIdx, slotIdx, "endTime", e.target.value)} className="rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm" />
-                          <button type="button" onClick={() => removeSlot(dayIdx, slotIdx)} className="text-red-500 hover:text-red-700 ml-2" title="Remove Slot">
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                      <button type="button" onClick={() => addSlot(dayIdx)} className="text-sm text-teal-600 font-medium hover:text-teal-800 flex items-center gap-1">
-                        + Add time slot
-                      </button>
-                    </>
-                  )}
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Available Days</label>
+              <div className="flex flex-wrap gap-3">
+                {DAYS.map(day => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => handleAvailableDaysChange(day)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+                      formData.availableDays.includes(day)
+                        ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {day.charAt(0).toUpperCase() + day.slice(1)}
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                <input type="time" name="startTime" value={formData.startTime} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">End Time</label>
+                <input type="time" name="endTime" value={formData.endTime} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Break Start (Optional)</label>
+                <input type="time" name="breakStart" value={formData.breakStart} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Break End (Optional)</label>
+                <input type="time" name="breakEnd" value={formData.breakEnd} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Slot Duration (Mins)</label>
+                <select name="slotDuration" value={formData.slotDuration} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm">
+                  <option value={10}>10 minutes</option>
+                  <option value={15}>15 minutes</option>
+                  <option value={20}>20 minutes</option>
+                  <option value={30}>30 minutes</option>
+                  <option value={45}>45 minutes</option>
+                  <option value={60}>60 minutes</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Max Patients Per Day</label>
+                <input type="number" min="0" name="maxPatientsPerDay" value={formData.maxPatientsPerDay} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm" />
+              </div>
+            </div>
           </div>
         </div>
 

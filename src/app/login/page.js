@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { loginUser } from "@/frontend/services/authApi";
 import { useAuth } from "@/frontend/context/AuthContext";
@@ -10,6 +10,7 @@ import { ROLES } from "@/backend/utils/permissions";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
   
   const [formData, setFormData] = useState({
@@ -35,6 +36,8 @@ export default function LoginPage() {
       await refreshUser();
       
       const { user } = response;
+      const callbackUrl = searchParams.get("callbackUrl");
+
       if (user.role === "unassigned") {
         router.push("/onboarding/select-role");
       } else if (user.role === ROLES.CLINIC_OWNER && !user.onboardingCompleted) {
@@ -44,7 +47,11 @@ export default function LoginPage() {
       } else if (user.role === "patient" && !user.onboardingCompleted) {
         router.push("/onboarding/patient");
       } else if (user.role === "patient" && user.onboardingCompleted) {
-        router.push("/patient/dashboard");
+        if (callbackUrl) {
+          router.push(callbackUrl);
+        } else {
+          router.push("/patient/dashboard");
+        }
       } else {
         router.push("/dashboard");
       }

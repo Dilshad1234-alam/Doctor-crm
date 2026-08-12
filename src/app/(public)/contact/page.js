@@ -1,116 +1,156 @@
-import Link from "next/link";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 
 export const metadata = {
-  title: "Contact Us | Doctor CRM",
-  description: "Get in touch with the Doctor CRM team",
+  title: "Contact Us | Clinora",
+  description: "Get in touch with the Clinora team for any queries or support.",
 };
 
 export default function ContactPage() {
   return (
-    <div className="font-sans min-h-screen bg-gray-50 pb-24 overflow-x-hidden">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#15558d] to-[#2ab5e1] pb-24 pt-16 sm:pt-24 lg:pt-32 min-h-[400px] font-sans">
-        <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1] mb-6">
-            Get in Touch
+    <div className="bg-[#F8FAFC] min-h-screen pt-24 pb-24">
+      <div className="max-w-[1600px] mx-auto px-6">
+        
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h1 className="text-4xl lg:text-5xl font-black text-[#0F172A] leading-tight mb-4">
+            Get in <span className="text-[#10B981]">Touch</span>
           </h1>
-          <p className="text-lg sm:text-xl text-blue-50 leading-relaxed max-w-2xl mx-auto">
-            Have questions about Doctor CRM? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+          <p className="text-[#64748B] text-lg">
+            Have questions about Clinora? Our team is here to help you.
           </p>
         </div>
-        
-        {/* Background abstract shapes */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-          <div className="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] rounded-full bg-white/5 blur-3xl"></div>
-          <div className="absolute top-1/2 -left-1/4 w-[600px] h-[600px] rounded-full bg-white/5 blur-3xl"></div>
-        </div>
-      </section>
 
-      {/* Contact Content */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           
-          {/* Contact Info */}
-          <div className="lg:col-span-5 bg-white rounded-[2rem] shadow-xl p-8 md:p-12 border border-gray-100 flex flex-col justify-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Contact Information</h2>
-            
-            <div className="space-y-8">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Mail size={24} />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Email Us</h3>
-                  <p className="text-gray-600 mt-1">support@doctorcrm.com</p>
-                  <p className="text-gray-600">sales@doctorcrm.com</p>
-                </div>
-              </div>
+          {/* Left Column - Info */}
+          <div className="lg:col-span-1 space-y-8">
+            <div className="bg-[#FFFFFF] rounded-2xl p-8 border border-[#E2E8F0] shadow-sm">
+              <h3 className="text-xl font-bold text-[#0F172A] mb-6">Contact Information</h3>
               
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Phone size={24} />
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center shrink-0">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#0F172A] mb-1">Phone</p>
+                    <p className="text-[#64748B]">+1 (555) 123-4567</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Call Us</h3>
-                  <p className="text-gray-600 mt-1">+1 (555) 123-4567</p>
-                  <p className="text-gray-600">Mon-Fri from 8am to 5pm</p>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center shrink-0">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#0F172A] mb-1">Email</p>
+                    <p className="text-[#64748B]">support@clinora.com</p>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <MapPin size={24} />
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#0F172A] mb-1">Address</p>
+                    <p className="text-[#64748B]">123 Healthcare Blvd,<br/>Suite 400, New York, NY 10001</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Visit Us</h3>
-                  <p className="text-gray-600 mt-1">123 Health Tech Blvd, Suite 400</p>
-                  <p className="text-gray-600">San Francisco, CA 94107</p>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#ECFDF5] text-[#10B981] flex items-center justify-center shrink-0">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#0F172A] mb-1">Working Hours</p>
+                    <p className="text-[#64748B]">Mon - Fri: 9:00 AM - 6:00 PM</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          
-          {/* Contact Form */}
-          <div className="lg:col-span-7 bg-white rounded-[2rem] shadow-xl p-8 md:p-12 border border-gray-100">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Send a Message</h2>
-            
-            <form className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                  <input type="text" id="firstName" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="John" />
+
+          {/* Right Column - Form */}
+          <div className="lg:col-span-2">
+            <div className="bg-[#FFFFFF] rounded-2xl p-8 lg:p-10 border border-[#E2E8F0] shadow-sm">
+              <h3 className="text-2xl font-bold text-[#0F172A] mb-8">Send us a Message</h3>
+              
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-[#0F172A] mb-2">Full Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="John Doe"
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] rounded-xl focus:ring-[#10B981] focus:border-[#10B981] block p-3"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-[#0F172A] mb-2">Email Address</label>
+                    <input 
+                      type="email" 
+                      placeholder="john@example.com"
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] rounded-xl focus:ring-[#10B981] focus:border-[#10B981] block p-3"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                  <input type="text" id="lastName" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="Doe" />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-[#0F172A] mb-2">Phone Number</label>
+                    <input 
+                      type="tel" 
+                      placeholder="+1 (555) 000-0000"
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] rounded-xl focus:ring-[#10B981] focus:border-[#10B981] block p-3"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-[#0F172A] mb-2">Subject</label>
+                    <input 
+                      type="text" 
+                      placeholder="How can we help?"
+                      className="w-full bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] rounded-xl focus:ring-[#10B981] focus:border-[#10B981] block p-3"
+                    />
+                  </div>
                 </div>
-              </div>
-              
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                <input type="email" id="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="john@example.com" />
-              </div>
-              
-              <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                <input type="text" id="subject" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="How can we help?" />
-              </div>
-              
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                <textarea id="message" rows="5" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors resize-none" placeholder="Tell us more about your inquiry..."></textarea>
-              </div>
-              
-              <button type="button" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-xl transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
-                <Send size={20} />
-                Send Message
-              </button>
-            </form>
+
+                <div>
+                  <label className="block text-sm font-bold text-[#0F172A] mb-2">Message</label>
+                  <textarea 
+                    rows="5"
+                    placeholder="Write your message here..."
+                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] rounded-xl focus:ring-[#10B981] focus:border-[#10B981] block p-3"
+                  ></textarea>
+                </div>
+
+                <button type="button" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#10B981] text-[#FFFFFF] font-bold shadow-md hover:bg-[#047857] transition-all w-full md:w-auto">
+                  <Send className="w-5 h-5" /> Send Message
+                </button>
+              </form>
+            </div>
           </div>
           
         </div>
-      </section>
+        
+        {/* Map Card */}
+        <div className="mt-12 bg-[#FFFFFF] rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden h-96 relative">
+          <div className="absolute inset-0 bg-gray-200">
+            {/* Map background for visual */}
+            <iframe 
+              src="https://maps.google.com/maps?q=New%20York,%20NY&t=&z=13&ie=UTF8&iwloc=&output=embed" 
+              width="100%" 
+              height="100%" 
+              style={{border:0}} 
+              allowFullScreen="" 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Map"
+            ></iframe>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }

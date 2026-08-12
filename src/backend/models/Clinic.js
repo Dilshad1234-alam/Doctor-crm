@@ -26,6 +26,7 @@ const clinicSchema = new mongoose.Schema(
     address: {
       line1: { type: String, trim: true, default: "" },
       line2: { type: String, trim: true, default: "" },
+      area: { type: String, trim: true, default: "" },
       city: { type: String, trim: true, default: "" },
       state: { type: String, trim: true, default: "" },
       pincode: { type: String, trim: true, default: "" },
@@ -34,6 +35,23 @@ const clinicSchema = new mongoose.Schema(
     logo: {
       type: String,
       default: null,
+    },
+    isPublic: {
+      type: Boolean,
+      default: false,
+    },
+    about: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    specialties: {
+      type: [String],
+      default: [],
+    },
+    facilities: {
+      type: [String],
+      default: [],
     },
     consultationDuration: {
       type: Number,

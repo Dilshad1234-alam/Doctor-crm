@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -160,13 +160,23 @@ export default function PatientDashboardPage() {
                    <h4 className="font-bold text-[#0F172A] text-lg">Dr. {upcomingVisit.doctorId?.userId?.name || "Doctor"}</h4>
                    <p className="text-[#64748B] font-medium text-sm mt-1">Consultation</p>
                  </div>
-                 <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-[#2563EB] border border-[#E2E8F0]">
-                   <Calendar className="w-5 h-5" />
-                 </div>
+                 {upcomingVisit.token && (
+                   <div className="bg-white px-3 py-2 rounded-lg border border-[#2563EB]/30 shadow-sm text-center min-w-[70px]">
+                     <span className="block text-[10px] uppercase font-bold text-[#64748B] mb-0.5">Token</span>
+                     <span className="block font-black text-[#2563EB] text-sm">{upcomingVisit.token}</span>
+                   </div>
+                 )}
                </div>
-               <div className="bg-white rounded-xl p-4 flex items-center gap-6 text-sm font-bold text-[#0F172A] shadow-sm border border-[#E2E8F0] mt-2">
-                 <div className="flex items-center gap-2.5"><Clock className="w-4 h-4 text-[#64748B]" /> {upcomingVisit.timeSlot}</div>
-                 <div className="flex items-center gap-2.5"><Calendar className="w-4 h-4 text-[#64748B]" /> {new Date(upcomingVisit.appointmentDate).toLocaleDateString()}</div>
+               <div className="bg-white rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-sm font-bold text-[#0F172A] shadow-sm border border-[#E2E8F0] mt-2">
+                 <div className="flex items-center gap-6">
+                   <div className="flex items-center gap-2.5"><Clock className="w-4 h-4 text-[#64748B]" /> {upcomingVisit.timeSlot}</div>
+                   <div className="flex items-center gap-2.5"><Calendar className="w-4 h-4 text-[#64748B]" /> {new Date(upcomingVisit.appointmentDate).toLocaleDateString()}</div>
+                 </div>
+                 <div className="flex gap-2">
+                   <Link href={`/patient/book?doctorId=${upcomingVisit.doctorId?._id || upcomingVisit.doctorId}`} className="text-xs font-bold px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] text-[#475569] hover:bg-white transition-colors">
+                     Reschedule
+                   </Link>
+                 </div>
                </div>
              </div>
           ) : (

@@ -44,6 +44,15 @@ const baseDoctorSchema = z.object({
   defaultSlotDuration: z.coerce.number().min(5, "Slot duration must be at least 5 minutes").default(15),
   maxAppointmentsPerDay: z.coerce.number().min(0, "Max appointments cannot be negative").default(30),
   isAcceptingAppointments: z.boolean().optional(),
+  // New Step 2 Fields
+  isAvailable: z.boolean().optional(),
+  availableDays: z.array(z.string()).optional(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  breakStart: z.string().optional().nullable(),
+  breakEnd: z.string().optional().nullable(),
+  slotDuration: z.coerce.number().optional(),
+  maxPatientsPerDay: z.coerce.number().optional(),
 });
 
 export const createDoctorSchema = baseDoctorSchema.extend({

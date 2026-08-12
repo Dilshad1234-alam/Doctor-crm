@@ -52,15 +52,29 @@ export async function getDoctorAvailableSlots(clinicId, doctorId, dateStr) {
 
   // 2. Determine Day of Week
   const dayStr = getDayString(dateStr);
-  const availability = doctor.availability.find((a) => a.day === dayStr);
+  const legacyAvailability = doctor.availability?.find((a) => a.day === dayStr);
 
-  let isAvailable = availability ? availability.isAvailable : false;
-  let scheduleSlots = availability ? availability.slots : [];
+  let isAvailable = false;
+  let scheduleSlots = [];
 
-  // Fallback for testing: if doctor has NO availability configured at all, assume Mon-Fri 9 AM to 5 PM
-  if (doctor.availability.length === 0 && dayStr !== "sunday" && dayStr !== "saturday") {
+  // Check top-level availability first (Step 2 Implementation)
+  if (doctor.isAvailable !== false && doctor.availableDays?.includes(dayStr)) {
     isAvailable = true;
-    scheduleSlots = [{ startTime: "09:00", endTime: "17:00" }];
+    let mainStartTime = doctor.startTime || "09:00";
+    let mainEndTime = doctor.endTime || "17:00";
+    
+    if (doctor.breakStart && doctor.breakEnd) {
+      scheduleSlots = [
+        { startTime: mainStartTime, endTime: doctor.breakStart },
+        { startTime: doctor.breakEnd, endTime: mainEndTime }
+      ];
+    } else {
+      scheduleSlots = [{ startTime: mainStartTime, endTime: mainEndTime }];
+    }
+  } else if (legacyAvailability) {
+    // Fallback to legacy configuration
+    isAvailable = legacyAvailability.isAvailable;
+    scheduleSlots = legacyAvailability.slots || [];
   }
 
   // 3. Apply Schedule Exceptions
@@ -100,7 +114,7 @@ export async function getDoctorAvailableSlots(clinicId, doctorId, dateStr) {
     return { success: true, slots: [], message: "Clinic is closed on this date." };
   }
 
-  const duration = doctor.defaultSlotDuration || clinicDuration;
+  const duration = doctor.slotDuration || doctor.defaultSlotDuration || clinicDuration;
   let allSlots = [];
 
   for (const block of scheduleSlots) {
@@ -144,28 +158,34 @@ export async function getDoctorAvailableSlots(clinicId, doctorId, dateStr) {
   });
 
   const bookedStartTimes = new Set(existingAppointments.map(a => a.startTime));
+  const isMaxReached = doctor.maxPatientsPerDay && existingAppointments.length >= doctor.maxPatientsPerDay;
 
-  // 6. Filter out booked slots
-  let availableSlots = allSlots.filter(slot => !bookedStartTimes.has(slot.startTime));
-
-  // 7. Filter out past slots if the date is today
-  // Assumes Asia/Kolkata for clinic timezone
+  // 6. Map slots with isBooked flag
   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
 
-  if (targetDate.getTime() === today.getTime()) {
-    const currentHour = now.getHours();
-    const currentMin = now.getMinutes();
-    const currentTotalMins = currentHour * 60 + currentMin;
+  let isDateInPast = false;
+  let currentTotalMins = 0;
 
-    availableSlots = availableSlots.filter(slot => {
-      const [sh, sm] = slot.startTime.split(":").map(Number);
-      return (sh * 60 + sm) > currentTotalMins;
-    });
-  } else if (targetDate.getTime() < today.getTime()) {
-    return { success: false, slots: [], message: "Cannot book appointments in the past." };
+  if (targetDate.getTime() < today.getTime()) {
+    isDateInPast = true;
+  } else if (targetDate.getTime() === today.getTime()) {
+    currentTotalMins = now.getHours() * 60 + now.getMinutes();
   }
 
-  return { success: true, slots: availableSlots };
+  const finalSlots = allSlots.map(slot => {
+    const [sh, sm] = slot.startTime.split(":").map(Number);
+    const slotMins = sh * 60 + sm;
+    
+    const isPast = isDateInPast || (targetDate.getTime() === today.getTime() && slotMins <= currentTotalMins);
+    const isBooked = isPast || isMaxReached || bookedStartTimes.has(slot.startTime);
+
+    return {
+      ...slot,
+      isBooked
+    };
+  });
+
+  return { success: true, slots: finalSlots };
 }

@@ -34,6 +34,7 @@ const clinicSettingsSchema = new mongoose.Schema(
       invoicePrefix: { type: String, default: "INV" },
       paymentReceiptPrefix: { type: String, default: "REC" },
       invoiceFooter: { type: String, default: "Thank you for visiting our clinic." },
+      paymentGateway: { type: String, enum: ["none", "razorpay"], default: "none" },
     },
     prescriptionSettings: {
       showClinicAddress: { type: Boolean, default: true },
@@ -48,6 +49,7 @@ const clinicSettingsSchema = new mongoose.Schema(
       appointmentCancellation: { type: Boolean, default: true },
       followUpReminder: { type: Boolean, default: true },
       paymentReceipt: { type: Boolean, default: true },
+      whatsappEnabled: { type: Boolean, default: false },
     }
   },
   { timestamps: true }

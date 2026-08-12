@@ -47,15 +47,51 @@ export default function PatientBookAppointmentPage() {
     }
   }, [step, doctors.length]);
 
+  // URL Params handling
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const doctorId = searchParams.get('doctorId');
+    const date = searchParams.get('date');
+    const time = searchParams.get('time');
+
+    if (doctorId && doctors.length > 0 && !selectedDoctor) {
+      const doc = doctors.find(d => d.id === doctorId || d._id === doctorId);
+      if (doc) {
+        setSelectedDoctor(doc);
+        if (date) {
+          setSelectedDate(date);
+          if (time) {
+            // Need to set selected slot which will be fetched in step 3
+            // So we jump straight to step 3, then it fetches, then we select
+            setStep(3);
+          } else {
+            setStep(2);
+          }
+        } else {
+          setStep(2);
+        }
+      }
+    }
+  }, [doctors, selectedDoctor]);
+
   // Step 3: Fetch Slots
   useEffect(() => {
-    if (step === 3 && selectedDoctor && selectedDate) {
+    if ((step === 3 || step === 4) && selectedDoctor && selectedDate) {
       const fetchSlotsData = async () => {
         setSlotsLoading(true);
         try {
           const res = await getAvailableSlots(selectedDoctor.id || selectedDoctor._id, selectedDate);
           if (res.success) {
             setSlots(res.slots || []);
+            // Pre-select slot if time param exists
+            const timeParam = new URLSearchParams(window.location.search).get('time');
+            if (timeParam && !selectedSlot) {
+              const slotMatch = res.slots.find(s => s.startTime === timeParam);
+              if (slotMatch) {
+                setSelectedSlot(slotMatch);
+                setStep(4);
+              }
+            }
           } else {
             setSlots([]);
             setError(res.message);
@@ -212,11 +248,14 @@ export default function PatientBookAppointmentPage() {
                   {slots.map((slot, idx) => (
                     <button
                       key={idx}
+                      disabled={slot.isBooked}
                       onClick={() => setSelectedSlot(slot)}
                       className={`py-2 px-3 text-sm rounded-md border font-medium transition-colors ${
-                        selectedSlot?.startTime === slot.startTime 
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+                        slot.isBooked 
+                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                          : selectedSlot?.startTime === slot.startTime 
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500 hover:bg-blue-50'
                       }`}
                     >
                       {slot.startTime}

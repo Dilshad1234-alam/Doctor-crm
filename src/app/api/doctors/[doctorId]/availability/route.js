@@ -5,7 +5,14 @@ import { doctorAvailabilitySchema } from "@/backend/validations/doctorValidation
 import { z } from "zod";
 
 const inputSchema = z.object({
-  availability: doctorAvailabilitySchema,
+  isAvailable: z.boolean().optional(),
+  availableDays: z.array(z.string()).optional(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  breakStart: z.string().optional().nullable(),
+  breakEnd: z.string().optional().nullable(),
+  slotDuration: z.coerce.number().optional(),
+  maxPatientsPerDay: z.coerce.number().optional(),
 });
 
 export async function PATCH(request, { params }) {

@@ -37,23 +37,39 @@ export async function createAppointmentForClinic(authUser, input) {
     throw Object.assign(new Error("Slot is already booked"), { status: 409, code: "SLOT_ALREADY_BOOKED" });
   }
 
-  // 4. Generate Code & Snapshot Fee
+  // 4. Generate Code, Token & Snapshot Fee
   const appointmentCode = await generateAppointmentCode(clinicId);
   const consultationFee = doctor.consultationFee || 0;
   
   // Calculate End Time based on default duration
-  const durationMinutes = doctor.defaultSlotDuration || 15;
+  const durationMinutes = doctor.slotDuration || doctor.defaultSlotDuration || 15;
   let [h, m] = startTime.split(":").map(Number);
   let totalMins = h * 60 + m + durationMinutes;
   let eh = Math.floor(totalMins / 60);
   let em = totalMins % 60;
   const endTime = `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
 
+  // Generate Token: TKN-YYYYMMDD-00X
+  const appointmentDateObj = new Date(appointmentDate);
+  const startOfDay = new Date(appointmentDateObj);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(appointmentDateObj);
+  endOfDay.setHours(23, 59, 59, 999);
+  
+  const existingCount = await Appointment.countDocuments({
+    clinicId,
+    doctorId,
+    appointmentDate: { $gte: startOfDay, $lte: endOfDay }
+  });
+  const dateString = appointmentDateObj.toISOString().split("T")[0].replace(/-/g, "");
+  const token = `TKN-${dateString}-${String(existingCount + 1).padStart(3, "0")}`;
+
   const sourceMap = { "clinic_owner": "clinic_owner", "receptionist": "reception", "doctor": "doctor" };
   
   const appointmentData = {
     clinicId,
     appointmentCode,
+    token,
     patientId,
     doctorId,
     appointmentDate: new Date(appointmentDate),
