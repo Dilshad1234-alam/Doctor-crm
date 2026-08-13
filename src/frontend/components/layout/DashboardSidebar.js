@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -28,6 +28,8 @@ function getIconForLabel(label) {
   if (l.includes("dashboard")) return LayoutDashboard;
   if (l.includes("book appointment")) return CalendarPlus;
   if (l === "appointments" || l === "my appointments") return Calendar;
+  if (l.includes("schedule")) return CalendarPlus;
+  if (l.includes("earnings")) return Wallet;
   if (l.includes("prescription")) return FileText;
   if (l.includes("report")) return ShieldPlus;
   if (l.includes("billing") || l.includes("payment") || l.includes("invoice")) return Wallet;
@@ -104,11 +106,11 @@ export default function DashboardSidebar({ user }) {
                 onClick={closeMobileSidebar}
                 className={`flex items-center gap-3 rounded-[12px] px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-[#DBEAFE] text-[#1D4ED8] shadow-sm"
+                    ? "bg-emerald-50 text-emerald-700 shadow-sm"
                     : "text-[#64748B] hover:bg-gray-100 hover:text-[#0F172A]"
                 }`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? "text-[#2563EB]" : "text-[#64748B]"}`} strokeWidth={2} />
+                <Icon className={`w-5 h-5 ${isActive ? "text-emerald-600" : "text-[#64748B]"}`} strokeWidth={2} />
                 {item.label}
               </Link>
             );
@@ -119,7 +121,7 @@ export default function DashboardSidebar({ user }) {
         <div className="shrink-0 p-4 border-t border-[#E2E8F0] mt-auto">
           <div className="bg-white rounded-xl p-4 flex flex-col gap-4 border border-[#E2E8F0] shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#DBEAFE] flex items-center justify-center text-[#1D4ED8] font-bold text-sm shrink-0 border border-[#2563EB]/20">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm shrink-0 border border-emerald-200/60">
                 {initials}
               </div>
               <div className="flex flex-col overflow-hidden">

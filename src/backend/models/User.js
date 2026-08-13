@@ -33,26 +33,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    clinicId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
-      default: null,
-    },
-    doctorId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "DoctorProfile",
-      default: null,
-    },
-    staffId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "StaffProfile",
-      default: null,
-    },
-    patientId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "PatientProfile",
-      default: null,
-    },
     isActive: {
       type: Boolean,
       default: true,

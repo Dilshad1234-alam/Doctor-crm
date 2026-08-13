@@ -101,6 +101,7 @@ export default function RegisterPage() {
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
       });
       setToast({ message: "Account created! Redirecting to login…", type: "success" });
       setTimeout(() => router.push("/login"), 1500);

@@ -139,6 +139,11 @@ const doctorProfileSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    documents: {
+      medicalLicense: { type: String },
+      degreeCertificate: { type: String },
+      idProof: { type: String },
+    },
     consultationTypes: {
       inPerson: {
         type: Boolean,

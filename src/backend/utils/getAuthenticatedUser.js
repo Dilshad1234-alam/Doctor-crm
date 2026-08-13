@@ -13,14 +13,35 @@ export async function getAuthenticatedUser() {
   const user = await findUserById(decoded.userId);
   if (!user || !user.isActive) return null;
 
+  let clinicId = null;
+  let doctorId = null;
+  let patientId = null;
+
+  if (user.role === "clinic_owner") {
+    const { default: Clinic } = await import("@/backend/models/Clinic");
+    const clinic = await Clinic.findOne({ ownerId: user._id }).lean();
+    if (clinic) clinicId = clinic._id.toString();
+  } else if (user.role === "doctor") {
+    const { default: DoctorProfile } = await import("@/backend/models/DoctorProfile");
+    const doctor = await DoctorProfile.findOne({ userId: user._id }).lean();
+    if (doctor) {
+      doctorId = doctor._id.toString();
+      clinicId = doctor.clinicId ? doctor.clinicId.toString() : null;
+    }
+  } else if (user.role === "patient") {
+    const { default: PatientProfile } = await import("@/backend/models/PatientProfile");
+    const patient = await PatientProfile.findOne({ userId: user._id }).lean();
+    if (patient) patientId = patient._id.toString();
+  }
+
   return {
     id: user._id.toString(),
     name: user.name,
     email: user.email,
     role: user.role,
-    clinicId: user.clinicId ? user.clinicId.toString() : null,
-    doctorId: user.doctorId ? user.doctorId.toString() : null,
-    patientId: user.patientId ? user.patientId.toString() : null,
-    onboardingCompleted: user.onboardingCompleted || !!(user.clinicId || user.doctorId || user.staffId || user.patientId),
+    clinicId,
+    doctorId,
+    patientId,
+    onboardingCompleted: user.onboardingCompleted,
   };
 }

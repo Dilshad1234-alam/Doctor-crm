@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useAuth } from "@/frontend/context/AuthContext";
 import { useSidebar } from "@/frontend/context/SidebarContext";
@@ -78,7 +78,7 @@ export default function DashboardHeader({ user: serverUser }) {
             <span className="text-sm text-[#0F172A] font-bold tracking-tight leading-tight">{user.name}</span>
             <span className="text-xs font-semibold text-[#64748B] capitalize leading-tight">{displayRole}</span>
           </div>
-          <div className="h-10 w-10 rounded-full bg-[#DBEAFE] flex items-center justify-center text-[#1D4ED8] font-black text-sm shrink-0 border border-[#2563EB]/20">
+          <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-black text-sm shrink-0 border border-emerald-200/60">
             {initials}
           </div>
         </div>

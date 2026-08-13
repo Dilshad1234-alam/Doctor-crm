@@ -46,9 +46,6 @@ export async function PATCH(request) {
     const newToken = createAuthToken({
       userId: dbUser._id,
       role: role,
-      clinicId: dbUser.clinicId,
-      doctorId: dbUser.doctorId,
-      staffId: dbUser.staffId,
     });
 
     await setAuthCookie(newToken);

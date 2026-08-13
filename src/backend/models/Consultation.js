@@ -30,7 +30,7 @@ const ConsultationSchema = new mongoose.Schema({
   consultationCode: { type: String, required: true },
   
   appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Appointment", required: true },
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true, index: true },
+  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
   doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile", required: true, index: true },
   
   vitalsId: { type: mongoose.Schema.Types.ObjectId, ref: "PatientVitals" },

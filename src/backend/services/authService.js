@@ -4,7 +4,7 @@ import { ROLES } from "@/backend/utils/permissions";
 import StaffProfile from "@/backend/models/StaffProfile";
 
 export async function registerUser(input) {
-  const { name, email, password } = input;
+  const { name, email, phone, password } = input;
   const normalizedEmail = email.toLowerCase().trim();
 
   const existingUser = await findUserByEmail(normalizedEmail);
@@ -17,11 +17,9 @@ export async function registerUser(input) {
   const newUser = await createUser({
     name: name.trim(),
     email: normalizedEmail,
+    phone: phone || null,
     password: hashedPassword,
     role: "unassigned",
-    clinicId: null,
-    doctorId: null,
-    patientId: null,
     isActive: true,
     onboardingCompleted: false,
   });
@@ -29,9 +27,6 @@ export async function registerUser(input) {
   const token = createAuthToken({
     userId: newUser._id,
     role: newUser.role,
-    clinicId: newUser.clinicId,
-    doctorId: newUser.doctorId,
-    patientId: newUser.patientId,
   });
 
   return {
@@ -41,9 +36,6 @@ export async function registerUser(input) {
       email: newUser.email,
       phone: newUser.phone,
       role: newUser.role,
-      clinicId: newUser.clinicId,
-      doctorId: newUser.doctorId,
-      patientId: newUser.patientId,
       onboardingCompleted: newUser.onboardingCompleted,
     },
     token,
@@ -54,11 +46,10 @@ export async function loginUser(input) {
   const { email, password } = input;
   const normalizedEmail = email.toLowerCase().trim();
 
-  // Find user with password included for comparison
   const user = await findUserByEmail(normalizedEmail, { includePassword: true });
   
   if (!user) {
-    throw new Error("Invalid email or password"); // Generic message
+    throw new Error("Invalid email or password");
   }
 
   if (!user.isActive) {
@@ -67,26 +58,15 @@ export async function loginUser(input) {
 
   const isPasswordValid = await comparePassword(password, user.password);
   if (!isPasswordValid) {
-    throw new Error("Invalid email or password"); // Generic message
+    throw new Error("Invalid email or password");
   }
 
-  // Update last login
   await updateUserById(user._id, { lastLoginAt: new Date() });
 
   const token = createAuthToken({
     userId: user._id,
     role: user.role,
-    clinicId: user.clinicId,
-    doctorId: user.doctorId,
-    staffId: user.staffId,
-    patientId: user.patientId,
   });
-
-  let permissions = [];
-  if (user.staffId) {
-    const staff = await StaffProfile.findById(user.staffId).lean();
-    if (staff && staff.permissions) permissions = staff.permissions;
-  }
 
   return {
     user: {
@@ -95,12 +75,7 @@ export async function loginUser(input) {
       email: user.email,
       phone: user.phone,
       role: user.role,
-      clinicId: user.clinicId,
-      doctorId: user.doctorId,
-      staffId: user.staffId,
-      patientId: user.patientId,
-      permissions,
-      onboardingCompleted: user.onboardingCompleted || !!(user.clinicId || user.doctorId || user.staffId || user.patientId),
+      onboardingCompleted: user.onboardingCompleted,
     },
     token,
   };
@@ -110,24 +85,13 @@ export async function getCurrentUser(userId) {
   const user = await findUserById(userId);
   if (!user || !user.isActive) return null;
 
-  let permissions = [];
-  if (user.staffId) {
-    const staff = await StaffProfile.findById(user.staffId).lean();
-    if (staff && staff.permissions) permissions = staff.permissions;
-  }
-
   return {
     id: user._id,
     name: user.name,
     email: user.email,
     phone: user.phone,
     role: user.role,
-    clinicId: user.clinicId,
-    doctorId: user.doctorId,
-    staffId: user.staffId,
-    patientId: user.patientId,
-    permissions,
-    onboardingCompleted: user.onboardingCompleted || !!(user.clinicId || user.doctorId || user.staffId || user.patientId),
+    onboardingCompleted: user.onboardingCompleted,
   };
 }
 

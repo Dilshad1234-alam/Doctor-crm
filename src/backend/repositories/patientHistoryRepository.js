@@ -1,7 +1,7 @@
-import PatientMedicalHistory from "../models/PatientMedicalHistory.js";
+import PatientHistoryEvent from "../models/PatientHistoryEvent.js";
 
 export async function createHistoryEvent(data) {
-  const event = new PatientMedicalHistory(data);
+  const event = new PatientHistoryEvent(data);
   return event.save();
 }
 
@@ -16,8 +16,8 @@ export async function getPatientHistory(patientId, clinicId, query) {
   const skip = (page - 1) * limit;
 
   const [history, total] = await Promise.all([
-    PatientMedicalHistory.find(filter).sort({ date: -1 }).skip(skip).limit(limit).lean(),
-    PatientMedicalHistory.countDocuments(filter)
+    PatientHistoryEvent.find(filter).sort({ date: -1 }).skip(skip).limit(limit).lean(),
+    PatientHistoryEvent.countDocuments(filter)
   ]);
 
   return {

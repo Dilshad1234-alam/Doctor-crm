@@ -22,10 +22,18 @@ export async function setupClinicForOwner(userId, input) {
     phone,
     addressLine1,
     addressLine2,
+    area,
     city,
     state,
     pincode,
     consultationDuration,
+    openingTime,
+    closingTime,
+    specialties,
+    facilities,
+    isPublic,
+    logo,
+    coverImage,
   } = input;
 
   const newClinic = await createClinic({
@@ -36,18 +44,29 @@ export async function setupClinicForOwner(userId, input) {
     address: {
       line1: addressLine1,
       line2: addressLine2 || "",
+      area: area || "",
       city,
       state,
       pincode,
-      country: "India", // Defaulting for now
+      country: "India",
     },
     consultationDuration: consultationDuration || 15,
+    openingTime: openingTime || "",
+    closingTime: closingTime || "",
+    specialties: specialties || [],
+    facilities: facilities || [],
+    isPublic: isPublic || false,
+    logo: logo || null,
+    coverImage: coverImage || null,
     onboardingCompleted: true,
     isActive: true,
   });
 
-  // Update User to reference this clinic
-  await updateUserById(userId, { clinicId: newClinic._id });
+  // Update User to reference this clinic and mark onboarding complete
+  await updateUserById(userId, {
+    clinicId: newClinic._id,
+    onboardingCompleted: true,
+  });
 
   // Generate new token with clinicId included
   const token = createAuthToken({
@@ -72,3 +91,4 @@ export async function setupClinicForOwner(userId, input) {
     token,
   };
 }
+

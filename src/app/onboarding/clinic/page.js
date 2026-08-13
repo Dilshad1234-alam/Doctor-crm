@@ -3,9 +3,10 @@ import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Setup Your Clinic | Doctor CRM",
-  description: "Complete your clinic profile to get started with Doctor CRM.",
+  title: "Clinic Setup | Clinora",
+  description: "Complete your clinic profile to start managing appointments, staff, and patients.",
 };
+
 
 export default async function ClinicOnboardingPage() {
   const user = await getAuthenticatedUser();

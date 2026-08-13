@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const MedicalReportSchema = new mongoose.Schema({
   clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true, index: true },
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true, index: true },
+  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
   doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile" }, // Doctor who ordered it
   appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Appointment" },
   consultationId: { type: mongoose.Schema.Types.ObjectId, ref: "Consultation" },

@@ -42,6 +42,10 @@ const clinicSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    coverImage: {
+      type: String,
+      default: null,
+    },
     isPublic: {
       type: Boolean,
       default: false,
@@ -62,6 +66,14 @@ const clinicSchema = new mongoose.Schema(
     consultationDuration: {
       type: Number,
       default: 15,
+    },
+    openingTime: {
+      type: String,
+      default: "",
+    },
+    closingTime: {
+      type: String,
+      default: "",
     },
     timezone: {
       type: String,
