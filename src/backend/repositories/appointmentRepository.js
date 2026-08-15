@@ -1,5 +1,5 @@
 import Appointment from "../models/Appointment.js";
-import "../models/Patient.js";
+import "../models/PatientProfile.js";
 import "../models/DoctorProfile.js";
 import "../models/User.js";
 import { ACTIVE_STATUSES } from "../utils/appointmentStatus.js";

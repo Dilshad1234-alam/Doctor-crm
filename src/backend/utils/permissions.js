@@ -31,6 +31,19 @@ export function hasPermission(user, permissionString) {
   // Super Admin inherently has all permissions
   if (hasRole(user, ROLES.SUPER_ADMIN)) return true;
 
+  // Doctors inherently have core patient/medical permissions
+  if (hasRole(user, ROLES.DOCTOR)) {
+    const doctorPermissions = [
+      "patients.view",
+      "patients.create",
+      "patients.edit",
+      "appointments.view",
+      "appointments.create",
+      "queue.view"
+    ];
+    if (doctorPermissions.includes(permissionString)) return true;
+  }
+
   // Staff granular permissions
   if (user.permissions && Array.isArray(user.permissions)) {
     return user.permissions.includes(permissionString);

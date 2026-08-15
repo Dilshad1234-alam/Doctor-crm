@@ -6,7 +6,6 @@ const clinicSettingsSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Clinic",
       required: true,
-      unique: true, // One settings document per clinic
     },
     workingHours: [
       {

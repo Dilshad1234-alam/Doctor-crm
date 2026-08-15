@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import Appointment from "../models/Appointment";
 import Consultation from "../models/Consultation";
 import Payment from "../models/Payment";
-import Patient from "../models/Patient";
+import PatientProfile from "../models/PatientProfile";
 import Invoice from "../models/Invoice";
 import DoctorProfile from "../models/DoctorProfile";
 
@@ -67,7 +67,7 @@ export const reportAnalyticsRepository = {
     if (startDate && endDate) {
       patientMatch.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
     }
-    const newPatients = await Patient.countDocuments(patientMatch);
+    const newPatients = await PatientProfile.countDocuments(patientMatch);
 
     return {
       totalAppointments,
@@ -258,7 +258,7 @@ export const reportAnalyticsRepository = {
     if (startDate && endDate) {
       patientMatch.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
     }
-    const newPatients = await Patient.countDocuments(patientMatch);
+    const newPatients = await PatientProfile.countDocuments(patientMatch);
 
     // Returning Patients: patients who had an appointment in this period AND had an appointment BEFORE this period
     let returningPatients = 0;

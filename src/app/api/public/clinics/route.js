@@ -36,7 +36,7 @@ export async function GET(request) {
     }
 
     let clinics = await Clinic.find(query)
-      .select("name slug logo address specialties about consultationDuration")
+      .select("name slug logo logoUrl coverImage coverImageUrl address specialties about consultationDuration")
       .lean();
 
     clinics = clinics.map(c => ({

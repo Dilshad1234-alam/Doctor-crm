@@ -5,7 +5,7 @@ import { useAuth } from "@/frontend/context/AuthContext";
 import { 
   MapPin, Star, Building2, Phone, Clock, Share2, Calendar, 
   Users, Award, ShieldCheck, Stethoscope, Video, Pill, FileText, 
-  Car, Accessibility, Wind
+  Car, Accessibility, Wind, UserCircle
 } from "lucide-react";
 
 const getFacilityIcon = (facility) => {
@@ -80,8 +80,8 @@ export default function ClinicDetailPage() {
     <div className="bg-[#F8FAFC] min-h-screen pb-24">
       {/* Hero Cover */}
       <div className="h-[300px] lg:h-[400px] relative bg-gradient-to-r from-[#047857] to-[#10B981]">
-        {clinic.coverImage && (
-          <img src={clinic.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+        {(clinic.coverImageUrl || clinic.coverImage) && (
+          <img src={clinic.coverImageUrl || clinic.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover opacity-60" />
         )}
       </div>
 
@@ -91,13 +91,13 @@ export default function ClinicDetailPage() {
           <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
             
             <div className="-mt-20 shrink-0 relative">
-              {clinic.logo ? (
-                <img src={clinic.logo} alt={clinic.name} className="w-40 h-40 rounded-2xl shadow-xl bg-white object-cover border-4 border-[#FFFFFF]" />
-              ) : (
-                <div className="w-40 h-40 rounded-2xl shadow-xl bg-white border-4 border-[#FFFFFF] flex items-center justify-center text-[#2563EB]">
-                  <Building2 className="w-16 h-16" />
-                </div>
-              )}
+              <div className="relative z-10 w-40 h-40 rounded-2xl shadow-xl bg-white border-4 border-[#FFFFFF] flex items-center justify-center overflow-hidden">
+                {(clinic.logoUrl || clinic.logo) ? (
+                  <img src={clinic.logoUrl || clinic.logo} alt={clinic.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Building2 className="w-20 h-20 text-[#2563EB] opacity-20" />
+                )}
+              </div>
             </div>
             
             <div className="flex-1 w-full">
@@ -222,13 +222,13 @@ export default function ClinicDetailPage() {
                     <div key={doctor._id} className="bg-[#FFFFFF] rounded-2xl p-6 border border-[#E2E8F0] shadow-sm flex flex-col md:flex-row md:items-center gap-6">
                       {/* Doctor Photo */}
                       <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 bg-[#F8FAFC]">
-                        {doctor.profileImage ? (
-                          <img src={doctor.profileImage} alt={doctor.user?.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[#2563EB] text-2xl font-bold">
-                            {doctor.user?.name ? doctor.user.name[0] : 'D'}
-                          </div>
-                        )}
+                        <div className="w-full h-full flex items-center justify-center">
+                          {(doctor.profileImageUrl || doctor.profileImage) ? (
+                            <img src={doctor.profileImageUrl || doctor.profileImage} alt={doctor.user?.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <UserCircle className="w-16 h-16 text-[#2563EB] opacity-30" />
+                          )}
+                        </div>
                       </div>
                       
                       {/* Details */}

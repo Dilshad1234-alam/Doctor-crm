@@ -1,6 +1,6 @@
 import Consultation from "../models/Consultation.js";
 import Appointment from "../models/Appointment.js";
-import "../models/Patient.js";
+import "../models/PatientProfile.js";
 import "../models/DoctorProfile.js";
 import "../models/User.js";
 

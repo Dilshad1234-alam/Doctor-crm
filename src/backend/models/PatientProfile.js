@@ -8,6 +8,10 @@ const patientProfileSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    profileImageUrl: {
+      type: String,
+      default: null,
+    },
     dateOfBirth: {
       type: Date,
     },

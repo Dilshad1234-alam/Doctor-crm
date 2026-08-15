@@ -131,6 +131,9 @@ const doctorProfileSchema = new mongoose.Schema(
     profileImage: {
       type: String,
     },
+    profileImageUrl: {
+      type: String,
+    },
     bio: {
       type: String,
       trim: true,

@@ -2,6 +2,36 @@ import { createUser, findUserByEmail, findUserById, updateUserById } from "@/bac
 import { hashPassword, comparePassword, createAuthToken } from "@/backend/utils/auth";
 import { ROLES } from "@/backend/utils/permissions";
 import StaffProfile from "@/backend/models/StaffProfile";
+import DoctorProfile from "@/backend/models/DoctorProfile";
+import Clinic from "@/backend/models/Clinic";
+import PatientProfile from "@/backend/models/PatientProfile";
+
+async function enrichUserData(baseUser) {
+  let enriched = { ...baseUser };
+
+  if (baseUser.role === "doctor") {
+    const profile = await DoctorProfile.findOne({ userId: baseUser.id }).lean();
+    if (profile) {
+      enriched.doctorId = profile._id;
+      enriched.clinicId = profile.clinicId;
+      enriched.profileImageUrl = profile.profileImageUrl || profile.profileImage;
+    }
+  } else if (baseUser.role === "clinic_owner") {
+    const clinic = await Clinic.findOne({ ownerId: baseUser.id }).lean();
+    if (clinic) {
+      enriched.clinicId = clinic._id;
+      enriched.profileImageUrl = clinic.logoUrl || clinic.logo;
+    }
+  } else if (baseUser.role === "patient") {
+    const profile = await PatientProfile.findOne({ userId: baseUser.id }).lean();
+    if (profile) {
+      enriched.patientId = profile._id;
+      enriched.profileImageUrl = profile.profileImageUrl || profile.profileImage;
+    }
+  }
+
+  return enriched;
+}
 
 export async function registerUser(input) {
   const { name, email, phone, password } = input;
@@ -29,15 +59,19 @@ export async function registerUser(input) {
     role: newUser.role,
   });
 
+  const baseUser = {
+    id: newUser._id,
+    name: newUser.name,
+    email: newUser.email,
+    phone: newUser.phone,
+    role: newUser.role,
+    onboardingCompleted: newUser.onboardingCompleted,
+  };
+
+  const enrichedUser = await enrichUserData(baseUser);
+
   return {
-    user: {
-      id: newUser._id,
-      name: newUser.name,
-      email: newUser.email,
-      phone: newUser.phone,
-      role: newUser.role,
-      onboardingCompleted: newUser.onboardingCompleted,
-    },
+    user: enrichedUser,
     token,
   };
 }
@@ -68,15 +102,19 @@ export async function loginUser(input) {
     role: user.role,
   });
 
+  const baseUser = {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    onboardingCompleted: user.onboardingCompleted,
+  };
+
+  const enrichedUser = await enrichUserData(baseUser);
+
   return {
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      onboardingCompleted: user.onboardingCompleted,
-    },
+    user: enrichedUser,
     token,
   };
 }
@@ -85,7 +123,7 @@ export async function getCurrentUser(userId) {
   const user = await findUserById(userId);
   if (!user || !user.isActive) return null;
 
-  return {
+  const baseUser = {
     id: user._id,
     name: user.name,
     email: user.email,
@@ -93,6 +131,8 @@ export async function getCurrentUser(userId) {
     role: user.role,
     onboardingCompleted: user.onboardingCompleted,
   };
+
+  return await enrichUserData(baseUser);
 }
 
 export async function changePassword(userId, currentPassword, newPassword) {

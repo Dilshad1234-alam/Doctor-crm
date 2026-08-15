@@ -1,5 +1,5 @@
 import Payment from "../models/Payment.js";
-import "../models/Patient.js";
+import "../models/PatientProfile.js";
 import "../models/Appointment.js";
 import "../models/Invoice.js";
 import "../models/User.js";

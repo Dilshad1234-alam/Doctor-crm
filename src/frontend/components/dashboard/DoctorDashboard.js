@@ -159,7 +159,8 @@ export default function DoctorDashboard() {
     );
   }
 
-  const firstName = user?.name?.split(" ")[0] || "Doctor";
+  const cleanName = user?.name?.replace(/^Dr\.?\s*/i, '') || "Doctor";
+  const firstName = cleanName.split(" ")[0];
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -219,7 +220,7 @@ export default function DoctorDashboard() {
   const quickActions = [
     {
       label: "Start Consultation",
-      href: "/dashboard/consultations/new",
+      href: "/dashboard/queue",
       icon: Stethoscope,
       description: "Begin patient visit",
       gradient: "from-blue-500 to-blue-600",
@@ -227,7 +228,7 @@ export default function DoctorDashboard() {
     },
     {
       label: "Write Prescription",
-      href: "/dashboard/prescriptions/new",
+      href: "/dashboard/prescriptions",
       icon: FileSignature,
       description: "New prescription",
       gradient: "from-emerald-500 to-emerald-600",
@@ -424,7 +425,7 @@ export default function DoctorDashboard() {
                     {/* Action */}
                     {isScheduled && (
                       <Link
-                        href={`/dashboard/consultations/new?patientId=${appt.patientId?._id}`}
+                        href={`/dashboard/consultations/start?appointmentId=${appt.id || appt._id}`}
                         className="shrink-0 w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-colors group-hover:scale-105"
                       >
                         <Play className="w-3.5 h-3.5 ml-0.5" />
@@ -510,7 +511,7 @@ export default function DoctorDashboard() {
                   </div>
 
                   <Link
-                    href={`/dashboard/consultations/new?queueId=${item._id}&patientId=${item.patientId?._id}`}
+                    href="/dashboard/queue"
                     className="shrink-0 w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition-colors"
                   >
                     <Play className="w-3.5 h-3.5 ml-0.5" />

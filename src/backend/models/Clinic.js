@@ -42,7 +42,15 @@ const clinicSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    logoUrl: {
+      type: String,
+      default: null,
+    },
     coverImage: {
+      type: String,
+      default: null,
+    },
+    coverImageUrl: {
       type: String,
       default: null,
     },

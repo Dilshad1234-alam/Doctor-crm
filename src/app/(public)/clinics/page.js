@@ -6,6 +6,8 @@ import { Search, MapPin, Star, Building2, Stethoscope, Clock, Filter, DollarSign
 export default function ClinicsPage() {
   const [clinics, setClinics] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
   const [area, setArea] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -40,12 +42,21 @@ export default function ClinicsPage() {
 
   useEffect(() => {
     fetchClinics();
+    setCurrentPage(1);
   }, [specialty, openNow, feeRange]);
 
   const handleSearch = (e) => {
     e.preventDefault();
+    setCurrentPage(1);
     fetchClinics();
   };
+
+  // Pagination logic
+  const totalPages = Math.ceil(clinics.length / ITEMS_PER_PAGE);
+  const paginatedClinics = clinics.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen pt-12 pb-24">
@@ -187,12 +198,12 @@ export default function ClinicsPage() {
               </div>
             ) : clinics.length > 0 ? (
               <div className="space-y-6">
-                {clinics.map(clinic => (
+                {paginatedClinics.map(clinic => (
                   <div key={clinic._id} className="bg-[#FFFFFF] rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-[#E2E8F0] overflow-hidden flex flex-col sm:flex-row">
                     {/* Clinic Image */}
                     <div className="sm:w-64 h-48 sm:h-auto bg-[#F8FAFC] relative">
-                      {clinic.logo ? (
-                        <img src={clinic.logo} alt={clinic.name} className="w-full h-full object-cover" />
+                      {(clinic.logoUrl || clinic.logo) ? (
+                        <img src={clinic.logoUrl || clinic.logo} alt={clinic.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-[#2563EB]">
                           <Building2 className="w-16 h-16 opacity-30" />
@@ -254,13 +265,39 @@ export default function ClinicsPage() {
                 ))}
 
                 {/* Pagination */}
-                <div className="flex items-center justify-center gap-2 pt-8">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]"><ChevronLeft className="w-5 h-5" /></button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#10B981] text-[#FFFFFF] font-bold">1</button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC] font-medium">2</button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC] font-medium">3</button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]"><ChevronRight className="w-5 h-5" /></button>
-                </div>
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 pt-8">
+                    <button 
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC] disabled:opacity-50"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button 
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium ${
+                          currentPage === page 
+                            ? "bg-[#10B981] text-[#FFFFFF] font-bold" 
+                            : "border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+
+                    <button 
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC] disabled:opacity-50"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-20 bg-[#FFFFFF] rounded-2xl border border-[#E2E8F0]">
