@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { findScheduleExceptions, createScheduleException } from "@/backend/repositories/doctorScheduleRepository";
 import { scheduleExceptionSchema } from "@/backend/validations/doctorValidation";
-import { ROLES } from "@/backend/utils/permissions";
+import { ACCOUNT_TYPES } from "@/backend/utils/permissions";
 
 export async function GET(request) {
   try {
     const authUser = await getAuthenticatedUser();
-    if (!authUser || authUser.role !== ROLES.DOCTOR || !authUser.doctorId) {
+    if (!authUser || authUser.accountType !== ACCOUNT_TYPES.DOCTOR || !authUser.doctorId) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
@@ -29,7 +29,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const authUser = await getAuthenticatedUser();
-    if (!authUser || authUser.role !== ROLES.DOCTOR || !authUser.doctorId) {
+    if (!authUser || authUser.accountType !== ACCOUNT_TYPES.DOCTOR || !authUser.doctorId) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 

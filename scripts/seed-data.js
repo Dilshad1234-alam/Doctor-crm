@@ -2,8 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const { pathToFileURL } = require("url");
 
-// 1. Load environment variables
+const RESET_SEED_DATA = true;
+
 const envPath = path.resolve(__dirname, "../.env.local");
 if (fs.existsSync(envPath)) {
   const envConfig = fs.readFileSync(envPath, "utf-8");
@@ -21,403 +23,384 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
-// 2. Define Schemas Inline (Avoids CJS/ESM import conflicts in Next.js)
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  phone: { type: String, default: null },
-  password: { type: String, required: true },
-  role: { type: String, enum: ["patient", "doctor", "receptionist", "assistant", "clinic_owner", "unassigned"], default: "unassigned" },
-  onboardingCompleted: { type: Boolean, default: false },
-  isActive: { type: Boolean, default: true },
-}, { timestamps: true });
+async function loadModels() {
+  const modelsPath = path.resolve(__dirname, "../src/backend/models");
+  
+  const loadModule = async (filename) => {
+    const fileUrl = pathToFileURL(path.join(modelsPath, filename)).href;
+    const mod = await import(fileUrl);
+    return mod.default || mod;
+  };
 
-const clinicSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  phone: { type: String, required: true },
-  address: {
-    line1: { type: String, required: true },
-    area: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    pincode: { type: String, required: true },
-    country: { type: String, required: true, default: "India" },
-  },
-  logoUrl: { type: String },
-  coverImageUrl: { type: String },
-  isPublic: { type: Boolean, default: false },
-  about: { type: String },
-  specialties: [{ type: String }],
-  facilities: [{ type: String }],
-  onboardingCompleted: { type: Boolean, default: false },
-  isActive: { type: Boolean, default: true },
-}, { timestamps: true });
+  const User = await loadModule("User.js");
+  const Clinic = await loadModule("Clinic.js");
+  const Doctor = await loadModule("Doctor.js");
+  const Patient = await loadModule("Patient.js");
+  const ClinicProfile = await loadModule("ClinicProfile.js");
+  const ClinicSettings = await loadModule("ClinicSettings.js");
+  const DoctorProfile = await loadModule("DoctorProfile.js");
+  const PatientProfile = await loadModule("PatientProfile.js");
+  const Appointment = await loadModule("Appointment.js");
+  const Consultation = await loadModule("Consultation.js");
+  const Prescription = await loadModule("Prescription.js");
+  const MedicalReport = await loadModule("MedicalReport.js");
+  const Invoice = await loadModule("Invoice.js");
+  const Payment = await loadModule("Payment.js");
+  const QueueEntry = await loadModule("QueueEntry.js");
+  const PatientVitals = await loadModule("PatientVitals.js");
+  const StaffProfile = await loadModule("StaffProfile.js");
+  const DoctorScheduleException = await loadModule("DoctorScheduleException.js");
+  const PatientHistoryEvent = await loadModule("PatientHistoryEvent.js");
 
-const doctorProfileSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
-  employeeId: { type: String },
-  profileImageUrl: { type: String },
-  specialization: { type: String, required: true },
-  qualification: [{ type: String }],
-  experienceYears: { type: Number },
-  consultationFee: { type: Number, required: true },
-  availableDays: [{ type: String }],
-  startTime: { type: String },
-  endTime: { type: String },
-  slotDuration: { type: Number, default: 30 },
-  isAvailable: { type: Boolean, default: true },
-  isPublic: { type: Boolean, default: false },
-  isActive: { type: Boolean, default: true },
-}, { timestamps: true });
+  return {
+    User, Clinic, Doctor, Patient, ClinicProfile, ClinicSettings, DoctorProfile, PatientProfile, Appointment,
+    Consultation, Prescription, MedicalReport, Invoice, Payment, QueueEntry,
+    PatientVitals, StaffProfile, DoctorScheduleException, PatientHistoryEvent
+  };
+}
 
-const patientProfileSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  profileImageUrl: { type: String },
-  gender: { type: String, enum: ["male", "female", "other", "prefer_not_to_say"] },
-  bloodGroup: { type: String, enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"] },
-  age: { type: Number },
-  address: {
-    line1: { type: String },
-    city: { type: String },
-    state: { type: String },
-  },
-  emergencyContact: {
-    name: { type: String },
-    phone: { type: String },
-  },
-  clinics: [{ type: mongoose.Schema.Types.ObjectId, ref: "Clinic" }],
-}, { timestamps: true });
-
-const appointmentSchema = new mongoose.Schema({
-  clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
-  appointmentCode: { type: String, required: true },
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile", required: true },
-  appointmentDate: { type: Date, required: true },
-  startTime: { type: String, required: true },
-  status: { type: String, enum: ["scheduled", "checked_in", "in_progress", "completed", "cancelled", "no_show"], default: "scheduled" },
-}, { timestamps: true });
-
-const consultationSchema = new mongoose.Schema({
-  clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
-  consultationCode: { type: String, required: true },
-  appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Appointment", required: true },
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile", required: true },
-  chiefComplaints: [{ complaint: String, duration: String, notes: String }],
-  symptoms: [{ name: String, duration: String, severity: String, notes: String }],
-  diagnoses: [String],
-  privateDoctorNotes: { type: String },
-  status: { type: String, enum: ["in_progress", "completed", "cancelled"], default: "in_progress" },
-  createdByDoctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile", required: true },
-}, { timestamps: true });
-
-const prescriptionSchema = new mongoose.Schema({
-  clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
-  prescriptionCode: { type: String, required: true },
-  consultationId: { type: mongoose.Schema.Types.ObjectId, ref: "Consultation", required: true },
-  appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Appointment", required: true },
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile", required: true },
-  medicines: [{
-    medicineName: String,
-    dosage: String,
-    frequency: String,
-    durationValue: Number,
-    durationUnit: String,
-    foodTiming: String,
-    route: String,
-    instructions: String
-  }],
-  status: { type: String, enum: ["draft", "finalized", "cancelled"], default: "draft" },
-  createdByDoctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile", required: true },
-}, { timestamps: true });
-
-// Register Models
-const User = mongoose.models.User || mongoose.model("User", userSchema);
-const Clinic = mongoose.models.Clinic || mongoose.model("Clinic", clinicSchema);
-const DoctorProfile = mongoose.models.DoctorProfile || mongoose.model("DoctorProfile", doctorProfileSchema);
-const PatientProfile = mongoose.models.PatientProfile || mongoose.model("PatientProfile", patientProfileSchema);
-const Appointment = mongoose.models.Appointment || mongoose.model("Appointment", appointmentSchema);
-const Consultation = mongoose.models.Consultation || mongoose.model("Consultation", consultationSchema);
-const Prescription = mongoose.models.Prescription || mongoose.model("Prescription", prescriptionSchema);
-
-// 3. Constants & Generators
 const CITIES = [
-  { 
-    city: "Patna", state: "Bihar", area: "Kankarbagh", address: "Plot 42, Kankarbagh Main Road",
-    logoUrl: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=400&auto=format&fit=crop",
-    coverImageUrl: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1200&auto=format&fit=crop"
-  },
-  { 
-    city: "Ranchi", state: "Jharkhand", area: "Lalpur", address: "Circular Road, Lalpur",
-    logoUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=400&auto=format&fit=crop",
-    coverImageUrl: "https://images.unsplash.com/photo-1581056771107-24ca5f033842?q=80&w=1200&auto=format&fit=crop"
-  },
-  { 
-    city: "Kolkata", state: "West Bengal", area: "Salt Lake", address: "Sector V, Salt Lake City",
-    logoUrl: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=400&auto=format&fit=crop",
-    coverImageUrl: "https://images.unsplash.com/photo-1538108149393-fbbd81895907?q=80&w=1200&auto=format&fit=crop"
-  },
-  { 
-    city: "Lucknow", state: "Uttar Pradesh", area: "Gomti Nagar", address: "Vibhuti Khand, Gomti Nagar",
-    logoUrl: "https://images.unsplash.com/photo-1512678080530-7760d81faba6?q=80&w=400&auto=format&fit=crop",
-    coverImageUrl: "https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=1200&auto=format&fit=crop"
-  },
-  { 
-    city: "Pune", state: "Maharashtra", area: "Kothrud", address: "Karve Road, Kothrud",
-    logoUrl: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=400&auto=format&fit=crop",
-    coverImageUrl: "https://images.unsplash.com/photo-1551076805-e1869033e561?q=80&w=1200&auto=format&fit=crop"
-  }
+  { name: "Patna", state: "Bihar", clinicName: "Patna Care Multispeciality Clinic", slug: "patna-demo", address: "Kankarbagh", pincode: "800020", phone: "+91 9000000001" },
+  { name: "Ranchi", state: "Jharkhand", clinicName: "Ranchi Health Plus Clinic", slug: "ranchi-demo", address: "Lalpur", pincode: "834001", phone: "+91 9000000002" },
+  { name: "Kolkata", state: "West Bengal", clinicName: "Kolkata MedCare Clinic", slug: "kolkata-demo", address: "Salt Lake", pincode: "700091", phone: "+91 9000000003" },
+  { name: "Delhi", state: "Delhi", clinicName: "Delhi Prime Health Clinic", slug: "delhi-demo", address: "Saket", pincode: "110017", phone: "+91 9000000004" },
+  { name: "Lucknow", state: "Uttar Pradesh", clinicName: "Lucknow Wellness Care Clinic", slug: "lucknow-demo", address: "Gomti Nagar", pincode: "226010", phone: "+91 9000000005" }
 ];
 
 const SPECIALTIES = ["General Physician", "Cardiologist", "Gynecologist", "Pediatrician", "Orthopedic"];
 
-const FIRST_NAMES_MALE = ["Amit", "Rahul", "Sandeep", "Rohit", "Manish", "Sunil", "Vijay", "Ramesh", "Sanjay", "Suresh"];
-const FIRST_NAMES_FEMALE = ["Priya", "Neha", "Pooja", "Anjali", "Sneha", "Riya", "Swati", "Kavita", "Kiran", "Rekha"];
-const LAST_NAMES = ["Sharma", "Singh", "Kumar", "Gupta", "Patel", "Verma", "Das", "Reddy", "Mishra", "Yadav", "Chauhan"];
+const MOCK_NAMES = [
+  "Dr. Amit Sharma", "Dr. Rahul Kumar", "Dr. Priya Singh", "Dr. Sandeep Verma", "Dr. Neha Gupta",
+  "Dr. Rohit Das", "Dr. Pooja Singh", "Dr. Manish Kumar", "Dr. Anjali Sharma", "Dr. Vivek Verma",
+  "Dr. Arjun Das", "Dr. Sneha Roy", "Dr. Rajiv Kumar", "Dr. Kavita Singh", "Dr. Nitin Gupta",
+  "Dr. Aditya Sharma", "Dr. Riya Verma", "Dr. Karan Singh", "Dr. Meera Gupta", "Dr. Sameer Kumar",
+  "Dr. Mohit Yadav", "Dr. Swati Sharma", "Dr. Akash Singh", "Dr. Nisha Verma", "Dr. Varun Kumar"
+];
 
-function getRandomName(gender) {
-  const fns = gender === "male" ? FIRST_NAMES_MALE : FIRST_NAMES_FEMALE;
-  const first = fns[Math.floor(Math.random() * fns.length)];
-  const last = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
-  return `${first} ${last}`;
+function generateDeterministicPhone(seed) {
+  return `+91910${seed.toString().padStart(7, "0")}`;
 }
 
-function getRandomPhone() {
-  return `+91 ${Math.floor(6000000000 + Math.random() * 3999999999)}`;
-}
+async function runSeed() {
+  console.log("Connecting to MongoDB...");
+  await mongoose.connect(MONGODB_URI);
+  console.log("Connected.");
 
-function getRandomFee() {
-  return Math.floor(Math.random() * 12 + 3) * 100; // 300 to 1500
-}
+  console.log("Loading models...");
+  const models = await loadModels();
+  const { User, Clinic, Doctor, Patient, ClinicProfile, ClinicSettings, DoctorProfile, PatientProfile, Appointment, Consultation, Prescription, MedicalReport, Invoice, Payment, QueueEntry, PatientVitals, StaffProfile, DoctorScheduleException, PatientHistoryEvent } = models;
 
-async function clearDatabase() {
-  console.log("Clearing existing seeded demo data...");
-  await User.deleteMany({ email: { $regex: "@demo.com$" } });
-  await Clinic.deleteMany({ name: { $regex: " Demo Clinic$" } });
-  await DoctorProfile.deleteMany({ consultationFee: { $exists: true } }); // Wipe all to ensure clean demo state
-  await PatientProfile.deleteMany({});
-  await Appointment.deleteMany({});
-  await Consultation.deleteMany({});
-  await Prescription.deleteMany({});
-}
+  if (RESET_SEED_DATA) {
+    console.log("\n--- Wiping complete database ---");
+    await Promise.all(Object.values(models).map(model => model.deleteMany({})));
+    console.log("Database cleared.");
+  }
 
-async function seed() {
-  try {
-    console.log("Connecting to MongoDB...");
-    await mongoose.connect(MONGODB_URI);
-    console.log("Connected successfully!");
+  const plainPassword = "12345678";
+  const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-    await clearDatabase();
+  const usedEmails = new Set();
+  const generateUniqueEmail = (email) => {
+    let finalEmail = email;
+    let counter = 1;
+    while (usedEmails.has(finalEmail)) {
+      const parts = email.split("@");
+      finalEmail = `${parts[0]}_${counter}@${parts[1]}`;
+      counter++;
+    }
+    usedEmails.add(finalEmail);
+    return finalEmail;
+  };
+
+  const getCleanNameEmail = (name) => {
+    const cleanName = name.replace("Dr. ", "").trim().toLowerCase().replace(/\s+/g, ".");
+    return generateUniqueEmail(`${cleanName}@gmail.com`);
+  };
+
+  let phoneCounter = 1;
+  let stats = { clinics: 0, owners: 0, doctors: 0, patients: 0, appointments: 0, consultations: 0, prescriptions: 0, reports: 0, invoices: 0, vitals: 0, payments: 0 };
+  let docCredentials = [];
+  let patCredentials = [];
+  let ownerCredentials = [];
+
+  console.log("\n--- Creating Demo Data ---");
+
+  // Global Admin
+  const adminAccount = await User.create({
+    name: "Clinora Admin",
+    email: "admin@clinora.com",
+    phone: generateDeterministicPhone(phoneCounter++),
+    password: hashedPassword,
+    isActive: true
+  });
+  ownerCredentials.push({ city: "Global (Admin)", email: "admin@clinora.com" });
+
+  for (let c = 0; c < CITIES.length; c++) {
+    const cityData = CITIES[c];
     
-    const hashedPassword = await bcrypt.hash("Password123!", 10);
-    
-    let stats = {
-      clinics: 0,
-      owners: 0,
-      doctors: 0,
-      patients: 0,
-      appointments: 0,
-      consultations: 0,
-      prescriptions: 0
-    };
+    // 1. Create Clinic Account (Owner)
+    const ownerName = `${cityData.name} Owner`;
+    const ownerEmail = getCleanNameEmail(ownerName);
+    const clinicAccount = await Clinic.create({
+      name: cityData.clinicName,
+      email: ownerEmail,
+      phone: cityData.phone,
+      password: hashedPassword,
+      isActive: true
+    });
+    stats.owners++;
+    ownerCredentials.push({ city: cityData.name, email: ownerEmail });
 
-    let sampleOwner = null;
-    let sampleDoctor = null;
-    let samplePatient = null;
+    // 2. Create Clinic Profile
+    const clinicProfile = await ClinicProfile.create({
+      clinicId: clinicAccount._id,
+      slug: cityData.slug,
+      address: {
+        line1: cityData.address,
+        city: cityData.name,
+        state: cityData.state,
+        pincode: cityData.pincode,
+        country: "India"
+      },
+      isPublic: true,
+      onboardingCompleted: true,
+      specialties: SPECIALTIES,
+      facilities: ["Pharmacy", "Lab", "X-Ray"],
+      status: "active",
+      logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(cityData.clinicName)}&background=10B981&color=fff&size=200`,
+      coverImageUrl: `https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop`
+    });
+    stats.clinics++;
 
-    // Iterate over cities 3 times to create 15 clinics total
-    for (let i = 0; i < 3; i++) {
-      for (const location of CITIES) {
-        // Create Owner
-        const ownerEmail = `owner.${location.city.toLowerCase()}${i === 0 ? '' : i}@demo.com`;
-      const owner = await User.create({
-        name: `${location.city} Owner`,
-        email: ownerEmail,
-        phone: getRandomPhone(),
+    // 3. Create ClinicSettings
+    await ClinicSettings.create({
+      clinicId: clinicAccount._id,
+      workingHours: ["monday", "tuesday", "wednesday", "thursday", "friday"].map(day => ({
+        day, isOpen: true, openingTime: "09:00", closingTime: "17:00"
+      })).concat([
+        { day: "saturday", isOpen: true, openingTime: "09:00", closingTime: "13:00" },
+        { day: "sunday", isOpen: false, openingTime: "09:00", closingTime: "17:00" }
+      ]),
+      appointmentSettings: { defaultSlotDuration: 15, allowSameDayBooking: true, allowWalkIn: true, allowAppointmentCancellation: true },
+      billingSettings: { currency: "INR" }
+    });
+
+    // 4. Create Exactly 5 Doctors
+    for (let d = 0; d < 5; d++) {
+      const docName = MOCK_NAMES[c * 5 + d];
+      const docEmail = getCleanNameEmail(docName);
+
+      const doctorAccount = await Doctor.create({
+        name: docName,
+        email: docEmail,
+        phone: generateDeterministicPhone(phoneCounter++),
         password: hashedPassword,
-        role: "clinic_owner",
-        onboardingCompleted: true
+        isActive: true
       });
-      stats.owners++;
-      if (!sampleOwner) sampleOwner = ownerEmail;
-
-        // Create Clinic
-        const clinicName = `${location.city} Demo Clinic${i === 0 ? '' : ` ${i + 1}`}`;
-        const clinic = await Clinic.create({
-        name: clinicName,
-        ownerId: owner._id,
-        phone: getRandomPhone(),
-        address: {
-          line1: location.address,
-          area: location.area,
-          city: location.city,
-          state: location.state,
-          pincode: "123456",
-          country: "India"
-        },
-        logoUrl: location.logoUrl,
-        coverImageUrl: location.coverImageUrl,
+      
+      const docProfile = await DoctorProfile.create({
+        doctorId: doctorAccount._id,
+        clinicId: clinicAccount._id,
+        employeeId: `DOC-${cityData.name.substring(0, 3).toUpperCase()}-00${d + 1}`,
+        specialization: SPECIALTIES[d],
+        qualification: ["MBBS", "MD"],
+        registrationNumber: `REG${10000 + c * 100 + d}`,
+        experienceYears: 5 + d,
+        consultationFee: 500,
+        availableDays: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+        startTime: "09:00",
+        endTime: "17:00",
+        slotDuration: 15,
+        maxAppointmentsPerDay: 30,
+        isAvailable: true,
         isPublic: true,
-        specialties: SPECIALTIES,
-        facilities: ["Pharmacy", "Lab", "X-Ray"],
-        onboardingCompleted: true,
+        isActive: true,
+        createdById: clinicAccount._id,
+        createdByModel: "Clinic"
       });
-      stats.clinics++;
-      console.log(`Created Clinic: ${clinicName}`);
+      stats.doctors++;
+      if (docCredentials.length < 5) docCredentials.push({ name: docName, email: docEmail, clinic: cityData.name, specialization: SPECIALTIES[d] });
 
-      // Create 5 Doctors for this Clinic
-      for (const specialty of SPECIALTIES) {
-        const docGender = Math.random() > 0.5 ? "male" : "female";
-        const docName = `Dr. ${getRandomName(docGender)}`;
-        const docEmail = `dr.${docName.split(" ")[1].toLowerCase()}.${location.city.toLowerCase()}.${Math.floor(Math.random() * 10000)}@demo.com`;
-        
-        const docUser = await User.create({
-          name: docName,
-          email: docEmail,
-          phone: getRandomPhone(),
+      // 5. Create Exactly 5 Patients per Doctor
+      for (let p = 0; p < 5; p++) {
+        const patientIndex = (d * 5) + p + 1;
+        const patFirstName = `Patient${patientIndex}`;
+        const lastName = docName.replace("Dr. ", "").split(" ")[1] || "Doc";
+        const patName = `${patFirstName} ${lastName}`;
+        const patEmail = getCleanNameEmail(patName);
+
+        const patientAccount = await Patient.create({
+          name: patName,
+          email: patEmail,
+          phone: generateDeterministicPhone(phoneCounter++),
           password: hashedPassword,
-          role: "doctor",
-          onboardingCompleted: true
+          isActive: true
         });
+
+        const patProfile = await PatientProfile.create({
+          patientId: patientAccount._id,
+          clinicId: clinicAccount._id, 
+          gender: p % 2 === 0 ? "male" : "female",
+          bloodGroup: "O+",
+          address: { city: cityData.name, state: cityData.state },
+          allergies: p % 3 === 0 ? ["Dust", "Peanuts"] : [],
+          chronicConditions: []
+        });
+        stats.patients++;
+        if (patCredentials.length < 5) patCredentials.push({ name: patientAccount.name, email: patEmail });
+
+        const statuses = ["completed", "scheduled", "checked_in", "cancelled"];
+        const apptStatus = statuses[p % statuses.length];
+        const apptDate = new Date();
+        if (apptStatus === "completed") {
+          apptDate.setDate(apptDate.getDate() - 2); 
+        } else if (apptStatus === "scheduled") {
+          apptDate.setDate(apptDate.getDate() + 1); 
+        }
         
-        const docProfile = await DoctorProfile.create({
-          userId: docUser._id,
-          clinicId: clinic._id,
-          employeeId: `DOC-${Math.floor(1000 + Math.random() * 9000)}-${Date.now().toString().slice(-4)}`,
-          profileImageUrl: docGender === "male" 
-            ? "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop"
-            : "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=400&auto=format&fit=crop",
-          specialization: specialty,
-          qualification: ["MBBS", "MD"],
-          experienceYears: Math.floor(Math.random() * 20) + 2,
-          consultationFee: getRandomFee(),
-          availableDays: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
-          startTime: "09:00",
-          endTime: "17:00",
-          slotDuration: 30,
-          isAvailable: true,
-          isPublic: true,
-          isActive: true,
+        const appointment = await Appointment.create({
+          clinicId: clinicAccount._id,
+          appointmentCode: `APT-${100000 + (c * 1000) + patientIndex}`,
+          patientId: patientAccount._id,
+          doctorId: doctorAccount._id,
+          appointmentDate: apptDate,
+          startTime: "10:00",
+          endTime: "10:15",
+          durationMinutes: 15,
+          visitType: "new_consultation",
+          source: "walk_in",
+          consultationFee: docProfile.consultationFee || 500,
+          status: apptStatus,
+          createdById: clinicAccount._id,
+          createdByModel: "Clinic"
         });
-        stats.doctors++;
-        if (!sampleDoctor) sampleDoctor = docEmail;
+        stats.appointments++;
 
-        // Create 5 Patients for this Doctor
-        for (let i = 0; i < 5; i++) {
-          const patGender = Math.random() > 0.5 ? "male" : "female";
-          const patName = getRandomName(patGender);
-          const patEmail = `pat.${patName.replace(" ", ".").toLowerCase()}.${Math.floor(Math.random() * 100000)}@demo.com`;
-          
-          const patUser = await User.create({
-            name: patName,
-            email: patEmail,
-            phone: getRandomPhone(),
-            password: hashedPassword,
-            role: "patient",
-            onboardingCompleted: true
+        if (apptStatus === "completed") {
+          const consultation = await Consultation.create({
+            clinicId: clinicAccount._id,
+            consultationCode: `CON-${100000 + (c * 1000) + patientIndex}`,
+            appointmentId: appointment._id,
+            patientId: patientAccount._id,
+            doctorId: doctorAccount._id,
+            chiefComplaints: [{ complaint: "Routine Checkup", duration: "1 day" }],
+            diagnoses: [{ name: "Healthy", type: "primary" }], 
+            status: "completed",
+            createdById: doctorAccount._id,
+            createdByModel: "Doctor"
           });
+          stats.consultations++;
 
-          const patProfile = await PatientProfile.create({
-            userId: patUser._id,
-            profileImageUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${patName.replace(" ", "")}`,
-            gender: patGender,
-            bloodGroup: ["O+", "A+", "B+", "AB+"][Math.floor(Math.random() * 4)],
-            age: Math.floor(Math.random() * 50) + 10,
-            address: { line1: "Test St", city: location.city, state: location.state },
-            emergencyContact: { name: "Family Member", phone: getRandomPhone() },
-            clinics: [clinic._id]
+          const prescription = await Prescription.create({
+            clinicId: clinicAccount._id,
+            prescriptionCode: `RX-${100000 + (c * 1000) + patientIndex}`,
+            consultationId: consultation._id,
+            appointmentId: appointment._id,
+            patientId: patientAccount._id,
+            doctorId: doctorAccount._id,
+            medicines: [{
+              medicineName: "Vitamin D3",
+              dosage: "1 capsule",
+              frequency: "Once a week",
+              durationValue: 4,
+              durationUnit: "weeks",
+              foodTiming: "after_food",
+              route: "oral"
+            }],
+            status: "finalized",
+            createdById: doctorAccount._id,
+            createdByModel: "Doctor"
           });
-          stats.patients++;
-          if (!samplePatient) samplePatient = patEmail;
+          stats.prescriptions++;
 
-          // Create Appointment
-          const statuses = ["scheduled", "checked_in", "completed"];
-          const apptStatus = statuses[Math.floor(Math.random() * statuses.length)];
-          const apptDate = new Date();
-          apptDate.setDate(apptDate.getDate() - Math.floor(Math.random() * 7)); // past week
-          
-          const appointment = await Appointment.create({
-            clinicId: clinic._id,
-            appointmentCode: `APT-${Math.floor(10000 + Math.random() * 90000)}`,
-            patientId: patUser._id,
-            doctorId: docProfile._id,
-            appointmentDate: apptDate,
-            startTime: "10:00",
-            status: apptStatus
+          await PatientVitals.create({
+            clinicId: clinicAccount._id,
+            patientId: patientAccount._id,
+            doctorId: doctorAccount._id,
+            appointmentId: appointment._id,
+            bloodPressure: { systolic: 120, diastolic: 80 },
+            pulseRate: 72,
+            temperatureC: 37,
+            recordedById: doctorAccount._id,
+            recordedByModel: "Doctor"
           });
-          stats.appointments++;
+          stats.vitals++;
 
-          // Create Consultation & Prescription ONLY if completed
-          if (apptStatus === "completed") {
-            const consultation = await Consultation.create({
-              clinicId: clinic._id,
-              consultationCode: `CON-${Math.floor(10000 + Math.random() * 90000)}`,
-              appointmentId: appointment._id,
-              patientId: patUser._id,
-              doctorId: docProfile._id,
-              chiefComplaints: [{ complaint: "Fever and cough", duration: "3 days", notes: "Mild" }],
-              diagnoses: ["Viral Infection"],
-              privateDoctorNotes: "Patient recovering well.",
-              status: "completed",
-              createdByDoctorId: docProfile._id
-            });
-            stats.consultations++;
+          const invoice = await Invoice.create({
+            clinicId: clinicAccount._id,
+            invoiceCode: `INV-${100000 + (c * 1000) + patientIndex}`,
+            patientId: patientAccount._id,
+            doctorId: doctorAccount._id,
+            appointmentId: appointment._id,
+            items: [{ type: "consultation", description: "Standard Consultation", quantity: 1, unitPrice: docProfile.consultationFee || 500, amount: docProfile.consultationFee || 500 }],
+            subtotal: docProfile.consultationFee || 500,
+            totalAmount: docProfile.consultationFee || 500,
+            pendingAmount: 0,
+            paidAmount: docProfile.consultationFee || 500,
+            status: "paid",
+            createdById: clinicAccount._id,
+            createdByModel: "Clinic"
+          });
+          stats.invoices++;
 
-            await Prescription.create({
-              clinicId: clinic._id,
-              prescriptionCode: `RX-${Math.floor(10000 + Math.random() * 90000)}`,
-              consultationId: consultation._id,
-              appointmentId: appointment._id,
-              patientId: patUser._id,
-              doctorId: docProfile._id,
-              medicines: [{
-                medicineName: "Paracetamol 500mg",
-                dosage: "1 tablet",
-                frequency: "Twice a day",
-                durationValue: 3,
-                durationUnit: "days",
-                foodTiming: "after_food",
-                route: "oral",
-                instructions: "Take after meals"
-              }],
-              status: "finalized",
-              createdByDoctorId: docProfile._id
-            });
-            stats.prescriptions++;
-          }
+          await Payment.create({
+            clinicId: clinicAccount._id,
+            paymentCode: `PAY-${100000 + (c * 1000) + patientIndex}`,
+            invoiceId: invoice._id,
+            patientId: patientAccount._id,
+            appointmentId: appointment._id,
+            amount: invoice.totalAmount,
+            paymentMethod: "cash",
+            status: "success",
+            receivedById: clinicAccount._id,
+            receivedByModel: "Clinic"
+          });
+          stats.payments++;
+
+          await MedicalReport.create({
+            clinicId: clinicAccount._id,
+            reportCode: `REP-${100000 + (c * 1000) + patientIndex}`,
+            patientId: patientAccount._id,
+            doctorId: doctorAccount._id,
+            appointmentId: appointment._id,
+            title: "Routine Blood Test",
+            reportType: "blood_test",
+            reportDate: apptDate,
+            fileName: "blood_test.pdf",
+            fileType: "application/pdf",
+            fileSize: 10240,
+            uploadedById: doctorAccount._id,
+            uploadedByModel: "Doctor",
+            reviewStatus: "reviewed",
+            reviewedById: doctorAccount._id,
+            reviewedByModel: "Doctor"
+          });
+          stats.reports++;
         }
       }
-      }
     }
-
-    console.log(`
-==================================================
-SEED COMPLETED SUCCESSFULLY
-==================================================`);
-    console.log(`Clinics created: ${stats.clinics}`);
-    console.log(`Clinic Owners created: ${stats.owners}`);
-    console.log(`Doctors created: ${stats.doctors}`);
-    console.log(`Patients created: ${stats.patients}`);
-    console.log(`Appointments created: ${stats.appointments}`);
-    console.log(`Consultations created: ${stats.consultations}`);
-    console.log(`Prescriptions created: ${stats.prescriptions}`);
-    console.log("==================================\n");
-    console.log("SAMPLE LOGIN ACCOUNTS (Password: Password123!)");
-    console.log(`Clinic Owner : ${sampleOwner}`);
-    console.log(`Doctor       : ${sampleDoctor}`);
-    console.log(`Patient      : ${samplePatient}`);
-    console.log("==================================\n");
-
-    process.exit(0);
-
-  } catch (error) {
-    console.error("Error seeding data:", error);
-    process.exit(1);
   }
+
+  console.log(`
+====================================
+SEED COMPLETED SUCCESSFULLY
+====================================
+Clinics: ${stats.clinics}
+Doctors: ${stats.doctors}
+Patients: ${stats.patients}
+Appointments: ${stats.appointments}
+Consultations: ${stats.consultations}
+Prescriptions: ${stats.prescriptions}
+Medical Reports: ${stats.reports}
+Invoices: ${stats.invoices}
+Payments: ${stats.payments}
+`);
+
+  process.exit(0);
 }
 
-seed();
+runSeed().catch(err => {
+  console.error("Seed execution failed:");
+  console.error(err);
+  process.exit(1);
+});

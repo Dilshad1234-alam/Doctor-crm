@@ -202,8 +202,8 @@ export default function ClinicsPage() {
                   <div key={clinic._id} className="bg-[#FFFFFF] rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-[#E2E8F0] overflow-hidden flex flex-col sm:flex-row">
                     {/* Clinic Image */}
                     <div className="sm:w-64 h-48 sm:h-auto bg-[#F8FAFC] relative">
-                      {(clinic.logoUrl || clinic.logo) ? (
-                        <img src={clinic.logoUrl || clinic.logo} alt={clinic.name} className="w-full h-full object-cover" />
+                      {(clinic.coverImageUrl || clinic.coverImage || clinic.logoUrl || clinic.logo) ? (
+                        <img src={clinic.coverImageUrl || clinic.coverImage || clinic.logoUrl || clinic.logo} alt={clinic.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-[#2563EB]">
                           <Building2 className="w-16 h-16 opacity-30" />

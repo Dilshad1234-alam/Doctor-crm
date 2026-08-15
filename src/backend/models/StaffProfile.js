@@ -7,10 +7,16 @@ const staffProfileSchema = new mongoose.Schema(
       ref: "Clinic",
       required: true,
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    name: {
+      type: String,
       required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
     },
     staffCode: {
       type: String,
@@ -41,9 +47,12 @@ const staffProfileSchema = new mongoose.Schema(
       enum: ["active", "inactive", "suspended"],
       default: "active",
     },
-    createdByUserId: {
+    createdById: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    },
+    createdByModel: {
+      type: String,
+      enum: ["Admin", "Clinic"],
     }
   },
   {

@@ -8,6 +8,7 @@ export const registerSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
+  accountType: z.enum(["clinic", "doctor", "patient"]),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -16,6 +17,7 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
+  accountType: z.enum(["admin", "clinic", "doctor", "patient"]).optional(),
 });
 
 export const clinicSetupSchema = z.object({

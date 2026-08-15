@@ -13,11 +13,7 @@ export async function createRecommendedTest(data, session = null) {
 export async function findTestById(testId, clinicId) {
   return RecommendedTest.findOne({ _id: testId, clinicId })
     .populate("patientId", "firstName lastName fullName patientCode age gender")
-    .populate({
-       path: "doctorId",
-       select: "specialization title",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("consultationId", "consultationCode");
 }
 
@@ -32,11 +28,7 @@ export async function findTestsByPatient(patientId, clinicId, query = {}) {
   if (query.status && query.status !== "all") filter.status = query.status;
 
   return RecommendedTest.find(filter)
-    .populate({
-       path: "doctorId",
-       select: "specialization",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .sort({ createdAt: -1 });
 }
 
@@ -46,9 +38,5 @@ export async function updateTestById(testId, clinicId, data, session = null) {
     { $set: data },
     session ? { session, new: true } : { new: true }
   ).populate("patientId", "firstName lastName fullName")
-   .populate({
-       path: "doctorId",
-       select: "specialization",
-       populate: { path: "userId", select: "name" }
-   });
+   .populate("doctorId", "name email phone");
 }

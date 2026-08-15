@@ -1,82 +1,68 @@
 import mongoose from "mongoose";
-import User from "@/backend/models/User";
+import Doctor from "@/backend/models/Doctor";
+import DoctorProfile from "@/backend/models/DoctorProfile";
 import { createDoctorProfile, findDoctorById, updateDoctorById, findDoctorsByClinic } from "@/backend/repositories/doctorRepository";
-import { findUserByEmail, updateUserById } from "@/backend/repositories/userRepository";
 import { generateDoctorEmployeeId } from "@/backend/utils/generateDoctorEmployeeId";
-import { requireRole, canManageDoctor, canViewDoctor, canUpdateDoctorAvailability, canManageDoctorSchedule, ROLES } from "@/backend/utils/permissions";
+import { requireAccountType, canManageDoctor, canViewDoctor, canUpdateDoctorAvailability, ACCOUNT_TYPES } from "@/backend/utils/permissions";
 import { hashPassword } from "@/backend/utils/auth";
 import { connectDB } from "@/backend/database/connectDB";
 import { getDoctorSummary as getDoctorSummaryData } from "@/backend/services/doctorActivityService";
 
 export async function createDoctorForClinic(ownerUser, input) {
-  requireRole(ownerUser, [ROLES.CLINIC_OWNER]);
+  requireAccountType(ownerUser, [ACCOUNT_TYPES.CLINIC]);
   await connectDB();
   
   const clinicId = ownerUser.clinicId;
   if (!clinicId) throw new Error("Clinic Owner has no associated clinic");
 
-  // Check if email is already in use
-  const existingUser = await findUserByEmail(input.email);
-  if (existingUser) {
+  const existingDoctor = await Doctor.findOne({ email: input.email.toLowerCase().trim() });
+  if (existingDoctor) {
     throw new Error("Email is already in use by another user");
   }
 
-  // Generate employee ID
   const employeeId = await generateDoctorEmployeeId(clinicId);
   const hashedPassword = await hashPassword(input.temporaryPassword);
 
   let session = null;
-  let newUser = null;
+  let newDoctor = null;
   let createdProfile = null;
 
   try {
     session = await mongoose.startSession();
     session.startTransaction();
   } catch (err) {
-    console.warn("MongoDB transactions not fully supported in this environment, falling back to manual rollback");
     session = null;
   }
 
   try {
-    const userData = {
+    const docData = {
       name: input.name,
       email: input.email.toLowerCase().trim(),
       phone: input.phone || null,
       password: hashedPassword,
-      role: ROLES.DOCTOR,
-      clinicId: clinicId,
       isActive: true,
     };
 
-    // Create user
-    const [user] = await User.create([userData], session ? { session } : {});
-    newUser = user;
+    const [doctor] = await Doctor.create([docData], session ? { session } : {});
+    newDoctor = doctor;
 
-    // Create profile
     const profileData = {
       ...input,
       clinicId: clinicId,
-      userId: user._id,
+      doctorId: doctor._id,
       employeeId: employeeId,
-      createdByUserId: ownerUser.id || ownerUser._id,
+      createdById: ownerUser.id || ownerUser._id,
+      createdByModel: "Clinic",
       isActive: true,
       isAcceptingAppointments: true,
     };
     
-    // Remove transient properties from profileData
     delete profileData.temporaryPassword;
     delete profileData.confirmPassword;
     delete profileData.name;
     delete profileData.email;
 
-    [createdProfile] = await mongoose.models.DoctorProfile.create([profileData], session ? { session } : {});
-
-    // Update user with doctorId
-    await User.findByIdAndUpdate(
-      user._id,
-      { doctorId: createdProfile._id },
-      session ? { session, new: true } : { new: true }
-    );
+    [createdProfile] = await DoctorProfile.create([profileData], session ? { session } : {});
 
     if (session) {
       await session.commitTransaction();
@@ -84,12 +70,10 @@ export async function createDoctorForClinic(ownerUser, input) {
   } catch (error) {
     if (session) {
       await session.abortTransaction();
-    } else if (newUser) {
-      // Manual rollback
-      await User.findByIdAndDelete(newUser._id);
+    } else if (newDoctor) {
+      await Doctor.findByIdAndDelete(newDoctor._id);
     }
     
-    // Check for duplicate registration number index error
     if (error.code === 11000 && error.message.includes('registrationNumber')) {
       throw new Error("Registration number already exists in this clinic");
     }
@@ -101,17 +85,17 @@ export async function createDoctorForClinic(ownerUser, input) {
     }
   }
 
-  return getSafeDoctorData(createdProfile, newUser);
+  return getSafeDoctorData(createdProfile, newDoctor);
 }
 
 export async function getDoctorsForClinic(ownerUser, query) {
-  requireRole(ownerUser, [ROLES.CLINIC_OWNER, ROLES.SUPER_ADMIN, ROLES.RECEPTIONIST]);
+  requireAccountType(ownerUser, [ACCOUNT_TYPES.CLINIC, ACCOUNT_TYPES.ADMIN, ACCOUNT_TYPES.DOCTOR, ACCOUNT_TYPES.PATIENT]);
   await connectDB();
   
   const clinicId = ownerUser.clinicId;
   const result = await findDoctorsByClinic(clinicId, query);
   
-  const safeDoctors = result.doctors.map(doc => getSafeDoctorData(doc, doc.userId));
+  const safeDoctors = result.doctors.map(doc => getSafeDoctorData(doc, doc.doctorId));
   
   return {
     ...result,
@@ -131,7 +115,7 @@ export async function getDoctorDetails(authUser, doctorId) {
     throw new Error("Unauthorized access to doctor profile");
   }
 
-  return getSafeDoctorData(doctor, doctor.userId);
+  return getSafeDoctorData(doctor, doctor.doctorId);
 }
 
 export async function updateDoctorForClinic(ownerUser, doctorId, input) {
@@ -144,32 +128,29 @@ export async function updateDoctorForClinic(ownerUser, doctorId, input) {
     throw new Error("Unauthorized to edit this doctor");
   }
 
-  // Update user name/phone if they were provided
   if (input.name || input.phone) {
-    const userUpdate = {};
-    if (input.name) userUpdate.name = input.name;
-    if (input.phone) userUpdate.phone = input.phone;
-    await updateUserById(doctor.userId._id, userUpdate);
+    const docUpdate = {};
+    if (input.name) docUpdate.name = input.name;
+    if (input.phone) docUpdate.phone = input.phone;
+    await Doctor.updateOne({ _id: doctor.doctorId._id }, { $set: docUpdate });
   }
   
-  // Clean input from user-related or forbidden fields
   const safeInput = { ...input };
   delete safeInput.name;
   delete safeInput.email;
   delete safeInput.phone;
   delete safeInput.employeeId;
   delete safeInput.clinicId;
-  delete safeInput.userId;
-  delete safeInput.role;
+  delete safeInput.doctorId;
   delete safeInput.password;
 
-  safeInput.lastUpdatedByUserId = ownerUser.id || ownerUser._id;
+  safeInput.lastUpdatedById = ownerUser.id || ownerUser._id;
+  safeInput.lastUpdatedByModel = "Clinic";
 
   const updatedDoctor = await updateDoctorById(doctorId, ownerUser.clinicId, safeInput);
   
-  // Need fresh user ref for safe output
-  const userRef = await User.findById(updatedDoctor.userId);
-  return getSafeDoctorData(updatedDoctor, userRef);
+  const docRef = await Doctor.findById(updatedDoctor.doctorId);
+  return getSafeDoctorData(updatedDoctor, docRef);
 }
 
 export async function changeDoctorStatus(ownerUser, doctorId, isActive) {
@@ -190,22 +171,22 @@ export async function changeDoctorStatus(ownerUser, doctorId, isActive) {
   }
 
   try {
-    const updatedDoctor = await mongoose.models.DoctorProfile.findOneAndUpdate(
-      { _id: doctorId, clinicId: ownerUser.clinicId },
-      { $set: { isActive, lastUpdatedByUserId: ownerUser.id || ownerUser._id } },
+    const updatedDoctor = await DoctorProfile.findOneAndUpdate(
+      { doctorId: doctorId, clinicId: ownerUser.clinicId },
+      { $set: { isActive, lastUpdatedById: ownerUser.id || ownerUser._id, lastUpdatedByModel: "Clinic" } },
       session ? { session, new: true } : { new: true }
     );
 
-    await User.findByIdAndUpdate(
-      doctor.userId._id,
+    await Doctor.findByIdAndUpdate(
+      doctor.doctorId._id,
       { $set: { isActive } },
       session ? { session } : {}
     );
 
     if (session) await session.commitTransaction();
 
-    const userRef = await User.findById(updatedDoctor.userId);
-    return getSafeDoctorData(updatedDoctor, userRef);
+    const docRef = await Doctor.findById(updatedDoctor.doctorId);
+    return getSafeDoctorData(updatedDoctor, docRef);
   } catch (error) {
     if (session) await session.abortTransaction();
     throw error;
@@ -215,7 +196,7 @@ export async function changeDoctorStatus(ownerUser, doctorId, isActive) {
 }
 
 export async function updateOwnDoctorAvailability(doctorUser, input) {
-  requireRole(doctorUser, [ROLES.DOCTOR]);
+  requireAccountType(doctorUser, [ACCOUNT_TYPES.DOCTOR]);
   await connectDB();
   
   const doctor = await findDoctorById(doctorUser.doctorId, doctorUser.clinicId);
@@ -227,14 +208,15 @@ export async function updateOwnDoctorAvailability(doctorUser, input) {
 
   const updatedDoctor = await updateDoctorById(doctorUser.doctorId, doctorUser.clinicId, {
     availability: input.availability,
-    lastUpdatedByUserId: doctorUser.id || doctorUser._id,
+    lastUpdatedById: doctorUser.id || doctorUser._id,
+    lastUpdatedByModel: "Doctor",
   });
 
-  return getSafeDoctorData(updatedDoctor, updatedDoctor.userId);
+  return getSafeDoctorData(updatedDoctor, updatedDoctor.doctorId);
 }
 
 export async function updateDoctorAvailabilityByOwner(ownerUser, doctorId, input) {
-  requireRole(ownerUser, [ROLES.CLINIC_OWNER]);
+  requireAccountType(ownerUser, [ACCOUNT_TYPES.CLINIC]);
   await connectDB();
   
   const doctor = await findDoctorById(doctorId, ownerUser.clinicId);
@@ -246,10 +228,11 @@ export async function updateDoctorAvailabilityByOwner(ownerUser, doctorId, input
 
   const updatedDoctor = await updateDoctorById(doctorId, ownerUser.clinicId, {
     availability: input.availability,
-    lastUpdatedByUserId: ownerUser.id || ownerUser._id,
+    lastUpdatedById: ownerUser.id || ownerUser._id,
+    lastUpdatedByModel: "Clinic",
   });
 
-  return getSafeDoctorData(updatedDoctor, updatedDoctor.userId);
+  return getSafeDoctorData(updatedDoctor, updatedDoctor.doctorId);
 }
 
 export async function getDoctorSummary(authUser, doctorId) {
@@ -260,7 +243,7 @@ export async function getDoctorSummary(authUser, doctorId) {
     throw new Error("Doctor not found or unauthorized");
   }
 
-  const safeDoctor = getSafeDoctorData(doctor, doctor.userId);
+  const safeDoctor = getSafeDoctorData(doctor, doctor.doctorId);
   const metrics = await getDoctorSummaryData(doctorId, authUser.clinicId);
   
   return {
@@ -269,12 +252,12 @@ export async function getDoctorSummary(authUser, doctorId) {
   };
 }
 
-// Helpers
 function getSafeDoctorData(profile, user) {
   if (!profile || !user) return null;
   
   return {
-    id: profile._id.toString(),
+    id: profile.doctorId.toString(), // The ID returned to the frontend should ideally be the doctorId because it's what they use for appointments
+    profileId: profile._id.toString(),
     employeeId: profile.employeeId,
     name: user.name,
     email: user.email,

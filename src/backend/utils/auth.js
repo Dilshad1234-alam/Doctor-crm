@@ -21,11 +21,8 @@ export function createAuthToken(payload) {
   
   return jwt.sign(
     {
-      userId: payload.userId,
-      role: payload.role,
-      clinicId: payload.clinicId,
-      doctorId: payload.doctorId,
-      staffId: payload.staffId,
+      accountType: payload.accountType,
+      accountId: payload.accountId,
     },
     secret,
     { expiresIn }

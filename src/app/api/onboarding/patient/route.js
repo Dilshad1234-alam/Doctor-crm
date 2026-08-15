@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
-import { findUserById, updateUserById } from "@/backend/repositories/userRepository";
+import { connectDB } from "@/backend/database/connectDB";
+import Patient from "@/backend/models/Patient";
 import PatientProfile from "@/backend/models/PatientProfile";
 import { createAuthToken } from "@/backend/utils/auth";
 import { setAuthCookie } from "@/backend/utils/authCookie";
@@ -10,7 +11,7 @@ export const runtime = "nodejs";
 export async function POST(request) {
   try {
     const authUser = await getAuthenticatedUser();
-    if (!authUser || authUser.role !== "patient") {
+    if (!authUser || authUser.accountType !== "patient") {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
@@ -36,69 +37,60 @@ export async function POST(request) {
       emergencyContactPhone,
     } = body;
 
-    const dbUser = await findUserById(authUser.id);
-    if (!dbUser) {
-      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
+    await connectDB();
+    const dbPatient = await Patient.findById(authUser.accountId);
+    if (!dbPatient) {
+      return NextResponse.json({ success: false, message: "Patient account not found" }, { status: 404 });
     }
 
-    if (dbUser.onboardingCompleted) {
+    const existingProfile = await PatientProfile.findOne({ patientId: dbPatient._id });
+    if (existingProfile) {
       return NextResponse.json({ success: false, message: "Patient profile already setup" }, { status: 400 });
     }
 
     // Create the Patient Profile with extended fields
     const profileData = {
-      userId: dbUser._id,
+      patientId: dbPatient._id,
       dateOfBirth: new Date(dateOfBirth),
       gender: gender,
     };
 
-    // Optional fields
     if (bloodGroup) profileData.bloodGroup = bloodGroup;
 
-    const patientProfile = await PatientProfile.create(profileData);
-
-    // Update User with all extended info
-    const userUpdate = {
-      role: "patient",
-      onboardingCompleted: true,
-    };
-
-    if (phone) userUpdate.phone = phone;
-    if (email && email !== dbUser.email) userUpdate.email = email;
-    if (fullName && fullName !== dbUser.name) userUpdate.name = fullName;
-
-    // Store extended health info on the profile (using findOneAndUpdate)
-    const profileUpdate = {};
-    if (allergies && allergies.length > 0) profileUpdate.allergies = allergies;
-    if (chronicConditions && chronicConditions.length > 0) profileUpdate.chronicConditions = chronicConditions;
-    if (currentMedicines && currentMedicines.length > 0) profileUpdate.currentMedicines = currentMedicines;
+    // Optional fields
+    if (allergies && allergies.length > 0) profileData.allergies = allergies;
+    if (chronicConditions && chronicConditions.length > 0) profileData.chronicConditions = chronicConditions;
+    if (currentMedicines && currentMedicines.length > 0) profileData.currentMedicines = currentMedicines;
+    
     if (emergencyContactName || emergencyContactPhone) {
-      profileUpdate.emergencyContact = {
+      profileData.emergencyContact = {
         name: emergencyContactName || "",
         phone: emergencyContactPhone || "",
       };
     }
+    
     if (address || city || state || pincode) {
-      profileUpdate.address = { line1: address || "", city: city || "", state: state || "", pincode: pincode || "" };
+      profileData.address = { line1: address || "", city: city || "", state: state || "", pincode: pincode || "" };
     }
 
-    // Update PatientProfile with extended info (non-required fields handled gracefully)
-    if (Object.keys(profileUpdate).length > 0) {
-      try {
-        const PatientProfileModel = PatientProfile;
-        // Dynamically add optional fields via direct update
-        await PatientProfileModel.findByIdAndUpdate(patientProfile._id, { $set: profileUpdate });
-      } catch (_) {
-        // Non-critical: profile still created successfully
+    await PatientProfile.create(profileData);
+
+    // Update base Patient info
+    await Patient.updateOne(
+      { _id: dbPatient._id },
+      {
+        $set: {
+          name: fullName || dbPatient.name,
+          email: email || dbPatient.email,
+          phone: phone || dbPatient.phone,
+        }
       }
-    }
-
-    await updateUserById(dbUser._id, userUpdate);
+    );
 
     // Generate new token
     const newToken = createAuthToken({
-      userId: dbUser._id,
-      role: "patient",
+      accountId: dbPatient._id,
+      accountType: "patient",
     });
 
     await setAuthCookie(newToken);

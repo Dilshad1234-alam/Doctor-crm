@@ -1,19 +1,22 @@
-import { findUserById, updateUserById } from "@/backend/repositories/userRepository";
-import { createClinic, findClinicByOwnerId } from "@/backend/repositories/clinicRepository";
-import { ROLES, requireRole } from "@/backend/utils/permissions";
+import { connectDB } from "@/backend/database/connectDB";
+import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
+import { ACCOUNT_TYPES, requireAccountType } from "@/backend/utils/permissions";
 import { createAuthToken } from "@/backend/utils/auth";
+import { getCurrentUser } from "@/backend/services/authService";
 
-export async function setupClinicForOwner(userId, input) {
-  const user = await findUserById(userId);
-  if (!user || !user.isActive) {
+export async function setupClinicForOwner(clinicId, input) {
+  await connectDB();
+  
+  // The authenticated user must be a clinic
+  const user = await getCurrentUser(clinicId, ACCOUNT_TYPES.CLINIC);
+  if (!user) {
     throw new Error("User not found or inactive");
   }
 
-  requireRole(user, ROLES.CLINIC_OWNER);
-
-  const existingClinic = await findClinicByOwnerId(userId);
-  if (existingClinic || user.clinicId) {
-    throw new Error("A clinic is already registered for this owner");
+  const existingProfile = await ClinicProfile.findOne({ clinicId });
+  if (existingProfile) {
+    throw new Error("A clinic profile is already registered for this account");
   }
 
   const {
@@ -36,11 +39,20 @@ export async function setupClinicForOwner(userId, input) {
     coverImage,
   } = input;
 
-  const newClinic = await createClinic({
-    name,
-    ownerId: userId,
-    email: email || null,
-    phone: phone || null,
+  // Update base clinic details if they changed during setup
+  await Clinic.updateOne(
+    { _id: clinicId },
+    { 
+      $set: { 
+        name, 
+        email: email || user.email, 
+        phone: phone || user.phone 
+      } 
+    }
+  );
+
+  const newProfile = await ClinicProfile.create({
+    clinicId,
     address: {
       line1: addressLine1,
       line2: addressLine2 || "",
@@ -59,36 +71,17 @@ export async function setupClinicForOwner(userId, input) {
     logo: logo || null,
     coverImage: coverImage || null,
     onboardingCompleted: true,
-    isActive: true,
+    status: "active",
   });
 
-  // Update User to reference this clinic and mark onboarding complete
-  await updateUserById(userId, {
-    clinicId: newClinic._id,
-    onboardingCompleted: true,
-  });
-
-  // Generate new token with clinicId included
   const token = createAuthToken({
-    userId: user._id,
-    role: user.role,
-    clinicId: newClinic._id,
-    doctorId: user.doctorId,
+    accountId: clinicId,
+    accountType: ACCOUNT_TYPES.CLINIC,
   });
 
   return {
-    clinic: newClinic,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      clinicId: newClinic._id,
-      doctorId: user.doctorId,
-      onboardingCompleted: true,
-    },
+    clinic: newProfile,
+    user: await getCurrentUser(clinicId, ACCOUNT_TYPES.CLINIC), // Re-fetch updated user
     token,
   };
 }
-

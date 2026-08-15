@@ -30,8 +30,8 @@ const ConsultationSchema = new mongoose.Schema({
   consultationCode: { type: String, required: true },
   
   appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Appointment", required: true },
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
-  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile", required: true, index: true },
+  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true, index: true },
+  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "Doctor", required: true, index: true },
   
   vitalsId: { type: mongoose.Schema.Types.ObjectId, ref: "PatientVitals" },
 
@@ -67,8 +67,10 @@ const ConsultationSchema = new mongoose.Schema({
   startedAt: { type: Date },
   completedAt: { type: Date },
 
-  createdByDoctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile", required: true },
-  lastUpdatedByUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+  createdById: { type: mongoose.Schema.Types.ObjectId, required: true },
+  createdByModel: { type: String, enum: ["Admin", "Clinic", "Doctor", "Patient"], required: true },
+  lastUpdatedById: { type: mongoose.Schema.Types.ObjectId },
+  lastUpdatedByModel: { type: String, enum: ["Admin", "Clinic", "Doctor", "Patient"] }
 }, { timestamps: true });
 
 // One Consultation per Appointment

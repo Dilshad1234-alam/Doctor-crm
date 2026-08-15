@@ -1,68 +1,45 @@
 import mongoose from "mongoose";
-import { findUserByEmail, createUser, updateUserById } from "@/backend/repositories/userRepository";
 import { createStaffProfile, findStaffById, updateStaffProfile, getStaffList as repoGetStaffList, getStaffStats, generateStaffCode } from "@/backend/repositories/staffRepository";
-import { requireRole, ROLES } from "@/backend/utils/permissions";
-import { hashPassword } from "@/backend/utils/auth";
+import { requireAccountType, ACCOUNT_TYPES } from "@/backend/utils/permissions";
 import { DEFAULT_ROLE_PERMISSIONS } from "@/backend/config/rolePermissions";
 import AuditLog from "@/backend/models/AuditLog";
+import { connectDB } from "@/backend/database/connectDB";
 
 export async function createStaff(authUser, input) {
-  requireRole(authUser, ROLES.CLINIC_OWNER);
+  requireAccountType(authUser, ACCOUNT_TYPES.CLINIC);
+  await connectDB();
   
-  const { name, email, phone, role, employeeId, joiningDate, password } = input;
+  const { name, email, phone, role, employeeId, joiningDate } = input;
   
   if (!["receptionist", "assistant", "accountant"].includes(role)) {
     throw new Error("Invalid staff role");
   }
   
-  const existingUser = await findUserByEmail(email);
-  if (existingUser) {
-    throw new Error("An account with this email already exists");
-  }
-
-  const hashedPassword = await hashPassword(password);
-  
   const session = await mongoose.startSession();
   session.startTransaction();
   
   try {
-    // 1. Create User
-    const newUser = await createUser({
-      name,
-      email,
-      phone,
-      password: hashedPassword,
-      role,
-      clinicId: authUser.clinicId,
-      isActive: true,
-    }, session);
-    
-    // 2. Generate Staff Code
     const staffCode = await generateStaffCode(authUser.clinicId, session);
-    
-    // 3. Get Default Permissions
     const permissions = DEFAULT_ROLE_PERMISSIONS[role] || [];
     
-    // 4. Create StaffProfile
     const staffProfile = await createStaffProfile({
       clinicId: authUser.clinicId,
-      userId: newUser._id,
+      name,
+      email: email.toLowerCase().trim(),
+      phone,
       staffCode,
       role,
-      phone,
       employeeId,
       joiningDate: joiningDate ? new Date(joiningDate) : new Date(),
       permissions,
       status: "active",
-      createdByUserId: authUser.id
+      createdById: authUser.accountId,
+      createdByModel: "Clinic"
     }, session);
-    
-    // 5. Update User with staffId
-    await updateUserById(newUser._id, { staffId: staffProfile._id }, session);
     
     await AuditLog.create([{
       clinicId: authUser.clinicId,
-      userId: authUser.id,
+      userId: authUser.accountId,
       action: "staff.created",
       details: `Created staff member ${name} (${staffCode}) as ${role}`
     }], { session });
@@ -79,12 +56,10 @@ export async function createStaff(authUser, input) {
 }
 
 export async function getStaffList(authUser, query) {
-  requireRole(authUser, ROLES.CLINIC_OWNER);
+  requireAccountType(authUser, [ACCOUNT_TYPES.CLINIC, ACCOUNT_TYPES.ADMIN]);
+  await connectDB();
   
   const clinicId = authUser.clinicId;
-  
-  // Since our repo getStaffList doesn't do a full user-text search yet, we will fetch and filter in memory if needed
-  // For production with large sets, this should be an aggregate lookup, but keeping it simple for now.
   let staff = await repoGetStaffList(clinicId, query);
   
   if (query.search) {
@@ -92,10 +67,9 @@ export async function getStaffList(authUser, query) {
     staff = staff.filter(st => 
       st.staffCode.toLowerCase().includes(s) ||
       st.employeeId?.toLowerCase().includes(s) ||
-      st.userId?.name?.toLowerCase().includes(s) ||
-      st.userId?.email?.toLowerCase().includes(s) ||
-      st.phone?.toLowerCase().includes(s) ||
-      st.userId?.phone?.toLowerCase().includes(s)
+      st.name?.toLowerCase().includes(s) ||
+      st.email?.toLowerCase().includes(s) ||
+      st.phone?.toLowerCase().includes(s)
     );
   }
   
@@ -114,39 +88,39 @@ export async function getStaffList(authUser, query) {
 }
 
 export async function getStaffDetails(authUser, staffId) {
-  requireRole(authUser, ROLES.CLINIC_OWNER);
+  requireAccountType(authUser, [ACCOUNT_TYPES.CLINIC, ACCOUNT_TYPES.ADMIN]);
+  await connectDB();
+  
   const staff = await findStaffById(staffId, authUser.clinicId);
   if (!staff) throw new Error("Staff not found");
   return staff;
 }
 
 export async function updateStaff(authUser, staffId, input) {
-  requireRole(authUser, ROLES.CLINIC_OWNER);
+  requireAccountType(authUser, ACCOUNT_TYPES.CLINIC);
+  await connectDB();
+  
   const staff = await findStaffById(staffId, authUser.clinicId);
   if (!staff) throw new Error("Staff not found");
   
-  const { name, phone, employeeId, joiningDate } = input;
+  const { name, email, phone, employeeId, joiningDate } = input;
   
   const session = await mongoose.startSession();
   session.startTransaction();
   
   try {
-    if (name || phone) {
-      const userUpdate = {};
-      if (name) userUpdate.name = name;
-      if (phone) userUpdate.phone = phone;
-      await updateUserById(staff.userId._id, userUpdate, session);
-    }
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email.toLowerCase().trim();
+    if (phone) updateData.phone = phone;
+    if (employeeId !== undefined) updateData.employeeId = employeeId;
+    if (joiningDate) updateData.joiningDate = new Date(joiningDate);
     
-    const updatedStaff = await updateStaffProfile(staffId, authUser.clinicId, {
-      phone: phone || staff.phone,
-      employeeId: employeeId !== undefined ? employeeId : staff.employeeId,
-      joiningDate: joiningDate ? new Date(joiningDate) : staff.joiningDate
-    }, session);
+    const updatedStaff = await updateStaffProfile(staffId, authUser.clinicId, updateData, session);
     
     await AuditLog.create([{
       clinicId: authUser.clinicId,
-      userId: authUser.id,
+      userId: authUser.accountId,
       action: "staff.updated",
       details: `Updated staff member ${staff.staffCode}`
     }], { session });
@@ -163,7 +137,9 @@ export async function updateStaff(authUser, staffId, input) {
 }
 
 export async function updateStaffPermissions(authUser, staffId, permissions) {
-  requireRole(authUser, ROLES.CLINIC_OWNER);
+  requireAccountType(authUser, ACCOUNT_TYPES.CLINIC);
+  await connectDB();
+  
   const staff = await findStaffById(staffId, authUser.clinicId);
   if (!staff) throw new Error("Staff not found");
   
@@ -173,7 +149,7 @@ export async function updateStaffPermissions(authUser, staffId, permissions) {
   
   await AuditLog.create({
     clinicId: authUser.clinicId,
-    userId: authUser.id,
+    userId: authUser.accountId,
     action: "staff.permissions_updated",
     details: `Updated permissions for staff member ${staff.staffCode}`
   });
@@ -182,7 +158,9 @@ export async function updateStaffPermissions(authUser, staffId, permissions) {
 }
 
 export async function setStaffStatus(authUser, staffId, isActive) {
-  requireRole(authUser, ROLES.CLINIC_OWNER);
+  requireAccountType(authUser, ACCOUNT_TYPES.CLINIC);
+  await connectDB();
+  
   const staff = await findStaffById(staffId, authUser.clinicId);
   if (!staff) throw new Error("Staff not found");
   
@@ -192,11 +170,10 @@ export async function setStaffStatus(authUser, staffId, isActive) {
   try {
     const status = isActive ? "active" : "inactive";
     await updateStaffProfile(staffId, authUser.clinicId, { status }, session);
-    await updateUserById(staff.userId._id, { isActive }, session);
     
     await AuditLog.create([{
       clinicId: authUser.clinicId,
-      userId: authUser.id,
+      userId: authUser.accountId,
       action: isActive ? "staff.activated" : "staff.deactivated",
       details: `${isActive ? "Activated" : "Deactivated"} staff member ${staff.staffCode}`
     }], { session });

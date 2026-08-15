@@ -13,12 +13,12 @@ export async function findPaymentById(paymentId, clinicId) {
   return Payment.findOne({ _id: paymentId, clinicId })
     .populate("patientId", "firstName lastName fullName patientCode")
     .populate("invoiceId", "invoiceCode totalAmount status")
-    .populate("receivedByUserId", "name role");
+    .populate("receivedById", "name email phone");
 }
 
 export async function findPaymentsByInvoice(invoiceId, clinicId) {
   return Payment.find({ invoiceId, clinicId })
-    .populate("receivedByUserId", "name role")
+    .populate("receivedById", "name email phone")
     .sort({ paidAt: -1 });
 }
 
@@ -45,7 +45,7 @@ export async function findPaymentsByClinic(clinicId, query = {}) {
   return Payment.find(filter)
     .populate("patientId", "firstName lastName fullName patientCode")
     .populate("invoiceId", "invoiceCode totalAmount")
-    .populate("receivedByUserId", "name role")
+    .populate("receivedById", "name email phone")
     .sort({ paidAt: -1 });
 }
 

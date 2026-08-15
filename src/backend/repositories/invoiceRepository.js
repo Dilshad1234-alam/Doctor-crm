@@ -13,24 +13,16 @@ export async function createInvoice(data, session = null) {
 export async function findInvoiceById(invoiceId, clinicId) {
   return Invoice.findOne({ _id: invoiceId, clinicId })
     .populate("patientId", "firstName lastName fullName patientCode phone")
-    .populate({
-       path: "doctorId",
-       select: "specialization title",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("appointmentId", "appointmentCode appointmentDate startTime endTime")
-    .populate("createdByUserId", "name role");
+    .populate("createdById", "name role");
 }
 
 export async function findInvoiceByAppointment(appointmentId, clinicId) {
   return Invoice.findOne({ appointmentId, clinicId })
     .populate("patientId", "firstName lastName fullName patientCode")
-    .populate({
-       path: "doctorId",
-       select: "specialization title",
-       populate: { path: "userId", select: "name" }
-    })
-    .populate("createdByUserId", "name role");
+    .populate("doctorId", "name email phone")
+    .populate("createdById", "name role");
 }
 
 export async function findInvoicesByClinic(clinicId, query = {}) {
@@ -64,11 +56,7 @@ export async function findInvoicesByClinic(clinicId, query = {}) {
 
   return Invoice.find(filter)
     .populate("patientId", "firstName lastName fullName patientCode phone")
-    .populate({
-       path: "doctorId",
-       select: "specialization",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .sort({ createdAt: -1 });
 }
 

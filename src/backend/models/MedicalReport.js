@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const MedicalReportSchema = new mongoose.Schema({
   clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true, index: true },
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
-  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile" }, // Doctor who ordered it
+  patientId: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true, index: true },
+  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "Doctor" }, // Doctor who ordered it
   appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Appointment" },
   consultationId: { type: mongoose.Schema.Types.ObjectId, ref: "Consultation" },
   recommendedTestId: { type: mongoose.Schema.Types.ObjectId, ref: "RecommendedTest" },
@@ -26,12 +26,13 @@ const MedicalReportSchema = new mongoose.Schema({
 
   notes: { type: String },
 
-  uploadedByUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  uploadedById: { type: mongoose.Schema.Types.ObjectId, required: true },
+  uploadedByModel: { type: String, enum: ["Admin", "Clinic", "Doctor", "Patient"], required: true },
   uploadedAt: { type: Date, default: Date.now },
 
   reviewStatus: { type: String, enum: ["pending_review", "reviewed"], default: "pending_review" },
 
-  reviewedByDoctorId: { type: mongoose.Schema.Types.ObjectId, ref: "DoctorProfile" },
+  reviewedByDoctorId: { type: mongoose.Schema.Types.ObjectId, ref: "Doctor" },
   reviewedAt: { type: Date },
   doctorReviewNotes: { type: String }
 }, { timestamps: true });

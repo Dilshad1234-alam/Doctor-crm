@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/backend/database/connectDB";
-import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
 import ClinicSettings from "@/backend/models/ClinicSettings";
 import DoctorProfile from "@/backend/models/DoctorProfile";
 
@@ -17,31 +17,55 @@ export async function GET(request) {
     const openNow = searchParams.get("openNow") === "true";
     const maxFee = searchParams.get("maxFee");
 
-    const query = {
-      isPublic: true,
-      isActive: true,
-    };
+    const pipeline = [
+      {
+        $lookup: {
+          from: "clinics",
+          localField: "clinicId",
+          foreignField: "_id",
+          as: "clinic"
+        }
+      },
+      { $unwind: "$clinic" },
+      {
+        $match: {
+          isPublic: true,
+          "clinic.isActive": true,
+        }
+      }
+    ];
 
-    if (city) query["address.city"] = { $regex: new RegExp(city, "i") };
-    if (state) query["address.state"] = { $regex: new RegExp(state, "i") };
-    if (area) query["address.area"] = { $regex: new RegExp(area, "i") };
-    if (specialty) query.specialties = { $regex: new RegExp(`^${specialty}$`, "i") };
+    if (city) pipeline.push({ $match: { "address.city": { $regex: new RegExp(city, "i") } } });
+    if (state) pipeline.push({ $match: { "address.state": { $regex: new RegExp(state, "i") } } });
+    if (area) pipeline.push({ $match: { "address.area": { $regex: new RegExp(area, "i") } } });
+    if (specialty) pipeline.push({ $match: { specialties: { $regex: new RegExp(`^${specialty}$`, "i") } } });
 
     if (search) {
-      query.$or = [
-        { name: { $regex: new RegExp(search, "i") } },
-        { specialties: { $regex: new RegExp(search, "i") } },
-        { "address.area": { $regex: new RegExp(search, "i") } },
-      ];
+      pipeline.push({
+        $match: {
+          $or: [
+            { "clinic.name": { $regex: new RegExp(search, "i") } },
+            { specialties: { $regex: new RegExp(search, "i") } },
+            { "address.area": { $regex: new RegExp(search, "i") } },
+          ]
+        }
+      });
     }
 
-    let clinics = await Clinic.find(query)
-      .select("name slug logo logoUrl coverImage coverImageUrl address specialties about consultationDuration")
-      .lean();
+    const rawProfiles = await ClinicProfile.aggregate(pipeline);
 
-    clinics = clinics.map(c => ({
-      ...c,
-      slug: c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')
+    let clinics = rawProfiles.map(p => ({
+      _id: p.clinicId,
+      name: p.clinic.name,
+      slug: p.slug || p.clinic.name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-'),
+      logo: p.logo,
+      logoUrl: p.logoUrl,
+      coverImage: p.coverImage,
+      coverImageUrl: p.coverImageUrl,
+      address: p.address,
+      specialties: p.specialties,
+      about: p.about,
+      consultationDuration: p.consultationDuration
     }));
 
     // Attach basic stats and filter by maxFee / openNow if needed
@@ -56,7 +80,6 @@ export async function GET(request) {
     for (let clinic of clinics) {
       const doctors = await DoctorProfile.find({
         clinicId: clinic._id,
-        isPublic: true,
         isActive: true,
       }).lean();
 
@@ -68,7 +91,6 @@ export async function GET(request) {
       let meetsFeeCriteria = true;
       let meetsOpenCriteria = true;
 
-      // Check maxFee (if clinic has doctors, check if ANY doctor fee <= maxFee)
       if (maxFee && doctors.length > 0) {
         const lowestFee = Math.min(...doctors.map(d => d.consultationFee || Infinity));
         if (lowestFee > parseInt(maxFee)) {
@@ -76,13 +98,11 @@ export async function GET(request) {
         }
       }
 
-      // Check openNow
       if (openNow && clinic.workingHours.length > 0) {
         const todayHours = clinic.workingHours.find(wh => wh.day === currentDay);
         if (!todayHours || !todayHours.isOpen) {
           meetsOpenCriteria = false;
         } else {
-          // Check if current time is within open and close time
           if (currentTimeStr < todayHours.openTime || currentTimeStr > todayHours.closeTime) {
             meetsOpenCriteria = false;
           }

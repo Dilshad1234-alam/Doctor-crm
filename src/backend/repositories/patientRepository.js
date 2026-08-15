@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
-import User from "../models/User.js";
+import Patient from "../models/Patient.js";
 import PatientProfile from "../models/PatientProfile.js";
+import Appointment from "../models/Appointment.js";
 
-// Helper to construct a unified patient object for the frontend
 const formatPatient = (user, profile) => {
   if (!user) return null;
   const p = profile || {};
   return {
-    _id: user._id, // we use userId as the primary ID for relationships
-    userId: user._id,
+    _id: user._id, // frontend expects _id
+    patientId: user._id,
     profileId: p._id,
     patientCode: p.patientCode || "",
     fullName: user.name,
@@ -32,7 +32,7 @@ const formatPatient = (user, profile) => {
     habits: p.habits,
     insurance: p.insurance,
     notes: p.notes,
-    clinics: p.clinics || [],
+    clinicId: p.clinicId,
     isActive: user.isActive,
     createdAt: p.createdAt || user.createdAt,
     updatedAt: p.updatedAt || user.updatedAt,
@@ -44,22 +44,18 @@ export async function createPatient(data) {
   
   const finalName = name || fullName || `${firstName || ""} ${lastName || ""}`.trim() || "Unknown Patient";
 
-  // 1. Create User
-  const user = new User({
+  const user = new Patient({
     name: finalName,
     email: email || undefined,
     phone: phone || undefined,
-    password: password || "temp1234", // Dummy for clinic-created patients
-    role: "patient",
-    onboardingCompleted: true,
+    password: password || "temp1234",
     isActive: true,
   });
   await user.save();
 
-  // 2. Create Profile
   const profile = new PatientProfile({
-    userId: user._id,
-    clinics: clinicId ? [clinicId] : [],
+    patientId: user._id,
+    clinicId: clinicId,
     ...profileData,
   });
   await profile.save();
@@ -67,50 +63,47 @@ export async function createPatient(data) {
   return formatPatient(user, profile);
 }
 
-export async function findPatientById(userId, clinicId) {
-  const user = await User.findById(userId).lean();
-  if (!user || user.role !== "patient") return null;
+export async function findPatientById(patientId, clinicId) {
+  const user = await Patient.findById(patientId).lean();
+  if (!user) return null;
 
-  const profile = await PatientProfile.findOne({ userId }).lean();
+  const profile = await PatientProfile.findOne({ patientId }).lean();
   
-  // If clinicId is provided, we can optionally check if they belong to it,
-  // but since they are global, we just return the unified object.
   return formatPatient(user, profile);
 }
 
 export async function findPatientByCode(patientCode, clinicId) {
-  const profile = await PatientProfile.findOne({ patientCode, clinics: clinicId }).lean();
+  const profile = await PatientProfile.findOne({ patientCode, clinicId }).lean();
   if (!profile) return null;
-  const user = await User.findById(profile.userId).lean();
+  const user = await Patient.findById(profile.patientId).lean();
   return formatPatient(user, profile);
 }
 
 export async function findPatientByPhone(phone) {
-  const user = await User.findOne({ phone, role: "patient" }).lean();
+  const user = await Patient.findOne({ phone }).lean();
   if (!user) return null;
-  const profile = await PatientProfile.findOne({ userId: user._id }).lean();
+  const profile = await PatientProfile.findOne({ patientId: user._id }).lean();
   return formatPatient(user, profile);
 }
 
 export async function findPatientByEmail(email) {
-  const user = await User.findOne({ email, role: "patient" }).lean();
+  const user = await Patient.findOne({ email }).lean();
   if (!user) return null;
-  const profile = await PatientProfile.findOne({ userId: user._id }).lean();
+  const profile = await PatientProfile.findOne({ patientId: user._id }).lean();
   return formatPatient(user, profile);
 }
 
 export async function findPatientsByClinic(clinicId, query) {
   const { page, limit, search, gender, bloodGroup, status, sortBy, sortOrder } = query;
   
-  // Find profiles matching the clinic
-  let profileFilter = { clinics: clinicId };
+  let profileFilter = { clinicId: clinicId };
   if (gender) profileFilter.gender = gender;
   if (bloodGroup) profileFilter.bloodGroup = bloodGroup;
   
   const profiles = await PatientProfile.find(profileFilter).lean();
-  const userIds = profiles.map(p => p.userId);
+  const patientIds = profiles.map(p => p.patientId);
   
-  let userFilter = { _id: { $in: userIds }, role: "patient" };
+  let userFilter = { _id: { $in: patientIds } };
   if (status === "active") userFilter.isActive = true;
   else if (status === "inactive") userFilter.isActive = false;
   
@@ -127,12 +120,12 @@ export async function findPatientsByClinic(clinicId, query) {
   const skip = (page - 1) * limit;
 
   const [users, total] = await Promise.all([
-    User.find(userFilter).sort(sort).skip(skip).limit(limit).lean(),
-    User.countDocuments(userFilter)
+    Patient.find(userFilter).sort(sort).skip(skip).limit(limit).lean(),
+    Patient.countDocuments(userFilter)
   ]);
 
   const finalPatients = users.map(u => {
-    const p = profiles.find(pr => pr.userId.toString() === u._id.toString());
+    const p = profiles.find(pr => pr.patientId.toString() === u._id.toString());
     return formatPatient(u, p);
   });
 
@@ -147,7 +140,7 @@ export async function findPatientsByClinic(clinicId, query) {
   };
 }
 
-export async function updatePatientById(userId, clinicId, data) {
+export async function updatePatientById(patientId, clinicId, data) {
   const { name, email, phone, ...profileData } = data;
   
   if (name || email || phone) {
@@ -155,26 +148,75 @@ export async function updatePatientById(userId, clinicId, data) {
     if (name) userUpdate.name = name;
     if (email) userUpdate.email = email;
     if (phone) userUpdate.phone = phone;
-    await User.findByIdAndUpdate(userId, { $set: userUpdate });
+    await Patient.findByIdAndUpdate(patientId, { $set: userUpdate });
   }
 
   if (Object.keys(profileData).length > 0) {
     await PatientProfile.findOneAndUpdate(
-      { userId },
-      { $set: profileData, $addToSet: { clinics: clinicId } }, // ensure clinic is added
+      { patientId },
+      { $set: { ...profileData, clinicId } }, 
       { new: true, upsert: true }
     );
   }
 
-  return findPatientById(userId, clinicId);
+  return findPatientById(patientId, clinicId);
 }
 
 export async function countPatientsByClinic(clinicId) {
-  return PatientProfile.countDocuments({ clinics: clinicId });
+  return PatientProfile.countDocuments({ clinicId: clinicId });
 }
 
 export async function countActivePatientsByClinic(clinicId) {
-  const profiles = await PatientProfile.find({ clinics: clinicId }).select('userId').lean();
-  const userIds = profiles.map(p => p.userId);
-  return User.countDocuments({ _id: { $in: userIds }, isActive: true });
+  const profiles = await PatientProfile.find({ clinicId: clinicId }).select('patientId').lean();
+  const patientIds = profiles.map(p => p.patientId);
+  return Patient.countDocuments({ _id: { $in: patientIds }, isActive: true });
+}
+
+export async function findPatientsByDoctor(clinicId, doctorId, query) {
+  const { page, limit, search, gender, bloodGroup, status, sortBy, sortOrder } = query;
+  
+  const distinctPatientIds = await Appointment.distinct("patientId", { clinicId, doctorId });
+  
+  let profileFilter = { clinicId: clinicId, patientId: { $in: distinctPatientIds } };
+  if (gender) profileFilter.gender = gender;
+  if (bloodGroup) profileFilter.bloodGroup = bloodGroup;
+  
+  const profiles = await PatientProfile.find(profileFilter).lean();
+  const patientIds = profiles.map(p => p.patientId);
+  
+  let userFilter = { _id: { $in: patientIds } };
+  if (status === "active") userFilter.isActive = true;
+  else if (status === "inactive") userFilter.isActive = false;
+  
+  if (search) {
+    const searchRegex = new RegExp(search, "i");
+    userFilter.$or = [
+      { name: searchRegex },
+      { phone: searchRegex },
+      { email: searchRegex }
+    ];
+  }
+
+  const sort = { [sortBy === "fullName" ? "name" : sortBy]: sortOrder === "asc" ? 1 : -1 };
+  const skip = (page - 1) * limit;
+
+  const [users, total] = await Promise.all([
+    Patient.find(userFilter).sort(sort).skip(skip).limit(limit).lean(),
+    Patient.countDocuments(userFilter)
+  ]);
+
+  const finalPatients = users.map(u => {
+    const p = profiles.find(pr => pr.patientId.toString() === u._id.toString());
+    return formatPatient(u, p);
+  });
+
+  return {
+    patients: finalPatients,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
 }

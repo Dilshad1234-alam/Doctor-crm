@@ -1,6 +1,10 @@
 import { getAuthTokenFromCookies } from "@/backend/utils/authCookie";
 import { verifyAuthToken } from "@/backend/utils/auth";
-import { findUserById } from "@/backend/repositories/userRepository";
+import { connectDB } from "@/backend/database/connectDB";
+import User from "@/backend/models/User";
+import Clinic from "@/backend/models/Clinic";
+import Doctor from "@/backend/models/Doctor";
+import Patient from "@/backend/models/Patient";
 
 export async function getAuthenticatedUser() {
   const token = await getAuthTokenFromCookies();
@@ -8,40 +12,55 @@ export async function getAuthenticatedUser() {
   if (!token) return null;
 
   const decoded = verifyAuthToken(token);
-  if (!decoded || !decoded.userId) return null;
+  if (!decoded || !decoded.accountId || !decoded.accountType) return null;
 
-  const user = await findUserById(decoded.userId);
-  if (!user || !user.isActive) return null;
+  await connectDB();
 
+  let user = null;
   let clinicId = null;
   let doctorId = null;
   let patientId = null;
+  let onboardingCompleted = true; // Default, checking profile might be better
 
-  if (user.role === "clinic_owner") {
-    const { default: Clinic } = await import("@/backend/models/Clinic");
-    const clinic = await Clinic.findOne({ ownerId: user._id }).lean();
-    if (clinic) clinicId = clinic._id.toString();
-  } else if (user.role === "doctor") {
+  if (decoded.accountType === "admin") {
+    user = await User.findById(decoded.accountId).lean();
+    if (!user || !user.isActive) return null;
+  } else if (decoded.accountType === "clinic") {
+    user = await Clinic.findById(decoded.accountId).lean();
+    if (!user || !user.isActive) return null;
+    clinicId = user._id.toString();
+  } else if (decoded.accountType === "doctor") {
+    user = await Doctor.findById(decoded.accountId).lean();
+    if (!user || !user.isActive) return null;
+    doctorId = user._id.toString();
     const { default: DoctorProfile } = await import("@/backend/models/DoctorProfile");
-    const doctor = await DoctorProfile.findOne({ userId: user._id }).lean();
-    if (doctor) {
-      doctorId = doctor._id.toString();
-      clinicId = doctor.clinicId ? doctor.clinicId.toString() : null;
+    const docProfile = await DoctorProfile.findOne({ doctorId: user._id }).lean();
+    if (docProfile) {
+      clinicId = docProfile.clinicId ? docProfile.clinicId.toString() : null;
     }
-  } else if (user.role === "patient") {
+  } else if (decoded.accountType === "patient") {
+    user = await Patient.findById(decoded.accountId).lean();
+    if (!user || !user.isActive) return null;
+    patientId = user._id.toString();
     const { default: PatientProfile } = await import("@/backend/models/PatientProfile");
-    const patient = await PatientProfile.findOne({ userId: user._id }).lean();
-    if (patient) patientId = patient._id.toString();
+    const patProfile = await PatientProfile.findOne({ patientId: user._id }).lean();
+    if (patProfile) {
+      clinicId = patProfile.clinicId ? patProfile.clinicId.toString() : null;
+    }
+  } else {
+    return null;
   }
 
   return {
     id: user._id.toString(),
+    accountId: user._id.toString(),
+    accountType: decoded.accountType,
     name: user.name,
     email: user.email,
-    role: user.role,
+    role: decoded.accountType, // Maintain backwards compatibility with role checks if any, though accountType is strict
     clinicId,
     doctorId,
     patientId,
-    onboardingCompleted: user.onboardingCompleted,
+    onboardingCompleted: true, // we assume true for now, can implement granular checks later if needed
   };
 }

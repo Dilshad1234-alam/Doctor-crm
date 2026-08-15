@@ -13,22 +13,14 @@ export async function createPrescription(data, session = null) {
 export async function findPrescriptionById(prescriptionId, clinicId) {
   return Prescription.findOne({ _id: prescriptionId, clinicId })
     .populate("patientId", "firstName lastName fullName patientCode age gender phone bloodGroup")
-    .populate({
-       path: "doctorId",
-       select: "specialization title qualification registrationNumber",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("consultationId", "consultationCode");
 }
 
 export async function findPrescriptionByConsultation(consultationId, clinicId) {
   return Prescription.findOne({ consultationId, clinicId })
     .populate("patientId", "firstName lastName fullName patientCode age gender phone bloodGroup")
-    .populate({
-       path: "doctorId",
-       select: "specialization title qualification registrationNumber",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("consultationId", "consultationCode");
 }
 
@@ -38,11 +30,7 @@ export async function updatePrescriptionById(prescriptionId, clinicId, data, ses
     { $set: data },
     session ? { session, new: true } : { new: true }
   ).populate("patientId", "firstName lastName fullName patientCode age gender phone bloodGroup")
-   .populate({
-       path: "doctorId",
-       select: "specialization title qualification registrationNumber",
-       populate: { path: "userId", select: "name" }
-   })
+   .populate("doctorId", "name email phone")
    .populate("consultationId", "consultationCode");
 }
 
@@ -69,11 +57,7 @@ export async function findPrescriptionsByClinic(clinicId, query = {}) {
 
   return Prescription.find(filter)
     .populate("patientId", "firstName lastName fullName patientCode phone")
-    .populate({
-       path: "doctorId",
-       select: "specialization title",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("consultationId", "consultationCode")
     .sort({ createdAt: -1 });
 }

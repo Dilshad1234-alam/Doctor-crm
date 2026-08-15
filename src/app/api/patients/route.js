@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { createPatientSchema, patientListQuerySchema } from "@/backend/validations/patientValidation";
-import { createPatientForClinic, getPatientsForClinic } from "@/backend/services/patientService";
+import { createPatientForClinic, getPatientsForClinic, getPatientsForDoctor } from "@/backend/services/patientService";
 
 import { hasPermission } from "@/backend/utils/permissions";
 
@@ -16,7 +16,12 @@ export async function GET(request) {
     const queryParams = Object.fromEntries(searchParams.entries());
     
     const parsedQuery = patientListQuerySchema.parse(queryParams);
-    const data = await getPatientsForClinic(authUser, parsedQuery);
+    let data;
+    if (authUser.role === "doctor") {
+      data = await getPatientsForDoctor(authUser, parsedQuery);
+    } else {
+      data = await getPatientsForClinic(authUser, parsedQuery);
+    }
 
     return NextResponse.json({ success: true, ...data }, { status: 200 });
   } catch (error) {

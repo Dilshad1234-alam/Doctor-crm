@@ -217,12 +217,15 @@ export async function getMyPrescriptions(authUser, query) {
 export async function getPrescriptions(authUser, query) {
   await connectDB();
   
-  // Non-doctors only see finalized prescriptions
-  if (authUser.role !== "doctor") {
+  if (authUser.role === "patient") {
+    query.patientId = authUser.patientId;
     query.status = "finalized";
-  } else {
+  } else if (authUser.role === "doctor") {
     // Doctors only see their own prescriptions in the main list
     query.doctorId = authUser.doctorId;
+  } else {
+    // Non-doctors (like receptionist) only see finalized prescriptions
+    query.status = "finalized";
   }
   
   return findPrescriptionsByClinic(authUser.clinicId, query);

@@ -1,4 +1,5 @@
 import DoctorProfile from "@/backend/models/DoctorProfile";
+import Doctor from "@/backend/models/Doctor";
 import mongoose from "mongoose";
 
 export async function createDoctorProfile(data, session = null) {
@@ -9,13 +10,13 @@ export async function createDoctorProfile(data, session = null) {
 
 export async function findDoctorById(doctorId, clinicId) {
   return DoctorProfile.findOne({
-    _id: doctorId,
+    doctorId: doctorId,
     clinicId,
-  }).populate("userId", "name email phone isActive role lastLoginAt");
+  }).populate("doctorId", "name email phone isActive lastLoginAt");
 }
 
-export async function findDoctorByUserId(userId) {
-  return DoctorProfile.findOne({ userId }).populate("userId", "name email phone isActive role");
+export async function findDoctorByDoctorId(doctorId) {
+  return DoctorProfile.findOne({ doctorId }).populate("doctorId", "name email phone isActive");
 }
 
 export async function findDoctorsByClinic(clinicId, query = {}) {
@@ -61,14 +62,12 @@ export async function findDoctorsByClinic(clinicId, query = {}) {
     ];
   }
 
-  // Build sort
   const sortOptions = {};
   sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
 
-  // Query
   let dbQuery = DoctorProfile.find(filter)
     .populate({
-      path: "userId",
+      path: "doctorId",
       select: "name email phone isActive",
       match: search ? {
         $or: [
@@ -84,25 +83,18 @@ export async function findDoctorsByClinic(clinicId, query = {}) {
 
   const rawDoctors = await dbQuery.exec();
 
-  // If search is provided, we need to filter out docs where userId didn't match (if we were relying on user fields for search)
-  // And recalculate total because populate match doesn't filter the parent document automatically in MongoDB
   let doctors = rawDoctors;
   if (search) {
     doctors = rawDoctors.filter(doc => {
-      // If it matched the profile-level $or, we keep it
       const matchesProfile = (
         (doc.employeeId && doc.employeeId.toLowerCase().includes(search.toLowerCase())) ||
         (doc.registrationNumber && doc.registrationNumber.toLowerCase().includes(search.toLowerCase())) ||
         (doc.qualification && doc.qualification.some(q => q.toLowerCase().includes(search.toLowerCase())))
       );
-      // Or if it matched the user-level populate
-      return matchesProfile || doc.userId !== null;
+      return matchesProfile || doc.doctorId !== null;
     });
   }
 
-  // Since filtering happens post-query if search is complex, pagination total is tricky.
-  // For production, aggregation pipeline is better for joining and searching across collections.
-  // Let's keep it simple for now, relying mostly on profile fields, or total count without full text search precision.
   const total = await DoctorProfile.countDocuments(filter);
 
   return {
@@ -115,10 +107,10 @@ export async function findDoctorsByClinic(clinicId, query = {}) {
 
 export async function updateDoctorById(doctorId, clinicId, data) {
   return DoctorProfile.findOneAndUpdate(
-    { _id: doctorId, clinicId },
+    { doctorId: doctorId, clinicId },
     { $set: data },
     { new: true, runValidators: true }
-  ).populate("userId", "name email phone isActive");
+  ).populate("doctorId", "name email phone isActive");
 }
 
 export async function countDoctorsByClinic(clinicId) {
@@ -130,7 +122,6 @@ export async function countActiveDoctorsByClinic(clinicId) {
 }
 
 export async function findDoctorByRegistrationNumber(registrationNumber) {
-  // Global check across all clinics to prevent reuse of registration numbers if required
   return DoctorProfile.findOne({ registrationNumber });
 }
 

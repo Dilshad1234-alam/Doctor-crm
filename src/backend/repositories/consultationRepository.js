@@ -12,25 +12,17 @@ export async function createConsultation(data, session = null) {
 export async function findConsultationById(consultationId, clinicId) {
   return Consultation.findOne({ _id: consultationId, clinicId })
     .populate("patientId", "firstName lastName fullName patientCode age gender phone bloodGroup")
-    .populate({
-       path: "doctorId",
-       select: "specialization title",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("appointmentId", "appointmentCode startTime endTime visitType status appointmentDate reason")
     .populate("createdByDoctorId", "specialization")
-    .populate("lastUpdatedByUserId", "name role")
+    .populate("lastUpdatedById", "name role")
     .populate("vitalsId");
 }
 
 export async function findConsultationByAppointment(appointmentId, clinicId) {
   return Consultation.findOne({ appointmentId, clinicId })
     .populate("patientId", "firstName lastName fullName patientCode age gender phone bloodGroup")
-    .populate({
-       path: "doctorId",
-       select: "specialization title",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("appointmentId", "appointmentCode startTime endTime visitType status appointmentDate reason")
     .populate("vitalsId");
 }
@@ -41,11 +33,7 @@ export async function updateConsultationById(consultationId, clinicId, updateDat
     { $set: updateData },
     session ? { session, new: true } : { new: true }
   ).populate("patientId", "firstName lastName fullName patientCode age gender phone")
-   .populate({
-       path: "doctorId",
-       select: "specialization title",
-       populate: { path: "userId", select: "name" }
-   });
+   .populate("doctorId", "name email phone");
 }
 
 export async function findConsultationsByClinic(clinicId, query = {}) {
@@ -72,11 +60,7 @@ export async function findConsultationsByClinic(clinicId, query = {}) {
 
   return Consultation.find(filter)
     .populate("patientId", "firstName lastName fullName patientCode phone")
-    .populate({
-       path: "doctorId",
-       select: "specialization title",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("appointmentId", "appointmentCode startTime endTime visitType status appointmentDate")
     .sort({ createdAt: -1 });
 }

@@ -11,7 +11,7 @@ const ownerNavigation = [
 ];
 
 const doctorNavigation = [
-  { label: "Dashboard", href: "/dashboard" },
+  { label: "Dashboard", href: "/dashboard/doctor" },
   { label: "Appointments", href: "/dashboard/appointments" },
   { label: "Patients", href: "/dashboard/patients" },
   { label: "Queue", href: "/dashboard/queue" },
@@ -54,12 +54,27 @@ const accountantNavigation = [
   { label: "Reports", href: "/dashboard/reports" },
 ];
 
+const adminNavigation = [
+  { label: "Dashboard", href: "/dashboard/admin" },
+  { label: "Clinics", href: "/dashboard/admin/clinics" },
+  { label: "Doctors", href: "/dashboard/admin/doctors" },
+  { label: "Patients", href: "/dashboard/admin/patients" },
+  { label: "Staff", href: "/dashboard/admin/staff" },
+  { label: "Appointments", href: "/dashboard/admin/appointments" },
+  { label: "Subscriptions", href: "/dashboard/admin/subscriptions" },
+  { label: "Payments", href: "/dashboard/admin/payments" },
+  { label: "Reports", href: "/dashboard/admin/reports" },
+  { label: "Audit Logs", href: "/dashboard/admin/audit-logs" },
+  { label: "Settings", href: "/dashboard/admin/settings" },
+];
+
 export function getNavigationForRole(role) {
   if (role === "clinic_owner") return ownerNavigation;
   if (role === "doctor") return doctorNavigation;
   if (role === "receptionist") return receptionistNavigation;
   if (role === "assistant") return assistantNavigation;
   if (role === "accountant") return accountantNavigation;
+  if (role === "admin") return adminNavigation;
   if (role === "patient") return patientNavigation;
   return ownerNavigation;
 }

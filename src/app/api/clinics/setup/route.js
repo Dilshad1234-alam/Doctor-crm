@@ -20,9 +20,9 @@ export async function POST(request) {
     
     const decoded = verifyAuthToken(token);
     
-    if (!decoded || !decoded.userId) {
+    if (!decoded || !decoded.accountId || decoded.accountType !== "clinic") {
       return NextResponse.json(
-        { success: false, message: "Invalid or expired token" },
+        { success: false, message: "Invalid token or wrong account type" },
         { status: 401 }
       );
     }
@@ -31,7 +31,7 @@ export async function POST(request) {
     
     const validatedData = clinicSetupSchema.parse(body);
     
-    const { clinic, user, token: newToken } = await setupClinicForOwner(decoded.userId, validatedData);
+    const { clinic, user, token: newToken } = await setupClinicForOwner(decoded.accountId, validatedData);
     
     // Set the new token containing the clinicId
     await setAuthCookie(newToken);

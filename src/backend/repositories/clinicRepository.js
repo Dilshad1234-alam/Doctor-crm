@@ -1,5 +1,6 @@
 import { connectDB } from "@/backend/database/connectDB";
 import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
 
 export async function createClinic(data) {
   await connectDB();
@@ -8,9 +9,9 @@ export async function createClinic(data) {
   return clinic.toObject();
 }
 
-export async function findClinicByOwnerId(ownerId) {
+export async function findClinicProfile(clinicId) {
   await connectDB();
-  return Clinic.findOne({ ownerId }).lean().exec();
+  return ClinicProfile.findOne({ clinicId }).lean().exec();
 }
 
 export async function findClinicById(clinicId) {

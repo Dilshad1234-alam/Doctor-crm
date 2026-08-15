@@ -1,0 +1,49 @@
+import { NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
+import { connectDB } from "@/backend/database/connectDB";
+import Clinic from "@/backend/models/Clinic";
+import DoctorProfile from "@/backend/models/DoctorProfile";
+import PatientProfile from "@/backend/models/PatientProfile";
+import StaffProfile from "@/backend/models/StaffProfile";
+import Appointment from "@/backend/models/Appointment";
+
+export async function GET(request, { params }) {
+  try {
+    const user = await getAuthenticatedUser(request);
+    if (!user || user.role !== "admin") {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
+    }
+
+    const { id } = await params;
+
+    await connectDB();
+
+    const clinic = await Clinic.findById(id).populate("ownerId", "name email phone").lean();
+    if (!clinic) {
+      return NextResponse.json({ success: false, message: "Clinic not found" }, { status: 404 });
+    }
+
+    const [totalDoctors, totalPatients, totalStaff, totalAppointments] = await Promise.all([
+      DoctorProfile.countDocuments({ clinicId: id }),
+      PatientProfile.countDocuments({ clinicId: id }),
+      StaffProfile.countDocuments({ clinicId: id }),
+      Appointment.countDocuments({ clinicId: id })
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      clinic: {
+        ...clinic,
+        stats: {
+          totalDoctors,
+          totalPatients,
+          totalStaff,
+          totalAppointments
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Admin clinic details error:", error);
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}

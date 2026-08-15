@@ -9,12 +9,12 @@ const patientVitalsSchema = new mongoose.Schema(
     },
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Patient",
       required: true,
     },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "DoctorProfile",
+      ref: "Doctor",
       required: true,
     },
     appointmentId: {
@@ -48,9 +48,13 @@ const patientVitalsSchema = new mongoose.Schema(
 
     notes: { type: String, trim: true },
 
-    recordedByUserId: {
+    recordedById: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      required: true,
+    },
+    recordedByModel: {
+      type: String,
+      enum: ["Admin", "Clinic", "Doctor", "Patient"],
       required: true,
     },
     recordedAt: {

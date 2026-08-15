@@ -218,11 +218,12 @@ export const reportAnalyticsRepository = {
 
     // Fetch doctor profiles to get names
     const doctorIds = doctorStats.map(d => d._id).filter(Boolean);
-    const doctors = await DoctorProfile.find({ _id: { $in: doctorIds } }, "userId").populate("userId", "name");
+    const { default: Doctor } = await import("../models/Doctor.js");
+    const doctors = await Doctor.find({ _id: { $in: doctorIds } }, "name").lean();
 
     const doctorMap = {};
     doctors.forEach(doc => {
-      doctorMap[doc._id.toString()] = doc.userId?.name || "Unknown Doctor";
+      doctorMap[doc._id.toString()] = doc.name || "Unknown Doctor";
     });
 
     return doctorStats.map(stat => {

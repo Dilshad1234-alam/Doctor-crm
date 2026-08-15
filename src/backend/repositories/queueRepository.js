@@ -86,11 +86,7 @@ export async function findClinicQueue(clinicId, date, query = {}) {
 
   return QueueEntry.find(filter)
     .populate("patientId", "firstName lastName fullName phone patientIdString")
-    .populate("doctorId", "specialization")
-    .populate({
-       path: "doctorId",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("appointmentId", "appointmentCode startTime endTime visitType status")
     .sort({ tokenNumber: 1 });
 }

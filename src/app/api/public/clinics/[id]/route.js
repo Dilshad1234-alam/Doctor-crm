@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/backend/database/connectDB";
-import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
 import ClinicSettings from "@/backend/models/ClinicSettings";
 import DoctorProfile from "@/backend/models/DoctorProfile";
-import User from "@/backend/models/User";
+import Doctor from "@/backend/models/Doctor";
 
 function slugify(text) {
   if (!text) return "";
@@ -22,39 +22,64 @@ export async function GET(request, { params }) {
     const unwrappedParams = await params;
     const id = unwrappedParams.id || unwrappedParams.slug;
 
-    let clinic = null;
+    let clinicProfile = null;
     const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
     if (isObjectId) {
-      clinic = await Clinic.findOne({ _id: id, isPublic: true, isActive: true }).lean();
+      clinicProfile = await ClinicProfile.findOne({ clinicId: id, isPublic: true }).populate("clinicId", "name email phone isActive").lean();
     }
-    if (!clinic) {
-      clinic = await Clinic.findOne({ slug: id, isPublic: true, isActive: true }).lean();
+    if (!clinicProfile) {
+      clinicProfile = await ClinicProfile.findOne({ slug: id, isPublic: true }).populate("clinicId", "name email phone isActive").lean();
     }
-    if (!clinic) {
-      const allPublicClinics = await Clinic.find({ isPublic: true, isActive: true }).lean();
-      clinic = allPublicClinics.find(c => slugify(c.name) === id.toLowerCase() || (c.slug && c.slug.toLowerCase() === id.toLowerCase()));
+    
+    // If not found by slug directly, try to search all public clinics (slow path fallback)
+    if (!clinicProfile) {
+      const allPublic = await ClinicProfile.find({ isPublic: true }).populate("clinicId", "name email phone isActive").lean();
+      clinicProfile = allPublic.find(p => p.clinicId?.name && slugify(p.clinicId.name) === id.toLowerCase());
     }
 
-    if (!clinic) {
+    if (!clinicProfile || !clinicProfile.clinicId || !clinicProfile.clinicId.isActive) {
       return NextResponse.json({ success: false, error: "Clinic not found or not public" }, { status: 404 });
     }
 
+    // Flatten clinic data for frontend compatibility
+    const clinic = {
+      _id: clinicProfile.clinicId._id,
+      name: clinicProfile.clinicId.name,
+      email: clinicProfile.clinicId.email,
+      phone: clinicProfile.clinicId.phone,
+      slug: clinicProfile.slug || slugify(clinicProfile.clinicId.name),
+      logo: clinicProfile.logo,
+      logoUrl: clinicProfile.logoUrl,
+      coverImage: clinicProfile.coverImage,
+      coverImageUrl: clinicProfile.coverImageUrl,
+      address: clinicProfile.address,
+      specialties: clinicProfile.specialties,
+      facilities: clinicProfile.facilities,
+      about: clinicProfile.about,
+      consultationDuration: clinicProfile.consultationDuration,
+      openingTime: clinicProfile.openingTime,
+      closingTime: clinicProfile.closingTime
+    };
+
     const settings = await ClinicSettings.findOne({ clinicId: clinic._id }).lean();
     
-    const doctorProfiles = await DoctorProfile.find({ clinicId: clinic._id, isPublic: true, isActive: true }).lean();
+    const doctorProfiles = await DoctorProfile.find({ clinicId: clinic._id, isActive: true }).lean();
     
     // Attach user names to doctors
-    const doctorUserIds = doctorProfiles.map(d => d.userId);
-    const users = await User.find({ _id: { $in: doctorUserIds } }).select("name email").lean();
-    const userMap = users.reduce((acc, user) => {
-      acc[user._id.toString()] = user;
+    const doctorIds = doctorProfiles.map(d => d.doctorId);
+    const doctorsAcc = await Doctor.find({ _id: { $in: doctorIds }, isActive: true }).select("name email phone").lean();
+    const docMap = doctorsAcc.reduce((acc, doc) => {
+      acc[doc._id.toString()] = doc;
       return acc;
     }, {});
 
-    const doctors = doctorProfiles.map(profile => ({
-      ...profile,
-      user: userMap[profile.userId.toString()]
-    }));
+    const doctors = doctorProfiles.filter(profile => docMap[profile.doctorId.toString()]).map(profile => {
+      const docData = docMap[profile.doctorId.toString()];
+      return {
+        ...profile,
+        user: docData // Frontend expects `user.name`, so map it to `user`
+      };
+    });
 
     return NextResponse.json({
       success: true,

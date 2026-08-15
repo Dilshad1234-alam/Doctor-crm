@@ -1,4 +1,4 @@
-import { createPatient, findPatientsByClinic, findPatientById, updatePatientById } from "../repositories/patientRepository.js";
+import { createPatient, findPatientsByClinic, findPatientById, updatePatientById, findPatientsByDoctor } from "../repositories/patientRepository.js";
 import { checkDuplicatePatient } from "./patientDuplicateService.js";
 import { logPatientHistoryEvent, detectMedicalProfileChanges } from "./patientHistoryService.js";
 import { generatePatientCode } from "../utils/generatePatientCode.js";
@@ -19,9 +19,9 @@ function generateFullName(firstName, lastName) {
   return [firstName, lastName].filter(Boolean).join(" ").trim();
 }
 
-function filterAllowedFields(input, role) {
+function filterAllowedFields(input, accountType) {
   const data = { ...input };
-  if (role === "receptionist" || role === "assistant") {
+  if (accountType === "receptionist" || accountType === "assistant") {
     // Receptionist/assistant cannot modify restricted medical fields
     MEDICAL_FIELDS.forEach(field => {
       delete data[field];
@@ -31,10 +31,10 @@ function filterAllowedFields(input, role) {
 }
 
 export async function createPatientForClinic(authUser, input) {
-  const { clinicId, id: userId, role } = authUser;
+  const { clinicId, id: userId, accountType } = authUser;
 
   // Filter based on role
-  const safeInput = filterAllowedFields(input, role);
+  const safeInput = filterAllowedFields(input, accountType);
 
   const duplicateCheck = await checkDuplicatePatient(clinicId, safeInput);
   if (duplicateCheck.isDuplicate) {
@@ -82,7 +82,7 @@ export async function createPatientForClinic(authUser, input) {
 }
 
 export async function updatePatientForClinic(authUser, patientId, input) {
-  const { clinicId, id: userId, role } = authUser;
+  const { clinicId, id: userId, accountType } = authUser;
 
   const existingPatient = await findPatientById(patientId, clinicId);
   if (!existingPatient) {
@@ -91,7 +91,7 @@ export async function updatePatientForClinic(authUser, patientId, input) {
     throw err;
   }
 
-  const safeInput = filterAllowedFields(input, role);
+  const safeInput = filterAllowedFields(input, accountType);
 
   const duplicateCheck = await checkDuplicatePatient(clinicId, { ...safeInput, excludeId: patientId });
   if (duplicateCheck.isDuplicate) {
@@ -148,6 +148,10 @@ export async function updatePatientForClinic(authUser, patientId, input) {
 
 export async function getPatientsForClinic(authUser, query) {
   return findPatientsByClinic(authUser.clinicId, query);
+}
+
+export async function getPatientsForDoctor(authUser, query) {
+  return findPatientsByDoctor(authUser.clinicId, authUser.doctorId, query);
 }
 
 export async function getPatientDetails(authUser, patientId) {

@@ -24,15 +24,6 @@ const userSchema = new mongoose.Schema(
       required: [true, "Password is required"],
       select: false, // Hidden by default
     },
-    role: {
-      type: String,
-      enum: ["unassigned", "clinic_owner", "doctor", "receptionist", "assistant", "accountant", "super_admin", "patient"],
-      default: "unassigned",
-    },
-    onboardingCompleted: {
-      type: Boolean,
-      default: false,
-    },
     isActive: {
       type: Boolean,
       default: true,

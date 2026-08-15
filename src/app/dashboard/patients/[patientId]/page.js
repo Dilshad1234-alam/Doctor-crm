@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
@@ -100,7 +100,6 @@ export default function PatientDetailsPage({ params }) {
     );
   }
 
-  return (
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header */}

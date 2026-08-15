@@ -19,7 +19,7 @@ const paymentSchema = new mongoose.Schema(
     },
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Patient",
       required: true,
     },
     appointmentId: {
@@ -51,10 +51,15 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    receivedByUserId: {
+    receivedById: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
       required: true,
+    },
+    receivedByModel: {
+      type: String,
+      enum: ["Admin", "Clinic"],
+      required: true,
+      default: "Clinic"
     },
     paidAt: {
       type: Date,

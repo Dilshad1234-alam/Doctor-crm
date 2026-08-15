@@ -200,6 +200,8 @@ export async function getAppointments(authUser, query) {
   const { clinicId, role } = authUser;
   if (role === "doctor") {
     query.doctorId = authUser.doctorId;
+  } else if (role === "patient") {
+    query.patientId = authUser.patientId;
   }
   return findAppointmentsByClinic(clinicId, query);
 }

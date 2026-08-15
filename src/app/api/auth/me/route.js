@@ -20,14 +20,14 @@ export async function GET(request) {
     const decoded = verifyAuthToken(token);
     console.log("Decoded token:", decoded);
     
-    if (!decoded || !decoded.userId) {
+    if (!decoded || !decoded.accountId || !decoded.accountType) {
       return NextResponse.json(
         { success: true, user: null, message: "Invalid or expired token" },
         { status: 200 }
       );
     }
     
-    const user = await fetchCurrentUser(decoded.userId);
+    const user = await fetchCurrentUser(decoded.accountId, decoded.accountType);
     console.log("Found user:", user ? "Exists" : "Null");
     
     if (!user) {

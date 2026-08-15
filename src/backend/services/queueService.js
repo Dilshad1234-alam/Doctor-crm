@@ -14,7 +14,7 @@ import Counter from "../models/Counter.js";
 import { APPOINTMENT_STATUSES } from "../utils/appointmentStatus.js";
 import { startConsultation } from "./consultationService.js";
 import { 
-  requireRole, 
+  requireAccountType, 
   canCheckInPatient, 
   canViewClinicQueue, 
   canViewDoctorQueue,
@@ -35,7 +35,7 @@ async function generateTokenNumber(clinicId, doctorId, dateStr, session) {
 }
 
 export async function checkInAppointment(authUser, appointmentId, input) {
-  requireRole(authUser, ["clinic_owner", "receptionist", "doctor"]);
+  requireAccountType(authUser, ["clinic", "doctor"]);
   await connectDB();
 
   const appointment = await findAppointmentById(appointmentId, authUser.clinicId);
@@ -113,7 +113,7 @@ export async function checkInAppointment(authUser, appointmentId, input) {
 }
 
 export async function getClinicQueue(authUser, query) {
-  requireRole(authUser, ["clinic_owner", "receptionist"]);
+  requireAccountType(authUser, ["clinic"]);
   if (!canViewClinicQueue(authUser)) throw new Error("Unauthorized to view clinic queue");
   
   await connectDB();
@@ -131,7 +131,7 @@ export async function getClinicQueue(authUser, query) {
 }
 
 export async function getDoctorQueue(authUser, doctorId, query) {
-  requireRole(authUser, ["clinic_owner", "receptionist", "doctor"]);
+  requireAccountType(authUser, ["clinic", "doctor"]);
   if (!canViewDoctorQueue(authUser, doctorId)) throw new Error("Unauthorized to view this doctor's queue");
 
   await connectDB();
@@ -150,7 +150,7 @@ export async function getDoctorQueue(authUser, doctorId, query) {
 }
 
 export async function callNextPatient(authUser) {
-  requireRole(authUser, ["doctor"]);
+  requireAccountType(authUser, ["doctor"]);
   await connectDB();
   
   const doctorId = authUser.doctorId;

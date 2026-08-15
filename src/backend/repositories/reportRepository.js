@@ -14,18 +14,10 @@ export async function createReport(data, session = null) {
 export async function findReportById(reportId, clinicId) {
   return MedicalReport.findOne({ _id: reportId, clinicId })
     .populate("patientId", "firstName lastName fullName patientCode age gender phone")
-    .populate({
-       path: "doctorId",
-       select: "specialization title qualification",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("recommendedTestId", "testCode name status category")
-    .populate("uploadedByUserId", "name role")
-    .populate({
-       path: "reviewedByDoctorId",
-       select: "specialization title",
-       populate: { path: "userId", select: "name" }
-    });
+    .populate("uploadedById", "name role")
+    .populate("reviewedByDoctorId", "name email phone");
 }
 
 export async function findReportsByClinic(clinicId, query = {}) {
@@ -55,13 +47,9 @@ export async function findReportsByClinic(clinicId, query = {}) {
 
   return MedicalReport.find(filter)
     .populate("patientId", "firstName lastName fullName patientCode")
-    .populate({
-       path: "doctorId",
-       select: "specialization title",
-       populate: { path: "userId", select: "name" }
-    })
+    .populate("doctorId", "name email phone")
     .populate("recommendedTestId", "name status")
-    .populate("uploadedByUserId", "name role")
+    .populate("uploadedById", "name role")
     .sort({ uploadedAt: -1 });
 }
 

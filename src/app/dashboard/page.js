@@ -1,11 +1,19 @@
-﻿"use client";
+"use client";
 
 import { useAuth } from "@/frontend/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import OwnerDashboard from "@/frontend/components/dashboard/OwnerDashboard";
-import DoctorDashboard from "@/frontend/components/dashboard/DoctorDashboard";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user && user.role === "doctor") {
+      router.push("/dashboard/doctor");
+    }
+  }, [user, router]);
 
   if (!user) {
     return <div className="p-12 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>;
@@ -16,7 +24,7 @@ export default function DashboardPage() {
   }
 
   if (user.role === "doctor") {
-    return <DoctorDashboard />;
+    return null; // Render nothing while redirecting
   }
 
   // Fallback for other roles (receptionist, assistant) - could be expanded later

@@ -6,6 +6,7 @@ const clinicSettingsSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Clinic",
       required: true,
+      unique: true,
     },
     workingHours: [
       {
@@ -53,8 +54,5 @@ const clinicSettingsSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Ensure index on clinicId
-clinicSettingsSchema.index({ clinicId: 1 }, { unique: true });
 
 export default mongoose.models.ClinicSettings || mongoose.model("ClinicSettings", clinicSettingsSchema);

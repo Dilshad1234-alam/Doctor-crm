@@ -12,15 +12,7 @@ export async function createStaffProfile(data, session = null) {
 
 export async function findStaffById(staffId, clinicId) {
   await connectDB();
-  return StaffProfile.findOne({ _id: staffId, clinicId })
-    .populate("userId", "name email phone isActive lastLoginAt")
-    .lean()
-    .exec();
-}
-
-export async function findStaffByUserId(userId, clinicId) {
-  await connectDB();
-  return StaffProfile.findOne({ userId, clinicId }).lean().exec();
+  return StaffProfile.findOne({ _id: staffId, clinicId }).lean().exec();
 }
 
 export async function getStaffList(clinicId, query = {}) {
@@ -32,15 +24,16 @@ export async function getStaffList(clinicId, query = {}) {
   
   if (query.search) {
     const searchRegex = new RegExp(query.search, "i");
-    // We will need to do a lookup or just filter by staffCode/phone for now
     filter.$or = [
+      { name: searchRegex },
+      { email: searchRegex },
+      { phone: searchRegex },
       { staffCode: searchRegex },
       { employeeId: searchRegex }
     ];
   }
 
   return StaffProfile.find(filter)
-    .populate("userId", "name email phone isActive lastLoginAt")
     .sort({ createdAt: -1 })
     .lean()
     .exec();

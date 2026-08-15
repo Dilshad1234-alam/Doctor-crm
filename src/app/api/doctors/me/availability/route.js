@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { updateOwnDoctorAvailability } from "@/backend/services/doctorService";
 import { doctorAvailabilitySchema } from "@/backend/validations/doctorValidation";
-import { ROLES } from "@/backend/utils/permissions";
+import { ACCOUNT_TYPES } from "@/backend/utils/permissions";
 import { z } from "zod";
 
 const inputSchema = z.object({
@@ -12,7 +12,7 @@ const inputSchema = z.object({
 export async function PATCH(request) {
   try {
     const authUser = await getAuthenticatedUser();
-    if (!authUser || authUser.role !== ROLES.DOCTOR || !authUser.doctorId) {
+    if (!authUser || authUser.accountType !== ACCOUNT_TYPES.DOCTOR || !authUser.doctorId) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 

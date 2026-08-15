@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { loginUser } from "@/frontend/services/authApi";
 import { useAuth } from "@/frontend/context/AuthContext";
-import { ROLES } from "@/backend/utils/permissions";
+import { ACCOUNT_TYPES } from "@/backend/utils/permissions";
 import {
   Mail, Lock, Eye, EyeOff, ArrowRight, Activity,
   ShieldCheck, CheckCircle2, Calendar, Stethoscope, Users
@@ -84,16 +84,20 @@ export default function LoginPage() {
       setTimeout(() => {
         if (callbackUrl) {
           router.push(callbackUrl);
-        } else if (user.role === "unassigned") {
+        } else if (user.accountType === "unassigned") {
           router.push("/onboarding/select-role");
-        } else if (user.role === ROLES.CLINIC_OWNER && !user.onboardingCompleted) {
+        } else if (user.accountType === ACCOUNT_TYPES.CLINIC && !user.onboardingCompleted) {
           router.push("/onboarding/clinic");
-        } else if (user.role === "doctor" && !user.onboardingCompleted) {
+        } else if (user.accountType === "doctor" && !user.onboardingCompleted) {
           router.push("/onboarding/doctor");
-        } else if (user.role === "patient" && !user.onboardingCompleted) {
+        } else if (user.accountType === "patient" && !user.onboardingCompleted) {
           router.push("/onboarding/patient");
-        } else if (user.role === "patient" && user.onboardingCompleted) {
+        } else if (user.accountType === "patient" && user.onboardingCompleted) {
           router.push("/patient/dashboard");
+        } else if (user.accountType === "admin") {
+          router.push("/dashboard/admin");
+        } else if (user.accountType === "doctor" && user.onboardingCompleted) {
+          router.push("/dashboard/doctor");
         } else {
           router.push("/dashboard");
         }

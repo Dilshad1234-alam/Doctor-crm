@@ -52,9 +52,9 @@ const doctorProfileSchema = new mongoose.Schema(
       ref: "Clinic",
       required: true,
     },
-    userId: {
+    doctorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Doctor",
       required: true,
     },
     employeeId: {
@@ -220,7 +220,6 @@ const doctorProfileSchema = new mongoose.Schema(
     createdByUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     lastUpdatedByUserId: {
       type: mongoose.Schema.Types.ObjectId,

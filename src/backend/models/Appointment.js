@@ -18,12 +18,12 @@ const appointmentSchema = new mongoose.Schema(
     },
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Patient",
       required: true,
     },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "DoctorProfile",
+      ref: "Doctor",
       required: true,
     },
     appointmentDate: {
@@ -86,7 +86,8 @@ const appointmentSchema = new mongoose.Schema(
     },
     cancellation: {
       reason: { type: String, trim: true },
-      cancelledByUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      cancelledById: { type: mongoose.Schema.Types.ObjectId },
+      cancelledByModel: { type: String, enum: ["Admin", "Clinic", "Doctor", "Patient"] },
       cancelledAt: { type: Date },
     },
     rescheduleHistory: [
@@ -94,18 +95,25 @@ const appointmentSchema = new mongoose.Schema(
         previousDate: { type: Date, required: true },
         previousStartTime: { type: String, required: true },
         previousEndTime: { type: String, required: true },
-        changedByUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        changedById: { type: mongoose.Schema.Types.ObjectId, required: true },
+        changedByModel: { type: String, enum: ["Admin", "Clinic", "Doctor", "Patient"] },
         changedAt: { type: Date, default: Date.now },
       },
     ],
-    createdByUserId: {
+    createdById: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
       required: true,
     },
-    lastUpdatedByUserId: {
+    createdByModel: {
+      type: String,
+      enum: ["Admin", "Clinic", "Doctor", "Patient"],
+    },
+    lastUpdatedById: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    },
+    lastUpdatedByModel: {
+      type: String,
+      enum: ["Admin", "Clinic", "Doctor", "Patient"],
     },
   },
   {

@@ -8,13 +8,13 @@ export async function createVitals(data, session = null) {
 
 export async function findVitalsByAppointment(appointmentId, clinicId) {
   return PatientVitals.findOne({ appointmentId, clinicId })
-    .populate("recordedByUserId", "name role")
+    .populate("recordedById", "name email phone")
     .lean();
 }
 
 export async function findVitalsById(vitalsId, clinicId) {
   return PatientVitals.findOne({ _id: vitalsId, clinicId })
-    .populate("recordedByUserId", "name role")
+    .populate("recordedById", "name email phone")
     .lean();
 }
 
@@ -23,7 +23,7 @@ export async function updateVitalsByAppointment(appointmentId, clinicId, data, s
     { appointmentId, clinicId },
     { $set: data },
     session ? { new: true, session } : { new: true }
-  ).populate("recordedByUserId", "name role");
+  ).populate("recordedById", "name email phone");
 }
 
 export async function findPatientVitalsHistory(patientId, clinicId, query = {}) {
@@ -47,7 +47,7 @@ export async function findPatientVitalsHistory(patientId, clinicId, query = {}) 
       .sort({ recordedAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("recordedByUserId", "name role")
+      .populate("recordedById", "name email phone")
       .lean(),
     PatientVitals.countDocuments(filter)
   ]);

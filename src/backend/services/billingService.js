@@ -196,6 +196,8 @@ export async function getInvoices(authUser, query = {}) {
 
   if (authUser.role === "doctor") {
     query.doctorId = authUser.doctorId;
+  } else if (authUser.role === "patient") {
+    query.patientId = authUser.patientId;
   }
 
   const invoices = await findInvoicesByClinic(authUser.clinicId, query);

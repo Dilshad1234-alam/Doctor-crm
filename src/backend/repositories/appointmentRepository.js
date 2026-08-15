@@ -13,8 +13,8 @@ export async function findAppointmentById(appointmentId, clinicId) {
   return Appointment.findOne({ _id: appointmentId, clinicId })
     .populate("patientId", "firstName lastName fullName patientCode phone age gender")
     .populate("doctorId", "specialization title employeeId")
-    .populate({ path: 'doctorId', populate: { path: 'userId', select: 'name' }}) // Get doctor name from User
-    .populate("createdByUserId", "name role");
+    .populate("doctorId", "name email phone")
+    .populate("createdById", "name role");
 }
 
 export async function findAppointmentByCode(appointmentCode, clinicId) {
@@ -60,7 +60,7 @@ export async function findAppointmentsByClinic(clinicId, query = {}) {
       .skip(skip)
       .limit(limit)
       .populate("patientId", "fullName patientCode phone gender")
-      .populate({ path: "doctorId", select: "specialization title", populate: { path: "userId", select: "name" } })
+      .populate("doctorId", "name email phone")
       .lean(),
     Appointment.countDocuments(filter)
   ]);
