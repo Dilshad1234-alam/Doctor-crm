@@ -37,5 +37,16 @@ export async function connectDB() {
   }
 
   cached.connection = await cached.promise;
+  
+  // Quick fix: Drop stale index from patients collection
+  try {
+    const db = cached.connection.connection.db;
+    const patientsCollection = db.collection("patients");
+    await patientsCollection.dropIndex("clinicId_1_patientCode_1");
+    console.log("Dropped stale index clinicId_1_patientCode_1");
+  } catch (err) {
+    // Ignore if index doesn't exist
+  }
+  
   return cached.connection;
 }

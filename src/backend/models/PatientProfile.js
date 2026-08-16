@@ -63,7 +63,7 @@ const patientProfileSchema = new mongoose.Schema(
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Clinic",
-      required: true,
+      required: false, // Legacy field, keeping for compatibility but making optional
     },
   },
   {

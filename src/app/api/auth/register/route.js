@@ -13,12 +13,23 @@ export async function POST(request) {
     const validatedData = registerSchema.parse(body);
     
     // Process registration
-    const { user } = await registerUser(validatedData);
+    const { user, token } = await registerUser(validatedData);
     
-    return NextResponse.json(
+    const response = NextResponse.json(
       { success: true, message: "Account created successfully", user },
       { status: 201 }
     );
+
+    // Set cookie
+    response.cookies.set("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     if (error?.name === "ZodError") {
       return NextResponse.json(

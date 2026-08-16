@@ -13,8 +13,11 @@ async function logAudit(clinicId, userId, action, resourceId, details) {
 }
 
 export async function createAppointmentForClinic(authUser, input) {
-  const { clinicId, id: userId, role } = authUser;
+  const { id: userId, role } = authUser;
   const { patientId, doctorId, appointmentDate, startTime, visitType, reason, notes } = input;
+  const clinicId = authUser.clinicId || input.clinicId;
+  
+  if (!clinicId) throw Object.assign(new Error("Clinic ID is required"), { status: 400 });
 
   // 1. Verify Patient & Doctor
   const patient = await findPatientById(patientId, clinicId);

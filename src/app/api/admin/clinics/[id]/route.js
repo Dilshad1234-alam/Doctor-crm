@@ -18,9 +18,20 @@ export async function GET(request, { params }) {
 
     await connectDB();
 
-    const clinic = await Clinic.findById(id).populate("ownerId", "name email phone").lean();
+    const clinic = await Clinic.findById(id).lean();
     if (!clinic) {
       return NextResponse.json({ success: false, message: "Clinic not found" }, { status: 404 });
+    }
+
+    const { default: ClinicProfile } = await import("@/backend/models/ClinicProfile");
+    const profile = await ClinicProfile.findOne({ clinicId: id }).lean();
+
+    clinic.ownerId = { name: clinic.name, email: clinic.email, phone: clinic.phone };
+    if (profile) {
+      clinic.address = profile.address;
+      clinic.status = profile.status;
+      clinic.logoUrl = profile.logoUrl;
+      clinic.about = profile.about;
     }
 
     const [totalDoctors, totalPatients, totalStaff, totalAppointments] = await Promise.all([

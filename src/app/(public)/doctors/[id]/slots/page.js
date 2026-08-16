@@ -63,6 +63,8 @@ export default function DoctorSlotsPage() {
           setDoctor({
             id: params.id,
             fee: result.data.doctor.fee || 500,
+            name: result.data.doctor.name,
+            image: result.data.doctor.image,
           });
         }
       } catch (err) {
@@ -103,11 +105,15 @@ export default function DoctorSlotsPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl p-6 border border-[#E2E8F0] shadow-sm sticky top-28 space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-[#ECFDF5] text-[#10B981] flex items-center justify-center text-xl font-black">
-                  <User className="w-8 h-8" />
+                <div className="w-16 h-16 rounded-2xl overflow-hidden bg-[#ECFDF5] text-[#10B981] flex items-center justify-center text-xl font-black shrink-0 border border-[#E2E8F0]">
+                  {doctor?.image ? (
+                    <img src={doctor.image} alt={doctor?.name || "Doctor"} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-8 h-8" />
+                  )}
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#0F172A] text-lg">Doctor Profile</h3>
+                  <h3 className="font-bold text-[#0F172A] text-lg">{doctor?.name || "Doctor Profile"}</h3>
                   <p className="text-xs text-[#10B981] font-bold">Verified Specialist</p>
                 </div>
               </div>

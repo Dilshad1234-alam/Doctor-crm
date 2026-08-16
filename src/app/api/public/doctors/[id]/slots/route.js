@@ -34,6 +34,11 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, error: "Doctor not found" }, { status: 404 });
     }
 
+    // Import the Doctor model locally to avoid circular dependency if any, or just use the imported one.
+    const mongoose = require("mongoose");
+    const Doctor = mongoose.models.Doctor || mongoose.model("Doctor");
+    const doctorUser = await Doctor.findById(doctor.doctorId).select("name").lean();
+
     if (!doctor.isAvailable) {
       return NextResponse.json({ success: true, data: { slots: [], message: "Doctor is currently unavailable" } });
     }
@@ -115,7 +120,9 @@ export async function GET(request, { params }) {
         doctor: {
           fee: doctor.consultationFee,
           maxPatients: doctor.maxPatientsPerDay,
-          bookedCount: existingAppointments.length
+          bookedCount: existingAppointments.length,
+          name: doctorUser?.name || "Doctor",
+          image: doctor.profileImageUrl || doctor.profileImage || null
         }
       },
     });

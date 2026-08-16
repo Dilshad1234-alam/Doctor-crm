@@ -82,9 +82,7 @@ export default function LoginPage() {
       setToast({ message: "Login successful! Redirecting…", type: "success" });
 
       setTimeout(() => {
-        if (callbackUrl) {
-          router.push(callbackUrl);
-        } else if (user.accountType === "unassigned") {
+        if (user.accountType === "unassigned") {
           router.push("/onboarding/select-role");
         } else if (user.accountType === ACCOUNT_TYPES.CLINIC && !user.onboardingCompleted) {
           router.push("/onboarding/clinic");
@@ -92,6 +90,8 @@ export default function LoginPage() {
           router.push("/onboarding/doctor");
         } else if (user.accountType === "patient" && !user.onboardingCompleted) {
           router.push("/onboarding/patient");
+        } else if (callbackUrl) {
+          router.push(callbackUrl);
         } else if (user.accountType === "patient" && user.onboardingCompleted) {
           router.push("/patient/dashboard");
         } else if (user.accountType === "admin") {

@@ -75,6 +75,16 @@ export async function POST(request) {
 
     await PatientProfile.create(profileData);
 
+    // If clinicId is provided, associate patient with the clinic
+    if (body.clinicId) {
+      const { default: PatientClinic } = await import("@/backend/models/PatientClinic");
+      await PatientClinic.findOneAndUpdate(
+        { patientId: dbPatient._id, clinicId: body.clinicId },
+        { $setOnInsert: { status: "active", firstVisitAt: new Date(), lastVisitAt: new Date() } },
+        { upsert: true, new: true }
+      );
+    }
+
     // Update base Patient info
     await Patient.updateOne(
       { _id: dbPatient._id },

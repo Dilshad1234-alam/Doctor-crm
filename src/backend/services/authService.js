@@ -27,18 +27,27 @@ async function enrichUserData(baseUser, accountType) {
       enriched.doctorId = baseUser.id;
       enriched.clinicId = profile.clinicId;
       enriched.profileImageUrl = profile.profileImageUrl || profile.profileImage;
+      enriched.onboardingCompleted = true;
+    } else {
+      enriched.onboardingCompleted = false;
     }
   } else if (accountType === "clinic") {
     const profile = await ClinicProfile.findOne({ clinicId: baseUser.id }).lean();
     if (profile) {
       enriched.clinicId = baseUser.id;
       enriched.profileImageUrl = profile.logoUrl || profile.logo;
+      enriched.onboardingCompleted = true;
+    } else {
+      enriched.onboardingCompleted = false;
     }
   } else if (accountType === "patient") {
     const profile = await PatientProfile.findOne({ patientId: baseUser.id }).lean();
     if (profile) {
       enriched.patientId = baseUser.id;
       enriched.profileImageUrl = profile.profileImageUrl || profile.profileImage;
+      enriched.onboardingCompleted = true;
+    } else {
+      enriched.onboardingCompleted = false;
     }
   }
 

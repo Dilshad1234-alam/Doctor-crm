@@ -12,6 +12,7 @@ export const createAppointmentSchema = z.object({
   visitType: z.enum(["new_consultation", "follow_up", "regular_checkup", "emergency", "online_consultation"]).default("new_consultation"),
   reason: z.string().optional(),
   notes: z.string().optional(),
+  clinicId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid clinic ID").optional(),
 });
 
 export const rescheduleAppointmentSchema = z.object({

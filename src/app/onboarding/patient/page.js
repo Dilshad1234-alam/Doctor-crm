@@ -662,6 +662,7 @@ export default function PatientOnboardingPage() {
           currentMedicines:      parse(data.currentMedicines),
           emergencyContactName:  data.emergencyContactName,
           emergencyContactPhone: data.emergencyContactPhone,
+          clinicId: typeof window !== "undefined" ? localStorage.getItem("selectedClinicId") : undefined,
         }),
       });
 

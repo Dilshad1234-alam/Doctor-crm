@@ -90,8 +90,8 @@ export default function ClinicDetailPage() {
         <div className="bg-[#FFFFFF] rounded-3xl shadow-lg border border-[#E2E8F0] p-6 md:p-8 mb-8">
           <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
             
-            <div className="-mt-20 shrink-0 relative">
-              <div className="relative z-10 w-40 h-40 rounded-2xl shadow-xl bg-white border-4 border-[#FFFFFF] flex items-center justify-center overflow-hidden">
+            <div className="-mt-[104px] md:-mt-28 -ml-6 md:-ml-8 shrink-0 relative lg:self-start">
+              <div className="relative z-10 w-40 h-40 rounded-full shadow-xl bg-white border-4 border-[#FFFFFF] flex items-center justify-center overflow-hidden">
                 {(clinic.logoUrl || clinic.logo) ? (
                   <img src={clinic.logoUrl || clinic.logo} alt={clinic.name} className="w-full h-full object-cover" />
                 ) : (
@@ -132,7 +132,19 @@ export default function ClinicDetailPage() {
                   <button className="flex items-center justify-center w-12 h-12 rounded-xl border border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC] transition-colors shrink-0">
                     <Share2 className="w-5 h-5" />
                   </button>
-                  <button onClick={() => window.scrollTo({top: 800, behavior: 'smooth'})} className="flex-1 lg:flex-none px-8 py-3.5 rounded-xl bg-[#10B981] text-white font-bold shadow-md hover:bg-[#047857] transition-all">
+                  <button onClick={() => {
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem("selectedClinicId", clinic._id);
+                    }
+                    if (!user) {
+                      router.push("/login");
+                    } else if (user.accountType === "patient") {
+                      router.push("/patient/dashboard");
+                    } else {
+                      // If admin/doctor/clinic, maybe just scroll down or alert
+                      window.scrollTo({top: 800, behavior: 'smooth'});
+                    }
+                  }} className="flex-1 lg:flex-none px-8 py-3.5 rounded-xl bg-[#10B981] text-white font-bold shadow-md hover:bg-[#047857] transition-all">
                     Book Appointment
                   </button>
                 </div>

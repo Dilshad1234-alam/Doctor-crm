@@ -34,7 +34,17 @@ export default function PatientBookAppointmentPage() {
     if (step === 1 && doctors.length === 0) {
       const fetchDocs = async () => {
         try {
-          const res = await fetch("/api/doctors");
+          const searchParams = new URLSearchParams(window.location.search);
+          const urlClinicId = searchParams.get('clinicId');
+          const localClinicId = typeof window !== "undefined" ? localStorage.getItem("selectedClinicId") : null;
+          const clinicId = urlClinicId || localClinicId;
+
+          let url = "/api/doctors";
+          if (clinicId) {
+            url += `?clinicId=${clinicId}`;
+          }
+
+          const res = await fetch(url);
           const data = await res.json();
           if (data.success) {
             setDoctors(data.doctors || []);
@@ -128,7 +138,8 @@ export default function PatientBookAppointmentPage() {
         startTime: selectedSlot.startTime,
         visitType,
         reason,
-        notes
+        notes,
+        clinicId: new URLSearchParams(window.location.search).get('clinicId') || (typeof window !== "undefined" ? localStorage.getItem("selectedClinicId") : null)
       };
 
       const res = await createAppointment(payload);

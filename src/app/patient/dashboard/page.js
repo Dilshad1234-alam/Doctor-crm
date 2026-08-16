@@ -21,6 +21,7 @@ import {
   XCircle,
   AlertCircle,
   Sparkles,
+  UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/frontend/context/AuthContext";
 import { getAppointments } from "@/frontend/services/appointmentApi";
@@ -36,6 +37,8 @@ export default function PatientDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [upcomingVisit, setUpcomingVisit] = useState(null);
   const [recentActivity, setRecentActivity] = useState([]);
+  const [selectedClinic, setSelectedClinic] = useState(null);
+  const [clinicDoctors, setClinicDoctors] = useState([]);
 
   useEffect(() => {
     if (user) {
@@ -73,6 +76,23 @@ export default function PatientDashboardPage() {
         reports: 0,
         pendingBills: 0,
       });
+
+      if (typeof window !== "undefined") {
+        const selectedClinicId = localStorage.getItem("selectedClinicId");
+        if (selectedClinicId) {
+          try {
+            const clinicRes = await fetch(`/api/public/clinics/${selectedClinicId}`);
+            const clinicData = await clinicRes.json();
+            if (clinicData.success) {
+              setSelectedClinic(clinicData.data.clinic);
+              setClinicDoctors(clinicData.data.doctors || []);
+            }
+          } catch (err) {
+            console.error("Failed to fetch selected clinic", err);
+          }
+        }
+      }
+
     } catch (error) {
       console.error("Failed to load patient data", error);
     } finally {
@@ -480,8 +500,82 @@ export default function PatientDashboardPage() {
             )}
           </div>
         </div>
-
       </div>
+
+      {/* Selected Clinic Section */}
+      {selectedClinic && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mt-6">
+          <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-50 bg-gradient-to-r from-emerald-50 to-white">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center">
+                <Stethoscope className="w-4 h-4 text-emerald-600" />
+              </div>
+              <h2 className="font-bold text-slate-800 text-[15px]">My Selected Clinic</h2>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="flex flex-col md:flex-row gap-6 mb-8">
+              <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 bg-gray-100 border border-gray-200">
+                {(selectedClinic.logoUrl || selectedClinic.logo) ? (
+                  <img src={selectedClinic.logoUrl || selectedClinic.logo} alt={selectedClinic.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Stethoscope className="w-8 h-8 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-slate-800">{selectedClinic.name}</h3>
+                <p className="text-sm text-slate-500 font-medium mb-3">
+                  {selectedClinic.address?.line1}, {selectedClinic.address?.city}
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {selectedClinic.specialties?.slice(0, 3).map((spec, i) => (
+                    <span key={i} className="text-[10px] font-bold px-2 py-1 bg-gray-100 text-gray-600 rounded-md">
+                      {spec}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <h4 className="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Available Doctors</h4>
+            {clinicDoctors.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {clinicDoctors.map((doctor) => (
+                  <div key={doctor._id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50 hover:border-emerald-200 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-white overflow-hidden shadow-sm border border-gray-200">
+                        {(doctor.profileImageUrl || doctor.profileImage) ? (
+                          <img src={doctor.profileImageUrl || doctor.profileImage} alt={doctor.user?.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                            <UserCircle className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h5 className="font-bold text-sm text-slate-800">{doctor.user?.name || "Doctor"}</h5>
+                        <p className="text-xs font-medium text-emerald-600">{doctor.specialization}</p>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/patient/book?doctorId=${doctor._id}&clinicId=${selectedClinic._id}`}
+                      className="text-xs font-bold px-4 py-2 bg-emerald-600 text-white rounded-lg shadow-sm hover:bg-emerald-700 transition-colors"
+                    >
+                      Book
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 font-medium bg-gray-50 p-4 rounded-xl">No doctors found for this clinic.</p>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

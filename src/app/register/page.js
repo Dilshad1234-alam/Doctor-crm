@@ -8,6 +8,7 @@ import {
   User, Mail, Lock, Eye, EyeOff, Phone, ArrowRight, 
   CheckCircle2, Calendar, FileText, Heart, ShieldCheck, Activity
 } from "lucide-react";
+import { useAuth } from "@/frontend/context/AuthContext";
 
 function getPasswordStrength(password) {
   if (!password) return { score: 0, label: "", color: "" };
@@ -46,6 +47,7 @@ const BENEFITS = [
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -96,15 +98,20 @@ export default function RegisterPage() {
     setToast({ message: "", type: "" });
 
     try {
-      await registerUser({
+      const res = await registerUser({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
+        accountType: "patient"
       });
-      setToast({ message: "Account created! Redirecting to login…", type: "success" });
-      setTimeout(() => router.push("/login"), 1500);
+      if (refreshUser) await refreshUser(); 
+
+      setToast({ message: "Account created! Redirecting to onboarding…", type: "success" });
+      setTimeout(() => {
+        router.push("/onboarding/patient");
+      }, 1500);
     } catch (err) {
       setToast({ message: err.message || "Registration failed. Please try again.", type: "error" });
     } finally {

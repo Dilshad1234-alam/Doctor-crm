@@ -167,7 +167,7 @@ async function runSeed() {
       specialties: SPECIALTIES,
       facilities: ["Pharmacy", "Lab", "X-Ray"],
       status: "active",
-      logoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(cityData.clinicName)}&background=10B981&color=fff&size=200`,
+      logoUrl: `https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&q=80&w=400`,
       coverImageUrl: `https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop`
     });
     stats.clinics++;
@@ -215,6 +215,7 @@ async function runSeed() {
         isAvailable: true,
         isPublic: true,
         isActive: true,
+        profileImageUrl: `https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=200`,
         createdById: clinicAccount._id,
         createdByModel: "Clinic"
       });

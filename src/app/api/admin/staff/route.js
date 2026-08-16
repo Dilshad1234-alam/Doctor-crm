@@ -17,13 +17,23 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get("limit") || "20");
     const skip = (page - 1) * limit;
 
-    const staff = await StaffProfile.find()
-      .populate("userId", "name email phone isActive role")
+    const profiles = await StaffProfile.find()
       .populate("clinicId", "name address")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
+
+    const staff = profiles.map(p => ({
+      ...p,
+      userId: {
+        name: p.name,
+        email: p.email,
+        phone: p.phone,
+        isActive: p.status === "active",
+        role: p.role
+      }
+    }));
 
     const total = await StaffProfile.countDocuments();
     const pages = Math.ceil(total / limit);

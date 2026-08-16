@@ -19,26 +19,50 @@ export async function GET(request) {
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
-    let query = {};
+    const { default: ClinicProfile } = await import("@/backend/models/ClinicProfile");
+    
+    let profileQuery = {};
     if (status && status !== "all") {
-      query.status = status;
+      profileQuery.status = status;
     }
+    
     if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
+      const matchingClinics = await Clinic.find({ name: { $regex: search, $options: "i" } }).select('_id').lean();
+      const clinicIds = matchingClinics.map(c => c._id);
+      
+      profileQuery.$or = [
+        { clinicId: { $in: clinicIds } },
         { "address.city": { $regex: search, $options: "i" } }
       ];
     }
 
-    const clinics = await Clinic.find(query)
-      .populate("ownerId", "name email phone")
+    const profiles = await ClinicProfile.find(profileQuery)
+      .populate("clinicId", "name email phone")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
 
-    const total = await Clinic.countDocuments(query);
+    const total = await ClinicProfile.countDocuments(profileQuery);
     const pages = Math.ceil(total / limit);
+
+    const clinics = profiles.map(p => {
+       const clinicInfo = p.clinicId || {};
+       return {
+         _id: clinicInfo._id || p._id, // the frontend uses this _id to navigate to clinic details
+         name: clinicInfo.name,
+         email: clinicInfo.email,
+         phone: clinicInfo.phone,
+         ownerId: {
+           name: clinicInfo.name,
+           email: clinicInfo.email,
+           phone: clinicInfo.phone
+         },
+         address: p.address,
+         status: p.status,
+         createdAt: p.createdAt
+       };
+    });
 
     return NextResponse.json({
       success: true,
