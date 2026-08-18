@@ -129,7 +129,7 @@ export default function QueuePage() {
     const waitingList = queue.filter(q => q.status === "waiting");
 
     return (
-      <div className="pb-12 max-w-7xl mx-auto">
+      <div className="pb-12 w-full">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">My Queue</h1>
@@ -168,7 +168,7 @@ export default function QueuePage() {
                 {currentPatient ? (
                   <div className="relative z-10">
                     <div className="text-5xl font-black text-gray-900 mb-3 tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600">Token {currentPatient.tokenNumber}</div>
-                    <p className="font-bold text-xl text-gray-800">{currentPatient.patientId?.fullName}</p>
+                    <p className="font-bold text-xl text-gray-800">{currentPatient.patientId?.name || currentPatient.patientId?.fullName || "Unknown Patient"}</p>
                     <p className="text-sm font-medium text-gray-500 mb-5 capitalize">{currentPatient.appointmentId?.visitType?.replace(/_/g, " ")}</p>
                     <QueueStatusBadge status={currentPatient.status} />
                     <div className="mt-8">
@@ -180,7 +180,7 @@ export default function QueuePage() {
                 ) : nextPatient ? (
                   <div className="relative z-10">
                     <div className="text-5xl font-black text-gray-900 mb-3 tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600">Token {nextPatient.tokenNumber}</div>
-                    <p className="font-bold text-xl text-gray-800">{nextPatient.patientId?.fullName}</p>
+                    <p className="font-bold text-xl text-gray-800">{nextPatient.patientId?.name || nextPatient.patientId?.fullName || "Unknown Patient"}</p>
                     <p className="text-sm font-medium text-gray-500 mb-5 capitalize">{nextPatient.appointmentId?.visitType?.replace(/_/g, " ")}</p>
                     <QueueStatusBadge status={nextPatient.status} />
                     <div className="mt-3">
@@ -242,7 +242,7 @@ export default function QueuePage() {
                             {entry.tokenNumber}
                           </div>
                           <div>
-                            <p className="font-bold text-lg text-gray-900">{entry.patientId?.fullName}</p>
+                            <p className="font-bold text-lg text-gray-900">{entry.patientId?.name || entry.patientId?.fullName || "Unknown Patient"}</p>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-xs font-medium text-gray-500">{entry.appointmentId?.startTime}</span>
                               <span className="text-xs text-gray-300">•</span>
@@ -283,7 +283,7 @@ export default function QueuePage() {
 
   // Clinic Queue View (Receptionist / Admin)
   return (
-    <div className="pb-12 max-w-7xl mx-auto">
+    <div className="pb-12 w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Clinic Queue</h1>
@@ -323,11 +323,11 @@ export default function QueuePage() {
                       <div className="text-sm font-black text-gray-900 bg-gray-100 inline-flex items-center justify-center w-10 h-10 rounded-xl shadow-sm border border-gray-200 group-hover:bg-white transition-colors">#{entry.tokenNumber}</div>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900 group-hover:text-[#15558d] transition-colors">{entry.patientId?.fullName}</div>
+                      <div className="text-sm font-bold text-gray-900 group-hover:text-[#15558d] transition-colors">{entry.patientId?.name || entry.patientId?.fullName || "Unknown Patient"}</div>
                       <div className="text-xs font-medium text-gray-500 mt-0.5">{entry.patientId?.patientIdString}</div>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900">{entry.doctorId?.userId?.name || "Doctor"}</div>
+                      <div className="text-sm font-bold text-gray-900">{entry.doctorId?.name || entry.doctorId?.userId?.name || "Unknown Doctor"}</div>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-600">
                       {entry.status === "waiting" || entry.status === "called" ? getWaitingTime(entry.waitingSince) : "-"}

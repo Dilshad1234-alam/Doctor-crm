@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+// Force Next.js recompile to pick up Invoice schema changes
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { createNewInvoice } from "@/backend/services/billingService";
 
@@ -16,7 +17,7 @@ export async function POST(request, { params }) {
     
     return NextResponse.json({ success: true, invoice });
   } catch (error) {
-    console.error(`POST /api/appointments/${params?.appointmentId}/invoice Error:`, error);
+    console.error(`POST /api/appointments/${appointmentId || "unknown"}/invoice Error:`, error);
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }
 }

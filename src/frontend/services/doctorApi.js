@@ -11,13 +11,16 @@ export async function createDoctor(payload) {
 
 export async function getDoctors(params = {}) {
   const query = new URLSearchParams(params).toString();
-  const response = await fetch(`/api/doctors?${query}`);
+  const response = await fetch(`/api/doctors?${query}`, { cache: "no-store" });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || "Failed to fetch doctors");
   return data;
 }
 
 export async function getDoctorById(doctorId) {
+  if (!doctorId || doctorId.includes('{{')) {
+    throw new Error("Invalid doctor ID");
+  }
   const response = await fetch(`/api/doctors/${doctorId}`);
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || "Failed to fetch doctor");
@@ -25,6 +28,9 @@ export async function getDoctorById(doctorId) {
 }
 
 export async function updateDoctor(doctorId, payload) {
+  if (!doctorId || doctorId.includes('{{')) {
+    throw new Error("Invalid doctor ID");
+  }
   const response = await fetch(`/api/doctors/${doctorId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -36,6 +42,9 @@ export async function updateDoctor(doctorId, payload) {
 }
 
 export async function updateDoctorStatus(doctorId, isActive) {
+  if (!doctorId || doctorId.includes('{{')) {
+    throw new Error("Invalid doctor ID");
+  }
   const response = await fetch(`/api/doctors/${doctorId}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -47,6 +56,9 @@ export async function updateDoctorStatus(doctorId, isActive) {
 }
 
 export async function updateDoctorAvailability(doctorId, availability) {
+  if (!doctorId || doctorId.includes('{{')) {
+    throw new Error("Invalid doctor ID");
+  }
   const response = await fetch(`/api/doctors/${doctorId}/availability`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -58,6 +70,9 @@ export async function updateDoctorAvailability(doctorId, availability) {
 }
 
 export async function getDoctorSummary(doctorId) {
+  if (!doctorId || doctorId.includes('{{')) {
+    throw new Error("Invalid doctor ID");
+  }
   const response = await fetch(`/api/doctors/${doctorId}/summary`);
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || "Failed to fetch summary");

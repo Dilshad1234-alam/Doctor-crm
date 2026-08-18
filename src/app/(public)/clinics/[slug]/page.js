@@ -27,6 +27,23 @@ export default function ClinicDetailPage() {
 
   const { user } = useAuth();
   const slugOrId = params.slug || params.id;
+  const [pendingBooking, setPendingBooking] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("pendingBooking");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed.clinicSlug === slugOrId) {
+            setPendingBooking(parsed);
+          }
+        } catch (e) {
+          console.error("Error parsing pending booking", e);
+        }
+      }
+    }
+  }, [slugOrId]);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -73,7 +90,7 @@ export default function ClinicDetailPage() {
   const { clinic, settings, doctors = [] } = data;
 
   const handleViewSlots = (doctor) => {
-    router.push(`/doctors/${doctor._id}/slots`);
+    router.push(`/clinics/${slugOrId}/doctors/${doctor._id}/slots`);
   };
 
   return (
@@ -136,16 +153,32 @@ export default function ClinicDetailPage() {
                     if (typeof window !== "undefined") {
                       localStorage.setItem("selectedClinicId", clinic._id);
                     }
-                    if (!user) {
-                      router.push("/login");
-                    } else if (user.accountType === "patient") {
-                      router.push("/patient/dashboard");
+                    if (pendingBooking) {
+                      const bookUrl = `/patient/book?clinicId=${clinic._id}&doctorId=${pendingBooking.doctorId}&date=${pendingBooking.appointmentDate}&time=${pendingBooking.startTime}`;
+                      if (!user) {
+                        router.push(`/login?callbackUrl=${encodeURIComponent(bookUrl)}`);
+                      } else {
+                        router.push(bookUrl);
+                      }
                     } else {
-                      // If admin/doctor/clinic, maybe just scroll down or alert
-                      window.scrollTo({top: 800, behavior: 'smooth'});
+                      if (!user) {
+                        router.push("/login");
+                      } else {
+                        const doctorsSection = document.getElementById("doctors");
+                        if (doctorsSection) {
+                          doctorsSection.scrollIntoView({ behavior: "smooth" });
+                        } else {
+                          window.scrollTo({top: 800, behavior: 'smooth'});
+                        }
+                      }
                     }
-                  }} className="flex-1 lg:flex-none px-8 py-3.5 rounded-xl bg-[#10B981] text-white font-bold shadow-md hover:bg-[#047857] transition-all">
-                    Book Appointment
+                  }} className="flex-1 lg:flex-none px-8 py-3.5 rounded-xl bg-[#10B981] text-white font-bold shadow-md hover:bg-[#047857] transition-all flex flex-col items-center justify-center">
+                    <span>Book Appointment</span>
+                    {pendingBooking && (
+                      <span className="text-[10px] font-normal opacity-90">
+                        {pendingBooking.doctorName} • {pendingBooking.startTime}
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -290,7 +323,7 @@ export default function ClinicDetailPage() {
                     <div key={idx} className="flex justify-between items-center text-sm border-b border-[#F8FAFC] pb-3 last:border-0 last:pb-0">
                       <span className="capitalize font-bold text-[#64748B]">{wh.day}</span>
                       {wh.isOpen ? (
-                        <span className="font-black text-[#0F172A]">{wh.openTime} - {wh.closeTime}</span>
+                        <span className="font-black text-[#0F172A]">{wh.openingTime || wh.openTime || "09:00"} - {wh.closingTime || wh.closeTime || "17:00"}</span>
                       ) : (
                         <span className="font-bold text-[#EF4444] text-xs px-2 py-1 bg-[#FEF2F2] rounded">Closed</span>
                       )}

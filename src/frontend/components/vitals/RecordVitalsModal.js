@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import VitalsForm from "./VitalsForm";
 import { recordVitals, updateVitals, getAppointmentVitals } from "@/frontend/services/vitalsApi";
 
@@ -56,7 +56,7 @@ export default function RecordVitalsModal({ isOpen, onClose, appointment }) {
   if (!isOpen || !appointment) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl my-8">
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h3 className="text-xl font-semibold text-gray-900">
@@ -74,11 +74,11 @@ export default function RecordVitalsModal({ isOpen, onClose, appointment }) {
           <div className="bg-blue-50 p-4 rounded-lg mb-6 flex flex-wrap gap-4 text-sm">
             <div className="flex-1 min-w-[200px]">
               <p className="text-blue-700 font-semibold mb-1">Patient</p>
-              <p className="text-gray-800">{appointment.patientId?.fullName || "Unknown Patient"}</p>
+              <p className="text-gray-800">{appointment.patientId?.name || appointment.patientId?.fullName || "Unknown Patient"}</p>
             </div>
             <div className="flex-1 min-w-[200px]">
               <p className="text-blue-700 font-semibold mb-1">Doctor</p>
-              <p className="text-gray-800">Dr. {appointment.doctorId?.userId?.name || appointment.doctorId?.name || "Unknown"}</p>
+              <p className="text-gray-800">{appointment.doctorId?.name || appointment.doctorId?.userId?.name || "Unknown Doctor"}</p>
             </div>
             <div className="flex-1 min-w-[200px]">
               <p className="text-blue-700 font-semibold mb-1">Appointment Time</p>

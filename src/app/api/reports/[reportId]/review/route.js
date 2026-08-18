@@ -6,7 +6,7 @@ import { reviewReportSchema } from "@/backend/validations/reportValidation";
 export async function POST(request, { params }) {
   try {
     const authUser = await getAuthenticatedUser(request);
-    const { reportId } = params;
+    const { reportId } = await params;
 
     const body = await request.json();
     const parsedData = reviewReportSchema.parse(body);

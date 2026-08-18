@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/frontend/context/AuthContext";
 import Logo from "@/frontend/components/branding/Logo";
@@ -574,9 +574,10 @@ const slideVariants = {
 };
 
 /* ─── Main Page ──────────────────────────────────────────── */
-export default function PatientOnboardingPage() {
+function PatientOnboardingContent() {
   const router = useRouter();
-  const { user, loading: authLoading, refreshUser } = useAuth();
+  const searchParams = useSearchParams();
+  const { user, refreshUser, loading: authLoading } = useAuth();
 
   const [step, setStep]       = useState(1);
   const [dir, setDir]         = useState(1); // 1 = forward, -1 = backward
@@ -601,7 +602,10 @@ export default function PatientOnboardingPage() {
     if (!authLoading) {
       if (!user)                        router.push("/login");
       else if (user.role !== "patient") router.push("/dashboard");
-      else if (user.onboardingCompleted) router.push("/patient/dashboard");
+      else if (user.onboardingCompleted) {
+        const callbackUrl = searchParams.get("callbackUrl");
+        router.push(callbackUrl || "/patient/dashboard");
+      }
     }
   }, [user, authLoading, router]);
 
@@ -670,7 +674,8 @@ export default function PatientOnboardingPage() {
       if (!res.ok) throw new Error(json.message || "Failed to complete profile");
 
       await refreshUser();
-      router.push("/patient/dashboard");
+      const callbackUrl = searchParams.get("callbackUrl");
+      router.push(callbackUrl || "/patient/dashboard");
     } catch (err) {
       setSubmitErr(err.message || "Something went wrong. Please try again.");
     } finally {
@@ -714,7 +719,10 @@ export default function PatientOnboardingPage() {
               Patient Onboarding
             </span>
             <button
-              onClick={() => router.push("/patient/dashboard")}
+              onClick={() => {
+                const callbackUrl = searchParams.get("callbackUrl");
+                router.push(callbackUrl || "/patient/dashboard");
+              }}
               className="text-xs font-bold text-slate-400 hover:text-slate-600 flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
             >
               <X size={13} /> Cancel
@@ -820,7 +828,10 @@ export default function PatientOnboardingPage() {
             <div className="px-6 py-5 border-t border-slate-100 flex items-center justify-between gap-3 bg-slate-50/60">
               <button
                 type="button"
-                onClick={step === 1 ? () => router.push("/patient/dashboard") : goPrev}
+                onClick={step === 1 ? () => {
+                  const callbackUrl = searchParams.get("callbackUrl");
+                  router.push(callbackUrl || "/patient/dashboard");
+                } : goPrev}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-slate-200 text-sm font-bold text-slate-600 hover:border-slate-300 hover:bg-white transition-all"
               >
                 <ArrowLeft size={15} />
@@ -874,5 +885,13 @@ export default function PatientOnboardingPage() {
         </p>
       </main>
     </div>
+  );
+}
+
+export default function PatientOnboardingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#10B981]"></div></div>}>
+      <PatientOnboardingContent />
+    </Suspense>
   );
 }

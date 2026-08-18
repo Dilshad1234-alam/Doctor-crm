@@ -45,8 +45,11 @@ function generateTimeSlots(startTime, endTime, durationMinutes) {
 
 export async function getDoctorAvailableSlots(clinicId, doctorId, dateStr) {
   // 1. Fetch Doctor Profile
-  const doctor = await DoctorProfile.findOne({ _id: doctorId, clinicId, isActive: true });
-  if (!doctor || !doctor.isAcceptingAppointments) {
+  const query = { isActive: true, $or: [{ _id: doctorId }, { doctorId: doctorId }] };
+  if (clinicId) query.clinicId = clinicId;
+  
+  const doctor = await DoctorProfile.findOne(query);
+  if (!doctor || doctor.isAcceptingAppointments === false) {
     return { success: false, slots: [], message: "Doctor is unavailable." };
   }
 
@@ -123,8 +126,8 @@ export async function getDoctorAvailableSlots(clinicId, doctorId, dateStr) {
 
     // Enforce clinic working hours bounds
     if (clinicWorkingHours && clinicWorkingHours.isOpen) {
-      const clinicStartMins = timeToMins(clinicWorkingHours.openingTime);
-      const clinicEndMins = timeToMins(clinicWorkingHours.closingTime);
+      const clinicStartMins = timeToMins(clinicWorkingHours.openingTime || clinicWorkingHours.openTime || "09:00");
+      const clinicEndMins = timeToMins(clinicWorkingHours.closingTime || clinicWorkingHours.closeTime || "17:00");
       const blockStartMins = timeToMins(blockStart);
       const blockEndMins = timeToMins(blockEnd);
 
@@ -179,11 +182,19 @@ export async function getDoctorAvailableSlots(clinicId, doctorId, dateStr) {
     const slotMins = sh * 60 + sm;
     
     const isPast = isDateInPast || (targetDate.getTime() === today.getTime() && slotMins <= currentTotalMins);
-    const isBooked = isPast || isMaxReached || bookedStartTimes.has(slot.startTime);
+    const isBooked = isMaxReached || bookedStartTimes.has(slot.startTime);
+
+    let state = "available";
+    if (isPast) {
+      state = "past";
+    } else if (isBooked) {
+      state = "booked";
+    }
 
     return {
       ...slot,
-      isBooked
+      isBooked: isPast || isBooked,
+      state
     };
   });
 

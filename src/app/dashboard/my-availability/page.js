@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import PageHeader from "@/frontend/components/dashboard/PageHeader";
@@ -20,7 +20,7 @@ export default function MyAvailabilityPage() {
       try {
         const profile = await getMyDoctorProfile();
         // Initialize availability state, merging existing with default for missing days
-        const existingAvail = profile.availability || [];
+        const existingAvail = profile.profile?.availability || profile.availability || [];
         const initialAvail = DAYS.map(day => {
           const found = existingAvail.find(a => a.day === day);
           if (found) return found;

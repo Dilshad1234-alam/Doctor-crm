@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import Button from "@/frontend/components/ui/Button";
 import { checkInAppointment } from "@/frontend/services/queueApi";
 
@@ -35,7 +35,7 @@ export default function CheckInModal({ appointment, isOpen, onClose, onSuccess }
 
   if (successMsg) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
         <div className="bg-white rounded-lg p-6 max-w-sm w-full text-center shadow-xl">
           <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
@@ -48,7 +48,7 @@ export default function CheckInModal({ appointment, isOpen, onClose, onSuccess }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-900">Check In Patient</h2>
@@ -62,11 +62,11 @@ export default function CheckInModal({ appointment, isOpen, onClose, onSuccess }
         <div className="bg-gray-50 p-4 rounded mb-5 text-sm space-y-2 border border-gray-100">
           <div className="flex justify-between">
             <span className="text-gray-500">Patient:</span>
-            <span className="font-medium text-gray-900">{appointment.patientId?.fullName || "Unknown"}</span>
+            <span className="font-medium text-gray-900">{appointment.patientId?.name || appointment.patientId?.fullName || "Unknown"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Doctor:</span>
-            <span className="font-medium text-gray-900">{appointment.doctorId?.userId?.name || "Unknown"}</span>
+            <span className="font-medium text-gray-900">{appointment.doctorId?.name || appointment.doctorId?.userId?.name || "Unknown"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Time:</span>

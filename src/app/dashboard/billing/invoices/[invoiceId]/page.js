@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
@@ -100,14 +100,16 @@ export default function InvoiceDetailsPage({ params }) {
           {/* Patient Details */}
           <div className="bg-white border rounded-lg shadow-sm p-5">
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Billed To</h3>
-            <p className="font-bold text-gray-900 text-lg">{invoice.patientId?.fullName}</p>
-            <p className="text-sm text-gray-600">Patient ID: {invoice.patientId?.patientCode}</p>
+            <p className="font-bold text-gray-900 text-lg">{invoice.patientId?.name || invoice.patientId?.fullName}</p>
+            <p className="text-sm text-gray-600">Patient ID: {invoice.patientId?.patientIdString || invoice.patientId?.patientCode || invoice.patientId?.email || invoice.patientId?.phone || "N/A"}</p>
             <p className="text-sm text-gray-600">Phone: {invoice.patientId?.phone || "N/A"}</p>
           </div>
           {/* Appointment Details */}
           <div className="bg-white border rounded-lg shadow-sm p-5">
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Treatment Details</h3>
-            <p className="font-bold text-gray-900">Dr. {invoice.doctorId?.userId?.name || invoice.doctorId?.specialization || "Unknown"}</p>
+            <p className="font-bold text-gray-900">
+              {invoice.doctorId?.name ? (invoice.doctorId.name.startsWith("Dr.") ? invoice.doctorId.name : `Dr. ${invoice.doctorId.name}`) : (invoice.doctorId?.userId?.name ? `Dr. ${invoice.doctorId.userId.name}` : `Dr. ${invoice.doctorId?.specialization || "Unknown"}`)}
+            </p>
             <p className="text-sm text-gray-600">Appointment: {invoice.appointmentId?.appointmentCode}</p>
             {invoice.consultationId && <p className="text-sm text-gray-600">Consultation: {invoice.consultationId?.consultationCode}</p>}
           </div>

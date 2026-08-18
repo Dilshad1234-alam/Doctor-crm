@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { connectDB } from "@/backend/database/connectDB";
 import Patient from "@/backend/models/Patient";
 import PatientProfile from "@/backend/models/PatientProfile";
+import mongoose from "mongoose";
 import { createAuthToken } from "@/backend/utils/auth";
 import { setAuthCookie } from "@/backend/utils/authCookie";
 
@@ -73,7 +74,19 @@ export async function POST(request) {
       profileData.address = { line1: address || "", city: city || "", state: state || "", pincode: pincode || "" };
     }
 
-    await PatientProfile.create(profileData);
+    try {
+      await PatientProfile.create(profileData);
+    } catch (createErr) {
+      if (createErr.code === 11000 && createErr.keyPattern && createErr.keyPattern.userId) {
+        // The old userId_1 index is causing a conflict. Let's drop it from MongoDB directly.
+        console.warn("Dropping legacy userId_1 index from patientprofiles collection...");
+        await mongoose.connection.db.collection('patientprofiles').dropIndex('userId_1').catch(e => console.error("Failed to drop index:", e));
+        // Retry creation after dropping index
+        await PatientProfile.create(profileData);
+      } else {
+        throw createErr;
+      }
+    }
 
     // If clinicId is provided, associate patient with the clinic
     if (body.clinicId) {

@@ -12,17 +12,17 @@ export async function createInvoice(data, session = null) {
 
 export async function findInvoiceById(invoiceId, clinicId) {
   return Invoice.findOne({ _id: invoiceId, clinicId })
-    .populate("patientId", "firstName lastName fullName patientCode phone")
+    .populate("patientId", "name firstName lastName fullName patientCode patientIdString phone")
     .populate("doctorId", "name email phone")
     .populate("appointmentId", "appointmentCode appointmentDate startTime endTime")
-    .populate("createdById", "name role");
+    .populate("createdByUserId", "name role");
 }
 
 export async function findInvoiceByAppointment(appointmentId, clinicId) {
   return Invoice.findOne({ appointmentId, clinicId })
-    .populate("patientId", "firstName lastName fullName patientCode")
+    .populate("patientId", "name firstName lastName fullName patientCode patientIdString")
     .populate("doctorId", "name email phone")
-    .populate("createdById", "name role");
+    .populate("createdByUserId", "name role");
 }
 
 export async function findInvoicesByClinic(clinicId, query = {}) {
@@ -55,7 +55,7 @@ export async function findInvoicesByClinic(clinicId, query = {}) {
   }
 
   return Invoice.find(filter)
-    .populate("patientId", "firstName lastName fullName patientCode phone")
+    .populate("patientId", "name firstName lastName fullName patientCode patientIdString phone")
     .populate("doctorId", "name email phone")
     .sort({ createdAt: -1 });
 }
@@ -72,7 +72,7 @@ export async function updateInvoiceById(invoiceId, clinicId, data, session = nul
     { _id: invoiceId, clinicId },
     { $set: data },
     options
-  ).populate("patientId", "firstName lastName fullName");
+  ).populate("patientId", "name firstName lastName fullName patientIdString");
 }
 
 export async function countInvoicesByClinic(clinicId, query = {}) {

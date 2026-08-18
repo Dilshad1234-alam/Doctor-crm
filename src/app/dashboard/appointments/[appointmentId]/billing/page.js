@@ -35,7 +35,7 @@ export default function CreateInvoicePage({ params }) {
       const fee = data.doctorId?.consultationFee || 500;
       setItems([{
         type: "consultation",
-        description: `Consultation Fee - Dr. ${data.doctorId?.userId?.name || data.doctorId?.specialization || "Unknown"}`,
+        description: `Consultation Fee - Dr. ${data.doctorId?.name || data.doctorId?.userId?.name || "Unknown"}`,
         quantity: 1,
         unitPrice: fee
       }]);
@@ -134,15 +134,15 @@ export default function CreateInvoicePage({ params }) {
         <div className="bg-white border rounded-lg shadow-sm p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
            <div>
              <p className="text-xs text-gray-500">Patient</p>
-             <p className="font-bold text-gray-900">{appointment?.patientId?.fullName}</p>
+             <p className="font-bold text-gray-900">{appointment?.patientId?.name || appointment?.patientId?.fullName}</p>
            </div>
            <div>
              <p className="text-xs text-gray-500">Patient Code</p>
-             <p className="font-bold text-gray-900">{appointment?.patientId?.patientCode}</p>
+             <p className="font-bold text-gray-900">{appointment?.patientId?.patientIdString || appointment?.patientId?.patientCode}</p>
            </div>
            <div>
              <p className="text-xs text-gray-500">Doctor</p>
-             <p className="font-bold text-gray-900">Dr. {appointment?.doctorId?.userId?.name || appointment?.doctorId?.specialization}</p>
+             <p className="font-bold text-gray-900">{appointment?.doctorId?.name || appointment?.doctorId?.userId?.name || appointment?.doctorId?.specialization}</p>
            </div>
            <div>
              <p className="text-xs text-gray-500">Appointment Code</p>

@@ -30,7 +30,7 @@ export default function PatientTable({ patients }) {
               </td>
               <td className="px-8 py-5">
                 <span className="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-gray-50 text-gray-600 border border-gray-200">
-                  {patient.patientCode}
+                  {patient.patientCode || patient.patientIdString || "N/A"}
                 </span>
               </td>
               <td className="px-8 py-5 text-sm font-medium text-gray-600">{patient.phone}</td>

@@ -92,7 +92,23 @@ export async function getDoctorsForClinic(ownerUser, query) {
   requireAccountType(ownerUser, [ACCOUNT_TYPES.CLINIC, ACCOUNT_TYPES.ADMIN, ACCOUNT_TYPES.DOCTOR, ACCOUNT_TYPES.PATIENT]);
   await connectDB();
   
-  const clinicId = ownerUser.clinicId;
+  let clinicId = ownerUser.clinicId;
+  if (!clinicId && query.clinicId) {
+    clinicId = query.clinicId;
+  }
+  
+  if (!clinicId && ownerUser.accountType === ACCOUNT_TYPES.PATIENT) {
+    const PatientClinic = mongoose.models.PatientClinic || mongoose.model("PatientClinic");
+    const link = await PatientClinic.findOne({ patientId: ownerUser.accountId }).sort({ createdAt: -1 });
+    if (link) {
+      clinicId = link.clinicId;
+    }
+  }
+  
+  if (!clinicId) {
+    throw new Error("clinicId is required");
+  }
+
   const result = await findDoctorsByClinic(clinicId, query);
   
   const safeDoctors = result.doctors.map(doc => getSafeDoctorData(doc, doc.doctorId));
@@ -208,6 +224,14 @@ export async function updateOwnDoctorAvailability(doctorUser, input) {
 
   const updatedDoctor = await updateDoctorById(doctorUser.doctorId, doctorUser.clinicId, {
     availability: input.availability,
+    isAvailable: input.isAvailable,
+    availableDays: input.availableDays,
+    startTime: input.startTime,
+    endTime: input.endTime,
+    slotDuration: input.slotDuration,
+    breakStart: input.breakStart,
+    breakEnd: input.breakEnd,
+    maxPatientsPerDay: input.maxPatientsPerDay,
     lastUpdatedById: doctorUser.id || doctorUser._id,
     lastUpdatedByModel: "Doctor",
   });
@@ -228,6 +252,14 @@ export async function updateDoctorAvailabilityByOwner(ownerUser, doctorId, input
 
   const updatedDoctor = await updateDoctorById(doctorId, ownerUser.clinicId, {
     availability: input.availability,
+    isAvailable: input.isAvailable,
+    availableDays: input.availableDays,
+    startTime: input.startTime,
+    endTime: input.endTime,
+    slotDuration: input.slotDuration,
+    breakStart: input.breakStart,
+    breakEnd: input.breakEnd,
+    maxPatientsPerDay: input.maxPatientsPerDay,
     lastUpdatedById: ownerUser.id || ownerUser._id,
     lastUpdatedByModel: "Clinic",
   });
@@ -247,7 +279,7 @@ export async function getDoctorSummary(authUser, doctorId) {
   const metrics = await getDoctorSummaryData(doctorId, authUser.clinicId);
   
   return {
-    doctor: safeDoctor,
+    ...safeDoctor,
     metrics
   };
 }
@@ -255,34 +287,22 @@ export async function getDoctorSummary(authUser, doctorId) {
 function getSafeDoctorData(profile, user) {
   if (!profile || !user) return null;
   
+  const profileObj = profile.toObject ? profile.toObject() : { ...profile };
+  delete profileObj.doctorId; // Remove populated doctorId from profile to prevent recursion/duplication
+  
   return {
-    id: profile.doctorId.toString(), // The ID returned to the frontend should ideally be the doctorId because it's what they use for appointments
-    profileId: profile._id.toString(),
-    employeeId: profile.employeeId,
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    title: profile.title,
-    specialization: profile.specialization,
-    subSpecialization: profile.subSpecialization,
-    qualification: profile.qualification,
-    registrationNumber: profile.registrationNumber,
-    registrationCouncil: profile.registrationCouncil,
-    experienceYears: profile.experienceYears,
-    consultationFee: profile.consultationFee,
-    followUpFee: profile.followUpFee,
-    followUpValidityDays: profile.followUpValidityDays,
-    gender: profile.gender,
-    bio: profile.bio,
-    languages: profile.languages,
-    consultationTypes: profile.consultationTypes,
-    availability: profile.availability,
-    defaultSlotDuration: profile.defaultSlotDuration,
-    maxAppointmentsPerDay: profile.maxAppointmentsPerDay,
-    isAcceptingAppointments: profile.isAcceptingAppointments,
-    isActive: profile.isActive,
-    lastLoginAt: user.lastLoginAt,
-    createdAt: profile.createdAt,
-    updatedAt: profile.updatedAt,
+    doctor: {
+      _id: user._id ? user._id.toString() : user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      isActive: user.isActive,
+      lastLoginAt: user.lastLoginAt,
+    },
+    profile: {
+      ...profileObj,
+      _id: profile._id ? profile._id.toString() : profile.id,
+      id: profile._id ? profile._id.toString() : profile.id,
+    }
   };
 }

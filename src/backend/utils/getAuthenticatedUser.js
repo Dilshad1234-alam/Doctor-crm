@@ -57,7 +57,7 @@ export async function getAuthenticatedUser() {
     accountType: decoded.accountType,
     name: user.name,
     email: user.email,
-    role: decoded.accountType, // Maintain backwards compatibility with role checks if any, though accountType is strict
+    role: decoded.accountType === "clinic" ? "clinic_owner" : decoded.accountType, // Maintain backwards compatibility with role checks if any, though accountType is strict
     clinicId,
     doctorId,
     patientId,

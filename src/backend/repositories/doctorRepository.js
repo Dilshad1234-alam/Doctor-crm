@@ -9,6 +9,9 @@ export async function createDoctorProfile(data, session = null) {
 }
 
 export async function findDoctorById(doctorId, clinicId) {
+  if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+    return null;
+  }
   return DoctorProfile.findOne({
     doctorId: doctorId,
     clinicId,

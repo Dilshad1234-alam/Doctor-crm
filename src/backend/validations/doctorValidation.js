@@ -99,4 +99,5 @@ export const doctorListQuerySchema = z.object({
   consultationType: z.enum(["inPerson", "online", "all"]).default("all"),
   sortBy: z.string().default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  clinicId: z.string().optional(),
 });

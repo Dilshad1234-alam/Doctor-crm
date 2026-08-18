@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Patient from "../models/Patient.js";
 import PatientProfile from "../models/PatientProfile.js";
 import Appointment from "../models/Appointment.js";
+import { calculateAge } from "../utils/calculateAge.js";
 
 const formatPatient = (user, profile) => {
   if (!user) return null;
@@ -17,7 +18,7 @@ const formatPatient = (user, profile) => {
     email: user.email,
     phone: user.phone,
     dateOfBirth: p.dateOfBirth,
-    age: p.age,
+    age: p.age !== undefined ? p.age : (p.dateOfBirth ? calculateAge(p.dateOfBirth) : undefined),
     gender: p.gender,
     bloodGroup: p.bloodGroup,
     maritalStatus: p.maritalStatus,
@@ -93,17 +94,32 @@ export async function findPatientByEmail(email) {
   return formatPatient(user, profile);
 }
 
+import PatientClinic from "../models/PatientClinic.js";
+
 export async function findPatientsByClinic(clinicId, query) {
-  const { page, limit, search, gender, bloodGroup, status, sortBy, sortOrder } = query;
+  const { page = 1, limit = 10, search, gender, bloodGroup, status, sortBy, sortOrder } = query;
   
-  let profileFilter = { clinicId: clinicId };
+  const distinctPatientIdsFromAppts = await Appointment.distinct("patientId", { clinicId });
+  const clinicProfiles = await PatientProfile.find({ clinicId }).select('patientId').lean();
+  const patientClinics = await PatientClinic.find({ clinicId }).select('patientId').lean();
+  
+  const distinctPatientIdsFromProfiles = clinicProfiles.map(p => p.patientId);
+  const distinctPatientIdsFromLink = patientClinics.map(p => p.patientId);
+  
+  const allValidPatientIds = [...new Set([
+    ...distinctPatientIdsFromAppts.map(String), 
+    ...distinctPatientIdsFromProfiles.map(String),
+    ...distinctPatientIdsFromLink.map(String)
+  ])];
+  
+  let profileFilter = { patientId: { $in: allValidPatientIds } };
   if (gender) profileFilter.gender = gender;
   if (bloodGroup) profileFilter.bloodGroup = bloodGroup;
   
   const profiles = await PatientProfile.find(profileFilter).lean();
-  const patientIds = profiles.map(p => p.patientId);
+  const matchedPatientIds = profiles.map(p => p.patientId);
   
-  let userFilter = { _id: { $in: patientIds } };
+  let userFilter = { _id: { $in: matchedPatientIds } };
   if (status === "active") userFilter.isActive = true;
   else if (status === "inactive") userFilter.isActive = false;
   
@@ -116,7 +132,7 @@ export async function findPatientsByClinic(clinicId, query) {
     ];
   }
 
-  const sort = { [sortBy === "fullName" ? "name" : sortBy]: sortOrder === "asc" ? 1 : -1 };
+  const sort = { [sortBy === "fullName" ? "name" : sortBy || "createdAt"]: sortOrder === "asc" ? 1 : -1 };
   const skip = (page - 1) * limit;
 
   const [users, total] = await Promise.all([
@@ -132,8 +148,8 @@ export async function findPatientsByClinic(clinicId, query) {
   return {
     patients: finalPatients,
     pagination: {
-      page,
-      limit,
+      page: Number(page),
+      limit: Number(limit),
       total,
       totalPages: Math.ceil(total / limit)
     }
@@ -173,11 +189,11 @@ export async function countActivePatientsByClinic(clinicId) {
 }
 
 export async function findPatientsByDoctor(clinicId, doctorId, query) {
-  const { page, limit, search, gender, bloodGroup, status, sortBy, sortOrder } = query;
+  const { page = 1, limit = 10, search, gender, bloodGroup, status, sortBy, sortOrder } = query;
   
   const distinctPatientIds = await Appointment.distinct("patientId", { clinicId, doctorId });
   
-  let profileFilter = { clinicId: clinicId, patientId: { $in: distinctPatientIds } };
+  let profileFilter = { patientId: { $in: distinctPatientIds } };
   if (gender) profileFilter.gender = gender;
   if (bloodGroup) profileFilter.bloodGroup = bloodGroup;
   
@@ -197,7 +213,7 @@ export async function findPatientsByDoctor(clinicId, doctorId, query) {
     ];
   }
 
-  const sort = { [sortBy === "fullName" ? "name" : sortBy]: sortOrder === "asc" ? 1 : -1 };
+  const sort = { [sortBy === "fullName" ? "name" : sortBy || "createdAt"]: sortOrder === "asc" ? 1 : -1 };
   const skip = (page - 1) * limit;
 
   const [users, total] = await Promise.all([
@@ -213,8 +229,8 @@ export async function findPatientsByDoctor(clinicId, doctorId, query) {
   return {
     patients: finalPatients,
     pagination: {
-      page,
-      limit,
+      page: Number(page),
+      limit: Number(limit),
       total,
       totalPages: Math.ceil(total / limit)
     }

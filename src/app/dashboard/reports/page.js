@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import PageHeader from "@/frontend/components/dashboard/PageHeader";
@@ -379,7 +379,7 @@ export default function ReportsPage() {
     );
   };
   return (
-    <div className="pb-12 max-w-7xl mx-auto">
+    <div className="pb-12 w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Clinic Reports & Analytics</h1>
@@ -441,8 +441,8 @@ export default function ReportsPage() {
                 onChange={(e) => setDoctorId(e.target.value)}
               >
                 <option value="">All Doctors</option>
-                {doctors.map(d => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
+                {doctors.map((d, index) => (
+                  <option key={d._id || d.id || index} value={d._id || d.id}>{d.name}</option>
                 ))}
               </select>
             </div>

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import Link from "next/link";
 import Button from "@/frontend/components/ui/Button";
 import InvoiceStatusBadge from "./InvoiceStatusBadge";
@@ -45,10 +45,12 @@ export default function InvoiceTable({ invoices, loading }) {
               </td>
               <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-900">{formatDate(inv.createdAt)}</td>
               <td className="px-8 py-5 whitespace-nowrap">
-                <div className="text-sm font-bold text-gray-900 group-hover:text-[#15558d] transition-colors">{inv.patientId?.fullName}</div>
-                <div className="text-xs font-medium text-gray-500 mt-0.5">{inv.patientId?.patientCode}</div>
+                <div className="text-sm font-bold text-gray-900 group-hover:text-[#15558d] transition-colors">{inv.patientId?.name || inv.patientId?.fullName || "Unknown Patient"}</div>
+                <div className="text-xs font-medium text-gray-500 mt-0.5">{inv.patientId?.patientIdString || inv.patientId?.patientCode || inv.patientId?.email || inv.patientId?.phone || "N/A"}</div>
               </td>
-              <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-900">Dr. {inv.doctorId?.userId?.name || inv.doctorId?.specialization || "Unknown"}</td>
+              <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-900">
+                {inv.doctorId?.name ? (inv.doctorId.name.startsWith("Dr.") ? inv.doctorId.name : `Dr. ${inv.doctorId.name}`) : (inv.doctorId?.userId?.name ? `Dr. ${inv.doctorId.userId.name}` : `Dr. ${inv.doctorId?.specialization || "Unknown"}`)}
+              </td>
               <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-gray-900 text-right">{formatCurrency(inv.totalAmount)}</td>
               <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-blue-600 text-right">{formatCurrency(inv.paidAmount)}</td>
               <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-red-600 text-right">{formatCurrency(inv.pendingAmount)}</td>

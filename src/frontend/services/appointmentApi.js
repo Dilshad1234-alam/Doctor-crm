@@ -1,5 +1,5 @@
-export async function getAvailableSlots(doctorId, date) {
-  const query = new URLSearchParams({ doctorId, date }).toString();
+export async function getAvailableSlots(clinicId, doctorId, date) {
+  const query = new URLSearchParams({ clinicId, doctorId, date }).toString();
   const res = await fetch(`/api/appointments/available-slots?${query}`);
   return res.json();
 }

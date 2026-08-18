@@ -6,7 +6,7 @@ import { reportListQuerySchema, createReportSchema } from "@/backend/validations
 export async function POST(request, { params }) {
   try {
     const authUser = await getAuthenticatedUser(request);
-    const { patientId } = params;
+    const { patientId } = await params;
 
     const formData = await request.formData();
     const file = formData.get("file");
@@ -41,7 +41,7 @@ export async function POST(request, { params }) {
 export async function GET(request, { params }) {
   try {
     const authUser = await getAuthenticatedUser(request);
-    const { patientId } = params;
+    const { patientId } = await params;
 
     const { searchParams } = new URL(request.url);
     const query = Object.fromEntries(searchParams.entries());

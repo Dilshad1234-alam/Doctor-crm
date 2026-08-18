@@ -55,7 +55,8 @@ export async function startConsultation(authUser, appointmentId) {
       vitalsId: vitals ? vitals._id : null,
       status: "in_progress",
       startedAt: new Date(),
-      createdByDoctorId: authUser.doctorId || appointment.doctorId._id || appointment.doctorId,
+      createdById: authUser.id || authUser._id,
+      createdByModel: authUser.accountType === "clinic" ? "Clinic" : "Doctor",
     }, session);
 
     // Update appointment status
@@ -121,7 +122,8 @@ export async function updateConsultation(authUser, consultationId, input) {
 
   const updated = await updateConsultationById(consultationId, authUser.clinicId, {
     ...input,
-    lastUpdatedByUserId: authUser.id || authUser._id,
+    lastUpdatedById: authUser.id || authUser._id,
+    lastUpdatedByModel: authUser.accountType === "clinic" ? "Clinic" : "Doctor",
   });
 
   return updated;
@@ -157,7 +159,8 @@ export async function completeConsultation(authUser, consultationId, input) {
       ...input,
       status: "completed",
       completedAt: new Date(),
-      lastUpdatedByUserId: authUser.id || authUser._id,
+      lastUpdatedById: authUser.id || authUser._id,
+      lastUpdatedByModel: authUser.accountType === "clinic" ? "Clinic" : "Doctor",
     }, session);
 
     // Update appointment status to completed

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import { getNavigationForRole } from "@/frontend/constants/navigation";
 import { useSidebar } from "@/frontend/context/SidebarContext";
 import { useAuth } from "@/frontend/context/AuthContext";
@@ -19,7 +20,8 @@ import {
   LogOut,
   X,
   CreditCard,
-  CheckSquare
+  CheckSquare,
+  Building2
 } from "lucide-react";
 import Logo from "@/frontend/components/branding/Logo";
 
@@ -40,14 +42,15 @@ function getIconForLabel(label) {
   if (l.includes("setting")) return Settings;
   if (l.includes("transaction")) return CreditCard;
   if (l.includes("task")) return CheckSquare;
-  return FileText; // fallback
+  return FileText;
 }
 
 export default function DashboardSidebar({ user }) {
   const pathname = usePathname();
   const { isMobileOpen, closeMobileSidebar } = useSidebar();
   const { logout } = useAuth();
-  
+  const [clinicProfile, setClinicProfile] = useState(null);
+
   const navItems = user ? getNavigationForRole(user.role) : [];
 
   const initials = user?.name
@@ -58,6 +61,27 @@ export default function DashboardSidebar({ user }) {
     .toUpperCase() || "U";
 
   const displayRole = user?.role ? user.role.replace("_", " ") : "User";
+
+  // Fetch clinic profile to get logo and name
+  useEffect(() => {
+    const fetchClinicProfile = async () => {
+      try {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        if (data.success && data.clinic) {
+          setClinicProfile(data.clinic);
+        }
+      } catch (err) {
+        // silently fail - fall back to Clinora logo
+      }
+    };
+    if (user?.role === "clinic_owner" || user?.role === "doctor" || user?.role === "receptionist" || user?.role === "assistant") {
+      fetchClinicProfile();
+    }
+  }, [user?.role]);
+
+  const clinicName = clinicProfile?.name || null;
+  const clinicLogo = clinicProfile?.profile?.logoUrl || clinicProfile?.logoUrl || null;
 
   const sidebarClasses = `
     fixed inset-y-0 left-0 z-50 flex flex-col bg-[#F8FAFC] text-[#0F172A] border-r border-[#E2E8F0]
@@ -80,11 +104,38 @@ export default function DashboardSidebar({ user }) {
       <div className={sidebarClasses}>
         {/* Top Brand Section */}
         <div className="shrink-0 pt-6 px-6 pb-6 relative flex justify-between items-start">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center">
-              <Logo className="scale-90 origin-left" />
-            </div>
-            <p className="text-[0.65rem] font-semibold text-[#64748B] uppercase tracking-wider mt-2">
+          <div className="flex flex-col gap-1 flex-1 min-w-0">
+            {clinicLogo ? (
+              /* Clinic's own logo */
+              <div className="flex items-center gap-2">
+                <img
+                  src={clinicLogo}
+                  alt={clinicName || "Clinic Logo"}
+                  className="h-10 w-10 rounded-xl object-cover border border-[#E2E8F0] shadow-sm shrink-0"
+                />
+                {clinicName && (
+                  <span className="text-sm font-black text-[#0F172A] leading-tight truncate">
+                    {clinicName}
+                  </span>
+                )}
+              </div>
+            ) : clinicName ? (
+              /* Clinic name with icon placeholder (no logo uploaded yet) */
+              <div className="flex items-center gap-2">
+                <div className="h-10 w-10 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center shrink-0">
+                  <Building2 className="w-5 h-5 text-emerald-600" />
+                </div>
+                <span className="text-sm font-black text-[#0F172A] leading-tight truncate">
+                  {clinicName}
+                </span>
+              </div>
+            ) : (
+              /* Fallback: Clinora logo */
+              <div className="flex items-center">
+                <Logo className="scale-90 origin-left" />
+              </div>
+            )}
+            <p className="text-[0.65rem] font-semibold text-[#64748B] uppercase tracking-wider mt-1">
               Smart Clinic &<br/>Patient Management
             </p>
           </div>

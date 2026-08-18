@@ -89,7 +89,7 @@ export default function LoginPage() {
         } else if (user.accountType === "doctor" && !user.onboardingCompleted) {
           router.push("/onboarding/doctor");
         } else if (user.accountType === "patient" && !user.onboardingCompleted) {
-          router.push("/onboarding/patient");
+          router.push(callbackUrl ? `/onboarding/patient?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/onboarding/patient");
         } else if (callbackUrl) {
           router.push(callbackUrl);
         } else if (user.accountType === "patient" && user.onboardingCompleted) {

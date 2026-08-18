@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Calendar, Clock, CheckCircle2, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Clock, CheckCircle2, User, MapPin, Phone } from "lucide-react";
 import { getAvailableSlots, createAppointment } from "@/frontend/services/appointmentApi";
 import { useAuth } from "@/frontend/context/AuthContext";
 
@@ -16,11 +16,13 @@ export default function PatientBookAppointmentPage() {
   const [error, setError] = useState("");
 
   // Data
+  const [clinic, setClinic] = useState(null);
   const [doctors, setDoctors] = useState([]);
   const [slots, setSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
 
   // Form State
+  const [activeClinicId, setActiveClinicId] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -29,60 +31,122 @@ export default function PatientBookAppointmentPage() {
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
 
-  // Step 1: Fetch Doctors
+  // Initialization: URL -> pendingBooking -> localStorage
   useEffect(() => {
-    if (step === 1 && doctors.length === 0) {
-      const fetchDocs = async () => {
-        try {
-          const searchParams = new URLSearchParams(window.location.search);
-          const urlClinicId = searchParams.get('clinicId');
-          const localClinicId = typeof window !== "undefined" ? localStorage.getItem("selectedClinicId") : null;
-          const clinicId = urlClinicId || localClinicId;
+    const init = async () => {
+      let resolvedClinicId = null;
+      let doctorToSelect = null;
+      let dateToSelect = null;
+      let timeToSelect = null;
+      let startStep = 1;
 
-          let url = "/api/doctors";
-          if (clinicId) {
-            url += `?clinicId=${clinicId}`;
+      if (typeof window !== "undefined") {
+        const searchParams = new URLSearchParams(window.location.search);
+        
+        // 1. Check URL
+        if (searchParams.get('clinicId')) {
+          resolvedClinicId = searchParams.get('clinicId');
+          doctorToSelect = searchParams.get('doctorId');
+          dateToSelect = searchParams.get('date');
+          timeToSelect = searchParams.get('time');
+        } 
+        // 2. Check pending booking
+        else {
+          const storedPending = localStorage.getItem("pendingBooking");
+          if (storedPending) {
+            try {
+              const parsed = JSON.parse(storedPending);
+              if (parsed.clinicId) resolvedClinicId = parsed.clinicId;
+              if (parsed.doctorId) doctorToSelect = parsed.doctorId;
+              if (parsed.appointmentDate) dateToSelect = parsed.appointmentDate;
+              if (parsed.startTime) timeToSelect = parsed.startTime;
+            } catch (e) {}
           }
+        }
+        
+        // 3. Check selectedClinicId
+        if (!resolvedClinicId) {
+          resolvedClinicId = localStorage.getItem("selectedClinicId");
+        }
+      }
 
-          const res = await fetch(url);
+      if (resolvedClinicId) {
+        setActiveClinicId(resolvedClinicId);
+        
+        // Fetch Clinic Details
+        try {
+          // We can use the public clinic fetch by ID if we have it, or fallback.
+          // Since we might only have an ID, not a slug, we use the public API by ID.
+          const res = await fetch(`/api/public/clinics/${resolvedClinicId}`);
           const data = await res.json();
-          if (data.success) {
-            setDoctors(data.doctors || []);
+          if (data.success && data.data) {
+            setClinic(data.data.clinic);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+
+        // Fetch Doctors for this clinic
+        try {
+          const res = await fetch(`/api/doctors?clinicId=${resolvedClinicId}`);
+          const data = await res.json();
+          if (data.success && data.doctors) {
+            setDoctors(data.doctors);
+            
+            if (doctorToSelect) {
+              const doc = data.doctors.find(d => 
+                d.profile?._id === doctorToSelect || 
+                d.profile?.id === doctorToSelect || 
+                d.doctor?._id === doctorToSelect || 
+                d._id === doctorToSelect || 
+                d.id === doctorToSelect
+              );
+              if (doc) {
+                setSelectedDoctor(doc);
+                startStep = 2;
+                if (dateToSelect) {
+                  setSelectedDate(dateToSelect);
+                  startStep = 3;
+                  if (timeToSelect) {
+                    // We'll set a temporary slot object, step 3 effect will load real slots
+                    setSelectedSlot({ startTime: timeToSelect });
+                    startStep = 4;
+                  }
+                }
+              }
+            }
           }
         } catch (e) {
           console.error(e);
         }
-      };
-      fetchDocs();
-    }
-  }, [step, doctors.length]);
-
-  // URL Params handling
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const doctorId = searchParams.get('doctorId');
-    const date = searchParams.get('date');
-    const time = searchParams.get('time');
-
-    if (doctorId && doctors.length > 0 && !selectedDoctor) {
-      const doc = doctors.find(d => d.id === doctorId || d._id === doctorId);
-      if (doc) {
-        setSelectedDoctor(doc);
-        if (date) {
-          setSelectedDate(date);
-          if (time) {
-            // Need to set selected slot which will be fetched in step 3
-            // So we jump straight to step 3, then it fetches, then we select
-            setStep(3);
-          } else {
-            setStep(2);
+        
+        setStep(startStep);
+      } else {
+        // Fetch generic doctors (will fallback to PatientClinic in backend)
+        try {
+          const res = await fetch(`/api/doctors`);
+          const data = await res.json();
+          if (data.success && data.doctors) {
+            setDoctors(data.doctors);
+            // We can also fetch the clinic info from the first doctor's clinicId if needed
+            if (data.doctors.length > 0 && data.doctors[0].clinicId) {
+              const cid = data.doctors[0].clinicId;
+              setActiveClinicId(cid);
+              if (typeof window !== "undefined") localStorage.setItem("selectedClinicId", cid);
+              const cres = await fetch(`/api/public/clinics/${cid}`);
+              const cdata = await cres.json();
+              if (cdata.success && cdata.data) {
+                setClinic(cdata.data.clinic);
+              }
+            }
           }
-        } else {
-          setStep(2);
+        } catch (e) {
+          console.error(e);
         }
       }
-    }
-  }, [doctors, selectedDoctor]);
+    };
+    init();
+  }, []);
 
   // Step 3: Fetch Slots
   useEffect(() => {
@@ -90,17 +154,21 @@ export default function PatientBookAppointmentPage() {
       const fetchSlotsData = async () => {
         setSlotsLoading(true);
         try {
-          const res = await getAvailableSlots(selectedDoctor.id || selectedDoctor._id, selectedDate);
+          const finalClinicId = activeClinicId || selectedDoctor.profile?.clinicId || selectedDoctor.clinicId;
+          const docId = selectedDoctor.doctor?._id || selectedDoctor.profile?.doctorId || selectedDoctor._id || selectedDoctor.id;
+          const res = await getAvailableSlots(finalClinicId, docId, selectedDate);
           if (res.success) {
             setSlots(res.slots || []);
-            // Pre-select slot if time param exists
-            const timeParam = new URLSearchParams(window.location.search).get('time');
-            if (timeParam && !selectedSlot) {
-              const slotMatch = res.slots.find(s => s.startTime === timeParam);
-              if (slotMatch) {
-                setSelectedSlot(slotMatch);
-                setStep(4);
-              }
+            
+            // If we have a pre-selected slot time from initialization
+            if (selectedSlot && !selectedSlot._id) {
+               const slotMatch = res.slots.find(s => s.startTime === selectedSlot.startTime);
+               if (slotMatch) {
+                 setSelectedSlot(slotMatch);
+               } else {
+                 setSelectedSlot(null); // Invalid slot
+                 setStep(3);
+               }
             }
           } else {
             setSlots([]);
@@ -122,7 +190,7 @@ export default function PatientBookAppointmentPage() {
       return;
     }
 
-    if (!selectedDoctor || !selectedDate || !selectedSlot) {
+    if (!selectedDoctor || !selectedDate || !selectedSlot || !selectedSlot.startTime) {
       setError("Please complete all steps");
       return;
     }
@@ -131,21 +199,27 @@ export default function PatientBookAppointmentPage() {
     setError("");
     
     try {
+      const finalClinicId = activeClinicId || selectedDoctor.profile?.clinicId || selectedDoctor.clinicId;
+      const docId = selectedDoctor.doctor?._id || selectedDoctor.profile?.doctorId || selectedDoctor._id || selectedDoctor.id;
+      
       const payload = {
         patientId: user.patientId, // Patient books for themselves
-        doctorId: selectedDoctor.id || selectedDoctor._id,
+        doctorId: docId,
         appointmentDate: selectedDate,
         startTime: selectedSlot.startTime,
         visitType,
         reason,
         notes,
-        clinicId: new URLSearchParams(window.location.search).get('clinicId') || (typeof window !== "undefined" ? localStorage.getItem("selectedClinicId") : null)
+        clinicId: finalClinicId
       };
 
       const res = await createAppointment(payload);
       if (res.success) {
-        // Redirect to booking success screen
-        router.push(`/patient/book/success/${res.appointment._id}`);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("pendingBooking");
+        }
+        // Redirect to patient dashboard
+        router.push(`/patient/dashboard`);
       } else {
         setError(res.message || "Failed to book appointment");
       }
@@ -166,6 +240,30 @@ export default function PatientBookAppointmentPage() {
         </Link>
         <h1 className="text-2xl font-bold text-gray-900">Book Appointment</h1>
       </div>
+      
+      {/* Clinic Details Header */}
+      {clinic && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-bold tracking-wider text-blue-600 uppercase mb-1">Selected Clinic</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">{clinic.name}</h2>
+              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div className="flex items-center">
+                  <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+                  <span>{clinic.address?.line1}, {clinic.address?.city}</span>
+                </div>
+                {clinic.phone && (
+                  <div className="flex items-center">
+                    <Phone className="w-4 h-4 mr-1 text-gray-400" />
+                    <span>{clinic.phone}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {/* Progress Bar */}
@@ -199,25 +297,33 @@ export default function PatientBookAppointmentPage() {
             <div className="space-y-4">
               <h2 className="text-lg font-bold text-gray-900">Select Doctor</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {doctors.filter(d => d.isActive && d.isAcceptingAppointments).map(d => (
-                  <div 
-                    key={d.id || d._id} 
-                    onClick={() => setSelectedDoctor(d)}
-                    className={`p-4 border rounded-lg cursor-pointer flex flex-col ${
-                      (selectedDoctor?.id || selectedDoctor?._id) === (d.id || d._id) 
-                        ? 'border-blue-500 bg-blue-50' 
-                        : 'border-gray-200 hover:border-blue-300'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <p className="font-medium text-gray-900">{d.userId?.name || d.specialization}</p>
-                      {(selectedDoctor?.id || selectedDoctor?._id) === (d.id || d._id) && <CheckCircle2 className="w-5 h-5 text-blue-600" />}
+                {doctors.filter(d => (d.doctor?.isActive ?? d.profile?.isActive ?? d.isActive) && (d.profile?.isAcceptingAppointments ?? d.isAcceptingAppointments)).map(d => {
+                  const docId = d.profile?._id || d.profile?.id || d._id || d.id;
+                  const docName = d.doctor?.name || d.userId?.name || d.specialization;
+                  const docSpec = d.profile?.specialization || d.specialization;
+                  const docFee = d.profile?.consultationFee || d.consultationFee;
+                  const isSelected = (selectedDoctor?.profile?._id || selectedDoctor?.profile?.id || selectedDoctor?._id || selectedDoctor?.id) === docId;
+                  
+                  return (
+                    <div 
+                      key={docId} 
+                      onClick={() => setSelectedDoctor(d)}
+                      className={`p-4 border rounded-lg cursor-pointer flex flex-col ${
+                        isSelected 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <p className="font-medium text-gray-900">{docName}</p>
+                        {isSelected && <CheckCircle2 className="w-5 h-5 text-blue-600" />}
+                      </div>
+                      <p className="text-sm text-gray-500">{docSpec}</p>
+                      <p className="text-sm font-medium text-gray-900 mt-2">Fee: ₹{docFee}</p>
                     </div>
-                    <p className="text-sm text-gray-500">{d.specialization}</p>
-                    <p className="text-sm font-medium text-gray-900 mt-2">Fee: ₹{d.consultationFee}</p>
-                  </div>
-                ))}
-                {doctors.length === 0 && (
+                  );
+                })}
+                {doctors.filter(d => (d.doctor?.isActive ?? d.profile?.isActive ?? d.isActive) && (d.profile?.isAcceptingAppointments ?? d.isAcceptingAppointments)).length === 0 && (
                    <p className="text-sm text-gray-500 col-span-2">No doctors available at the moment.</p>
                 )}
               </div>
@@ -246,7 +352,7 @@ export default function PatientBookAppointmentPage() {
           {step === 3 && (
             <div className="space-y-4">
               <h2 className="text-lg font-bold text-gray-900">Select Available Slot</h2>
-              <p className="text-sm text-gray-500">For {new Date(selectedDate).toLocaleDateString()} with {selectedDoctor?.userId?.name || selectedDoctor?.specialization}</p>
+              <p className="text-sm text-gray-500">For {new Date(selectedDate).toLocaleDateString()} with {selectedDoctor?.userId?.name || selectedDoctor?.doctor?.name || selectedDoctor?.specialization}</p>
               
               {slotsLoading ? (
                 <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
@@ -284,8 +390,12 @@ export default function PatientBookAppointmentPage() {
               <div className="bg-gray-50 rounded-lg border border-gray-200 p-5 space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
+                    <span className="block text-gray-500 mb-1">Clinic</span>
+                    <span className="font-medium text-gray-900">{clinic?.name || "Selected Clinic"}</span>
+                  </div>
+                  <div>
                     <span className="block text-gray-500 mb-1">Doctor</span>
-                    <span className="font-medium text-gray-900">{selectedDoctor?.userId?.name || selectedDoctor?.specialization}</span>
+                    <span className="font-medium text-gray-900">{selectedDoctor?.userId?.name || selectedDoctor?.doctor?.name || selectedDoctor?.specialization}</span>
                   </div>
                   <div>
                     <span className="block text-gray-500 mb-1">Date</span>
@@ -342,7 +452,13 @@ export default function PatientBookAppointmentPage() {
           {/* Navigation */}
           <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between">
             <button
-              onClick={() => setStep(step - 1)}
+              onClick={() => {
+                if (step === 4 && selectedSlot && !selectedSlot._id) {
+                  setStep(2); // If fast-forwarded to step 4 without real slot data, go back to 2
+                } else {
+                  setStep(step - 1);
+                }
+              }}
               disabled={step === 1}
               className={`px-4 py-2 text-sm font-medium rounded-lg border ${
                 step === 1 
@@ -371,7 +487,7 @@ export default function PatientBookAppointmentPage() {
                 disabled={loading}
                 className="px-6 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-wait transition-colors flex items-center"
               >
-                {loading ? 'Confirming...' : 'Confirm Appointment'}
+                {loading ? 'Booking...' : 'Book Appointment'}
               </button>
             )}
           </div>

@@ -275,7 +275,7 @@ export default function OwnerDashboard() {
   }
 
   return (
-    <div className="space-y-6 pb-10 max-w-[1400px] mx-auto" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div className="space-y-6 pb-10 w-full" style={{ fontFamily: "'Poppins', sans-serif" }}>
 
       {/* ── Page Header ── */}
       <div className="flex items-center justify-between">
@@ -364,7 +364,7 @@ export default function OwnerDashboard() {
             sub="Last 7 days"
             href="/dashboard/appointments"
           />
-          <BarChart data={weeklyAppts} color="#10B981" height={140} />
+          <BarChart data={weeklyAppts} color="#10B981" height={200} />
           <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
               <span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block" />
@@ -412,7 +412,7 @@ export default function OwnerDashboard() {
         {/* Revenue Overview */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
           <SectionHeader title="Revenue Overview" sub="Last 7 days (₹)" href="/dashboard/billing" />
-          <BarChart data={revenueWeekly} color="#3B82F6" height={140} />
+          <BarChart data={revenueWeekly} color="#3B82F6" height={200} />
           <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
               <span className="w-3 h-3 rounded-sm bg-blue-500 inline-block" />

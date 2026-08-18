@@ -49,7 +49,7 @@ export async function findDoctorQueue(clinicId, doctorId, date, query = {}) {
   }
 
   return QueueEntry.find(filter)
-    .populate("patientId", "firstName lastName fullName phone gender dateOfBirth patientIdString")
+    .populate("patientId", "name firstName lastName fullName phone gender dateOfBirth patientIdString")
     .populate("appointmentId", "appointmentCode startTime endTime visitType status")
     .sort({ priority: -1, waitingSince: 1, tokenNumber: 1 }); // Sort logic handling needed below
 }
@@ -85,7 +85,7 @@ export async function findClinicQueue(clinicId, date, query = {}) {
   }
 
   return QueueEntry.find(filter)
-    .populate("patientId", "firstName lastName fullName phone patientIdString")
+    .populate("patientId", "name firstName lastName fullName phone patientIdString")
     .populate("doctorId", "name email phone")
     .populate("appointmentId", "appointmentCode startTime endTime visitType status")
     .sort({ tokenNumber: 1 });

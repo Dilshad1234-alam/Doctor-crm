@@ -86,7 +86,7 @@ export async function registerUser(input) {
     name: newUser.name,
     email: newUser.email,
     phone: newUser.phone,
-    role: accountType, // alias for backwards compatibility
+    role: accountType === "clinic" ? "clinic_owner" : accountType, // alias for backwards compatibility
     onboardingCompleted: false, // can be derived from profile later
   };
 
@@ -153,7 +153,7 @@ export async function loginUser(input) {
     name: user.name,
     email: user.email,
     phone: user.phone,
-    role: foundAccountType, // alias for compatibility
+    role: foundAccountType === "clinic" ? "clinic_owner" : foundAccountType, // alias for compatibility
     onboardingCompleted: true, // Needs profile check if required
   };
 
@@ -177,7 +177,7 @@ export async function getCurrentUser(accountId, accountType) {
     name: user.name,
     email: user.email,
     phone: user.phone,
-    role: accountType,
+    role: accountType === "clinic" ? "clinic_owner" : accountType,
     onboardingCompleted: true,
   };
 

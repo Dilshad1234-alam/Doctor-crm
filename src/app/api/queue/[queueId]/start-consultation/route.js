@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+// Force Next.js recompile to pick up consultationService changes
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { startConsultationFromQueue } from "@/backend/services/queueService";
 

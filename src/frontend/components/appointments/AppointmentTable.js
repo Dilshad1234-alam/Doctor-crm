@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import AppointmentStatusBadge from "./AppointmentStatusBadge";
 import { Eye, Calendar, XCircle, UserX } from "lucide-react";
 
@@ -52,11 +52,11 @@ export default function AppointmentTable({ appointments, role, onReschedule, onC
                 </span>
               </td>
               <td className="px-5 py-3 whitespace-nowrap">
-                <div className="text-sm font-bold text-[#0F172A] group-hover:text-[#2563EB] transition-colors">{apt.patientId?.fullName || "Unknown"}</div>
+                <div className="text-sm font-bold text-[#0F172A] group-hover:text-[#2563EB] transition-colors">{apt.patientId?.name || apt.patientId?.fullName || "Unknown"}</div>
                 <div className="text-xs font-semibold text-[#64748B] mt-0.5">{apt.patientId?.phone || "N/A"}</div>
               </td>
               <td className="px-5 py-3 whitespace-nowrap">
-                <div className="text-sm font-bold text-[#0F172A]">{apt.doctorId?.userId?.name || "Unknown"}</div>
+                <div className="text-sm font-bold text-[#0F172A]">{apt.doctorId?.name || apt.doctorId?.userId?.name || "Unknown"}</div>
                 <div className="text-xs font-semibold text-[#64748B] mt-0.5">{apt.doctorId?.specialization || "N/A"}</div>
               </td>
               <td className="px-5 py-3 whitespace-nowrap text-sm font-bold text-[#64748B]">

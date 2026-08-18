@@ -19,9 +19,11 @@ export async function GET(request) {
       return NextResponse.json({ success: false, errors: parsedQuery.error.format() }, { status: 400 });
     }
 
-    const { doctorId, date } = parsedQuery.data;
+    const { doctorId, date, clinicId } = parsedQuery.data;
 
-    const result = await getDoctorAvailableSlots(authUser.clinicId, doctorId, date);
+    // Use clinicId from query if provided, otherwise fallback to authUser.clinicId
+    const clinicIdToUse = clinicId || authUser.clinicId;
+    const result = await getDoctorAvailableSlots(clinicIdToUse, doctorId, date);
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: error.status || 500 });

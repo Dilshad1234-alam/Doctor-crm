@@ -5,7 +5,7 @@ import { getPatientTests } from "@/backend/services/testService";
 export async function GET(request, { params }) {
   try {
     const authUser = await getAuthenticatedUser(request);
-    const { patientId } = params;
+    const { patientId } = await params;
 
     const { searchParams } = new URL(request.url);
     const query = Object.fromEntries(searchParams.entries());

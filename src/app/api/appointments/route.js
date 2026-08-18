@@ -22,6 +22,9 @@ export async function POST(request) {
     const appointment = await createAppointmentForClinic(authUser, parsedData.data);
     return NextResponse.json({ success: true, appointment }, { status: 201 });
   } catch (error) {
+    if (error.code === "SLOT_ALREADY_BOOKED") {
+      return NextResponse.json({ success: false, message: error.message }, { status: 200 });
+    }
     return NextResponse.json({ success: false, message: error.message, code: error.code }, { status: error.status || 500 });
   }
 }

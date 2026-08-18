@@ -256,7 +256,7 @@ export default function AppointmentDetailsPage({ params }) {
                 <User className="w-10 h-10 text-blue-600 bg-white p-2 rounded-full border border-blue-200 mr-3" />
                 <div>
                   <Link href={`/dashboard/patients/${appointment.patientId?._id}`} className="font-medium text-blue-900 hover:underline">
-                    {appointment.patientId?.fullName}
+                    {appointment.patientId?.name || appointment.patientId?.fullName || "Unknown Patient"}
                   </Link>
                   <p className="text-sm text-blue-700">{appointment.patientId?.patientCode} • {appointment.patientId?.age} yrs • {appointment.patientId?.gender}</p>
                   {appointment.patientId?.phone && <p className="text-sm text-blue-700 mt-1 flex items-center"><Phone className="w-3 h-3 mr-1" /> {appointment.patientId.phone}</p>}
@@ -269,8 +269,8 @@ export default function AppointmentDetailsPage({ params }) {
               <div className="flex items-start">
                 <UserCheck className="w-10 h-10 text-gray-500 bg-gray-100 p-2 rounded-full border border-gray-200 mr-3" />
                 <div>
-                  <p className="font-medium text-gray-900">{appointment.doctorId?.userId?.name}</p>
-                  <p className="text-sm text-gray-500">{appointment.doctorId?.specialization}</p>
+                  <p className="font-medium text-gray-900">{appointment.doctorId?.name || appointment.doctorId?.userId?.name || "Unknown Doctor"}</p>
+                  <p className="text-sm text-gray-500">{appointment.doctorId?.specialization || "N/A"}</p>
                 </div>
               </div>
             </div>

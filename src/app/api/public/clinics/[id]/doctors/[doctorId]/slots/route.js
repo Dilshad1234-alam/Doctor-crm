@@ -1,17 +1,63 @@
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+import Clinic from "@/backend/models/Clinic";
 import { getDoctorAvailableSlots } from "@/backend/services/appointmentSlotService";
 import { connectDB as connectToDatabase } from "@/backend/database/connectDB";
 
 export async function GET(request, { params }) {
   try {
     await connectToDatabase();
-    const { id: clinicId, doctorId } = params;
+    const { id: clinicId, doctorId } = await params;
+
+    let resolvedClinicId = clinicId;
+    if (!mongoose.Types.ObjectId.isValid(clinicId)) {
+      // Slug is derived from clinic name, not stored in DB.
+      // So we load all public clinics and match by slugified name.
+      function slugify(text) {
+        if (!text) return "";
+        return text.toString().toLowerCase().trim()
+          .replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
+      }
+
+      const ClinicProfile = (await import("@/backend/models/ClinicProfile")).default;
+      const allPublic = await ClinicProfile.find({ isPublic: true })
+        .populate("clinicId", "name isActive")
+        .lean();
+
+      const matched = allPublic.find(p =>
+        p.clinicId?.isActive &&
+        slugify(p.clinicId.name) === clinicId.toLowerCase()
+      );
+
+      if (!matched) {
+        // Try direct Clinic.slug as last fallback
+        const clinic = await Clinic.findOne({ slug: clinicId });
+        if (!clinic) {
+          return NextResponse.json({ success: false, message: "Clinic not found" }, { status: 404 });
+        }
+        resolvedClinicId = clinic._id.toString();
+      } else {
+        resolvedClinicId = matched.clinicId._id.toString();
+      }
+    }
 
     const { searchParams } = new URL(request.url);
-    const startDateStr = searchParams.get("startDate"); // YYYY-MM-DD
+    const startDateStr = searchParams.get("startDate");
+    const dateStr = searchParams.get("date"); // single date mode
     
-    if (!startDateStr) {
-      return NextResponse.json({ success: false, message: "startDate is required" }, { status: 400 });
+    if (!startDateStr && !dateStr) {
+      return NextResponse.json({ success: false, message: "startDate or date is required" }, { status: 400 });
+    }
+
+    if (dateStr) {
+      const result = await getDoctorAvailableSlots(resolvedClinicId, doctorId, dateStr);
+      return NextResponse.json({
+        success: true,
+        data: {
+          doctor: result.doctor, // if needed
+          slots: result.slots || []
+        }
+      });
     }
 
     const startDate = new Date(startDateStr);
@@ -23,17 +69,17 @@ export async function GET(request, { params }) {
     for (let i = 0; i < 7; i++) {
       const d = new Date(startDate);
       d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().split("T")[0];
-      next7Days.push(dateStr);
+      const ds = d.toISOString().split("T")[0];
+      next7Days.push(ds);
     }
 
     const slotsByDate = {};
-    for (const dateStr of next7Days) {
-      const result = await getDoctorAvailableSlots(clinicId, doctorId, dateStr);
+    for (const ds of next7Days) {
+      const result = await getDoctorAvailableSlots(resolvedClinicId, doctorId, ds);
       if (result.success) {
-        slotsByDate[dateStr] = result.slots;
+        slotsByDate[ds] = result.slots;
       } else {
-        slotsByDate[dateStr] = [];
+        slotsByDate[ds] = [];
       }
     }
 

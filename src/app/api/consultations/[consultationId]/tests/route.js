@@ -5,7 +5,7 @@ import { getConsultationTests } from "@/backend/services/testService";
 export async function GET(request, { params }) {
   try {
     const authUser = await getAuthenticatedUser(request);
-    const { consultationId } = params;
+    const { consultationId } = await params;
 
     const tests = await getConsultationTests(authUser, consultationId);
 

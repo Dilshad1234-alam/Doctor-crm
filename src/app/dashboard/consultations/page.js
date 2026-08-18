@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -28,7 +28,7 @@ export default function ConsultationsPage() {
   };
 
   return (
-    <div className="pb-12 max-w-7xl mx-auto">
+    <div className="pb-12 w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Consultations</h1>
@@ -64,8 +64,8 @@ export default function ConsultationsPage() {
                       {new Date(c.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
-                       <div className="text-sm font-bold text-gray-900 group-hover:text-[#15558d] transition-colors">{c.patient?.fullName || "Unknown Patient"}</div>
-                       <div className="text-xs font-medium text-gray-500 mt-0.5">ID: {c.patient?.patientCode || c.patient}</div>
+                       <div className="text-sm font-bold text-gray-900 group-hover:text-[#15558d] transition-colors">{c.patient?.name || c.patient?.fullName || "Unknown Patient"}</div>
+                       <div className="text-xs font-medium text-gray-500 mt-0.5">ID: {c.patient?.patientCode || c.patient?.patientIdString || "N/A"}</div>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
                        <span className={`px-3 py-1 rounded-md text-xs font-bold capitalize border ${c.status === 'completed' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>

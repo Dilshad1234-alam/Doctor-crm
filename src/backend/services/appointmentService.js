@@ -2,6 +2,7 @@ import { createAppointment, findAppointmentById, findAppointmentsByClinic, findA
 import { getDoctorAvailableSlots } from "./appointmentSlotService.js";
 import { generateAppointmentCode } from "../utils/generateAppointmentCode.js";
 import DoctorProfile from "../models/DoctorProfile.js";
+import Appointment from "../models/Appointment.js";
 import { findPatientById } from "../repositories/patientRepository.js";
 // import AuditLog from "../models/AuditLog.js";
 import { canReschedule, canCancel, APPOINTMENT_STATUSES, ACTIVE_STATUSES } from "../utils/appointmentStatus.js";
@@ -19,25 +20,39 @@ export async function createAppointmentForClinic(authUser, input) {
   
   if (!clinicId) throw Object.assign(new Error("Clinic ID is required"), { status: 400 });
 
-  // 1. Verify Patient & Doctor
-  const patient = await findPatientById(patientId, clinicId);
-  if (!patient || !patient.isActive) throw Object.assign(new Error("Patient not found or inactive"), { status: 404 });
-
-  const doctor = await DoctorProfile.findOne({ _id: doctorId, clinicId, isActive: true });
-  if (!doctor || !doctor.isAcceptingAppointments) throw Object.assign(new Error("Doctor not found or not accepting appointments"), { status: 400 });
-
   // 2. Verify Role Rules
   if (role === "doctor" && authUser.doctorId !== doctorId) {
     throw Object.assign(new Error("Doctors can only book their own appointments"), { status: 403 });
   }
-  if (role === "patient" && authUser.patientId !== patientId) {
-    throw Object.assign(new Error("Patients can only book their own appointments"), { status: 403 });
+  if (role === "patient") {
+    // Strictly override patientId from payload
+    input.patientId = authUser.patientId;
+    if (!input.patientId) {
+      throw Object.assign(new Error("Patient profile is not fully set up"), { status: 403 });
+    }
   }
 
-  // 3. Verify Slot Conflict (Double Booking)
-  const conflict = await findDoctorAppointmentConflict(clinicId, doctorId, appointmentDate, startTime);
-  if (conflict) {
-    throw Object.assign(new Error("Slot is already booked"), { status: 409, code: "SLOT_ALREADY_BOOKED" });
+  // Use the verified patientId for further logic
+  const actualPatientId = input.patientId;
+  const patient = await findPatientById(actualPatientId, clinicId);
+  if (!patient || !patient.isActive) throw Object.assign(new Error("Patient not found or inactive"), { status: 404 });
+
+  const doctor = await DoctorProfile.findOne({ 
+    $or: [{ _id: doctorId }, { doctorId: doctorId }],
+    clinicId, 
+    isActive: true 
+  });
+  if (!doctor || !doctor.isAcceptingAppointments) throw Object.assign(new Error("Doctor not found or not accepting appointments"), { status: 400 });
+
+  // 3. Deep Slot Validation & Race Condition Check
+  const slotRes = await getDoctorAvailableSlots(clinicId, doctorId, appointmentDate);
+  if (!slotRes.success) {
+    throw Object.assign(new Error(slotRes.message || "Failed to verify slot"), { status: 400 });
+  }
+  
+  const slot = slotRes.slots.find(s => s.startTime === startTime);
+  if (!slot || slot.isBooked) {
+    throw Object.assign(new Error("This slot is no longer available. Please select another slot."), { status: 409, code: "SLOT_ALREADY_BOOKED" });
   }
 
   // 4. Generate Code, Token & Snapshot Fee
@@ -85,7 +100,7 @@ export async function createAppointmentForClinic(authUser, input) {
     notes,
     consultationFee,
     status: APPOINTMENT_STATUSES.SCHEDULED,
-    createdByUserId: userId,
+    createdById: userId,
   };
 
   const appointment = await createAppointment(appointmentData);
@@ -126,7 +141,7 @@ export async function rescheduleAppointment(authUser, appointmentId, input) {
     previousDate: appointment.appointmentDate,
     previousStartTime: appointment.startTime,
     previousEndTime: appointment.endTime,
-    changedByUserId: userId,
+    changedById: userId,
     changedAt: new Date()
   };
 
@@ -134,7 +149,7 @@ export async function rescheduleAppointment(authUser, appointmentId, input) {
     appointmentDate: new Date(appointmentDate),
     startTime,
     endTime,
-    lastUpdatedByUserId: userId,
+    lastUpdatedById: userId,
     $push: { rescheduleHistory: historyEntry }
   };
 
@@ -162,10 +177,10 @@ export async function cancelAppointment(authUser, appointmentId, reason) {
     status: APPOINTMENT_STATUSES.CANCELLED,
     cancellation: {
       reason,
-      cancelledByUserId: userId,
+      cancelledById: userId,
       cancelledAt: new Date()
     },
-    lastUpdatedByUserId: userId
+    lastUpdatedById: userId
   };
 
   const updated = await updateAppointmentById(appointmentId, clinicId, updateData);
@@ -190,7 +205,7 @@ export async function markAppointmentNoShow(authUser, appointmentId) {
 
   const updateData = {
     status: APPOINTMENT_STATUSES.NO_SHOW,
-    lastUpdatedByUserId: userId
+    lastUpdatedById: userId
   };
 
   const updated = await updateAppointmentById(appointmentId, clinicId, updateData);
@@ -203,8 +218,10 @@ export async function getAppointments(authUser, query) {
   const { clinicId, role } = authUser;
   if (role === "doctor") {
     query.doctorId = authUser.doctorId;
+    return findAppointmentsByClinic(clinicId, query);
   } else if (role === "patient") {
     query.patientId = authUser.patientId;
+    return findAppointmentsByClinic(null, query);
   }
   return findAppointmentsByClinic(clinicId, query);
 }

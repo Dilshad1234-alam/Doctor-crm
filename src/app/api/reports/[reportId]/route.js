@@ -6,7 +6,7 @@ import { updateReportSchema } from "@/backend/validations/reportValidation";
 export async function GET(request, { params }) {
   try {
     const authUser = await getAuthenticatedUser(request);
-    const { reportId } = params;
+    const { reportId } = await params;
 
     const report = await getReport(authUser, reportId);
     return NextResponse.json({ success: true, report });
@@ -21,7 +21,7 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const authUser = await getAuthenticatedUser(request);
-    const { reportId } = params;
+    const { reportId } = await params;
 
     const body = await request.json();
     const parsedData = updateReportSchema.parse(body);

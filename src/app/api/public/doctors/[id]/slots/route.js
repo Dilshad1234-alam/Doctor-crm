@@ -20,7 +20,7 @@ function minutesToTime(minutesTotal) {
 export async function GET(request, { params }) {
   try {
     await connectDB();
-    const { id } = params; // Doctor ID
+    const { id } = await params; // Doctor ID
     const { searchParams } = new URL(request.url);
     const dateParam = searchParams.get("date"); // Format: YYYY-MM-DD
 
@@ -47,7 +47,11 @@ export async function GET(request, { params }) {
     const dayOfWeek = queryDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
     // Check if doctor works on this day
-    if (!doctor.availableDays || !doctor.availableDays.includes(dayOfWeek)) {
+    const legacyDay = doctor.availability?.find(a => a.day === dayOfWeek);
+    const hasLegacySlots = legacyDay && legacyDay.isAvailable && legacyDay.slots?.length > 0;
+    const worksToday = (doctor.availableDays && doctor.availableDays.includes(dayOfWeek)) || hasLegacySlots;
+
+    if (!worksToday) {
       return NextResponse.json({ success: true, data: { slots: [], message: "Doctor is not available on this day" } });
     }
 
@@ -69,11 +73,25 @@ export async function GET(request, { params }) {
     }
 
     const slots = [];
-    let currentMinutes = timeToMinutes(doctor.startTime);
-    const endMinutes = timeToMinutes(doctor.endTime);
+    
+    // Use legacy slots if top-level availableDays doesn't include the day, but legacy does
+    let blocks = [];
+    if (doctor.availableDays && doctor.availableDays.includes(dayOfWeek)) {
+      blocks = [{
+        start: doctor.startTime || "09:00",
+        end: doctor.endTime || "17:00"
+      }];
+    } else if (hasLegacySlots) {
+      blocks = legacyDay.slots.map(s => ({ start: s.startTime, end: s.endTime }));
+    }
+
     const breakStartMins = timeToMinutes(doctor.breakStart);
     const breakEndMins = timeToMinutes(doctor.breakEnd);
-    const duration = doctor.slotDuration || 15;
+    const duration = doctor.slotDuration || doctor.defaultSlotDuration || 15;
+
+    for (const block of blocks) {
+      let currentMinutes = timeToMinutes(block.start);
+      const endMinutes = timeToMinutes(block.end);
 
     while (currentMinutes + duration <= endMinutes) {
       const slotStartTimeStr = minutesToTime(currentMinutes);
@@ -111,6 +129,7 @@ export async function GET(request, { params }) {
       });
 
       currentMinutes = nextMinutes;
+    }
     }
 
     return NextResponse.json({

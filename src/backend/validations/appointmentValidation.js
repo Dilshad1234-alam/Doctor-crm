@@ -31,6 +31,7 @@ export const availableSlotsQuerySchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "Invalid date format",
   }),
+  clinicId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid clinic ID").optional(),
 });
 
 export const appointmentListQuerySchema = z.object({

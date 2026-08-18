@@ -11,9 +11,8 @@ export async function createAppointment(data) {
 
 export async function findAppointmentById(appointmentId, clinicId) {
   return Appointment.findOne({ _id: appointmentId, clinicId })
-    .populate("patientId", "firstName lastName fullName patientCode phone age gender")
-    .populate("doctorId", "specialization title employeeId")
-    .populate("doctorId", "name email phone")
+    .populate("patientId", "name firstName lastName fullName patientCode patientIdString phone age gender")
+    .populate("doctorId", "name specialization title employeeId email phone")
     .populate("createdById", "name role");
 }
 
@@ -24,7 +23,8 @@ export async function findAppointmentByCode(appointmentCode, clinicId) {
 export async function findAppointmentsByClinic(clinicId, query = {}) {
   const { page = 1, limit = 10, search, doctorId, patientId, date, dateFrom, dateTo, status, visitType, sortBy = "appointmentDate", sortOrder = -1 } = query;
   
-  const filter = { clinicId };
+  const filter = {};
+  if (clinicId) filter.clinicId = clinicId;
   
   if (doctorId) filter.doctorId = doctorId;
   if (patientId) filter.patientId = patientId;
@@ -59,7 +59,7 @@ export async function findAppointmentsByClinic(clinicId, query = {}) {
       .sort(sort)
       .skip(skip)
       .limit(limit)
-      .populate("patientId", "fullName patientCode phone gender")
+      .populate("patientId", "name fullName patientCode phone gender")
       .populate("doctorId", "name email phone")
       .lean(),
     Appointment.countDocuments(filter)

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -27,8 +27,8 @@ export default function DoctorsPage() {
       
       setStats({
         total: res.doctors.length, // For real scale, this would come from an API summary endpoint
-        active: res.doctors.filter(d => d.isActive).length,
-        notAccepting: res.doctors.filter(d => d.isActive && !d.isAcceptingAppointments).length,
+        active: res.doctors.filter(d => d.doctor.isActive).length,
+        notAccepting: res.doctors.filter(d => d.doctor.isActive && !d.profile.isAcceptingAppointments).length,
       });
     } catch (err) {
       setError(err.message || "Failed to load doctors");
@@ -47,7 +47,7 @@ export default function DoctorsPage() {
   };
 
   return (
-    <div className="pb-12 max-w-7xl mx-auto">
+    <div className="pb-12 w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#0f3d69] to-[#2ab5e1]">Doctors</h1>
@@ -130,28 +130,28 @@ export default function DoctorsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-50">
-                {doctors.map((doctor) => (
-                  <tr key={doctor.id} className="hover:bg-blue-50/50 transition-colors group">
+                {doctors.map(({ doctor, profile }) => (
+                  <tr key={profile.id || doctor._id} className="hover:bg-blue-50/50 transition-colors group">
                     <td className="px-8 py-5 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-tr from-[#15558d] to-[#2ab5e1] flex items-center justify-center text-white font-black shadow-md group-hover:scale-105 transition-transform">
                           {doctor.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="ml-5">
-                          <div className="text-sm font-bold text-gray-900">{doctor.title ? `${doctor.title} ` : ''}{doctor.name}</div>
+                          <div className="text-sm font-bold text-gray-900">{profile.title ? `${profile.title} ` : ''}{doctor.name}</div>
                           <div className="text-sm font-medium text-gray-500">{doctor.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap text-sm font-medium text-gray-500">
-                      {doctor.employeeId}
+                      {profile.employeeId}
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900">{doctor.specialization}</div>
-                      <div className="text-xs font-medium text-gray-500">{doctor.subSpecialization}</div>
+                      <div className="text-sm font-bold text-gray-900">{profile.specialization}</div>
+                      <div className="text-xs font-medium text-gray-500">{profile.subSpecialization}</div>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap text-sm font-bold text-gray-900">
-                      ${doctor.consultationFee}
+                      ${profile.consultationFee}
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
                       <span className={`px-3 py-1 inline-flex text-xs font-bold rounded-full ${doctor.isActive ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
@@ -159,13 +159,13 @@ export default function DoctorsPage() {
                       </span>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap text-right text-sm font-bold">
-                      <Link href={`/dashboard/doctors/${doctor.id}`} className="text-[#15558d] hover:text-[#2ab5e1] mr-4 transition-colors">
+                      <Link href={`/dashboard/doctors/${doctor._id || doctor.id}`} className="text-[#15558d] hover:text-[#2ab5e1] mr-4 transition-colors">
                         View
                       </Link>
-                      <Link href={`/dashboard/doctors/${doctor.id}/edit`} className="text-indigo-500 hover:text-indigo-700 mr-4 transition-colors">
+                      <Link href={`/dashboard/doctors/${doctor._id || doctor.id}/edit`} className="text-indigo-500 hover:text-indigo-700 mr-4 transition-colors">
                         Edit
                       </Link>
-                      <Link href={`/dashboard/doctors/${doctor.id}/schedule`} className="text-teal-500 hover:text-teal-700 transition-colors">
+                      <Link href={`/dashboard/doctors/${doctor._id || doctor.id}/schedule`} className="text-teal-500 hover:text-teal-700 transition-colors">
                         Schedule
                       </Link>
                     </td>
