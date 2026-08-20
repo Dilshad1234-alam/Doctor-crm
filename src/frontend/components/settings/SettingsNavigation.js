@@ -7,7 +7,6 @@ export default function SettingsNavigation({ activeTab, onTabChange, role }) {
     { id: "hours", label: "Working Hours", icon: Clock, roles: ["clinic_owner"] },
     { id: "appointments", label: "Appointment Settings", icon: Calendar, roles: ["clinic_owner"] },
     { id: "billing", label: "Billing Settings", icon: FileText, roles: ["clinic_owner", "accountant"] },
-    { id: "prescriptions", label: "Prescription Print", icon: FileText, roles: ["clinic_owner", "doctor"] },
     { id: "notifications", label: "Notifications", icon: Bell, roles: ["clinic_owner"] },
     { id: "security", label: "Security", icon: Shield, roles: ["clinic_owner", "doctor", "receptionist", "assistant", "accountant"] },
   ];

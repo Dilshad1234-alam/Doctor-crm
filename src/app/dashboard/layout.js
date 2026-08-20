@@ -14,21 +14,13 @@ export default async function DashboardLayout({ children }) {
     redirect("/onboarding/select-role");
   }
   
-  if (user.role === "patient") {
-    if (!user.onboardingCompleted) {
-      redirect("/onboarding/patient");
-    } else {
-      // Patient has their own layout/dashboard, they shouldn't access the clinic dashboard
-      redirect("/patient/dashboard");
-    }
-  }
-
   if (user.role === "doctor" && !user.onboardingCompleted) {
     redirect("/onboarding/doctor");
   }
 
+  // Treat clinic_owner as doctor for migration safety if any exist
   if (user.role === "clinic_owner" && !user.onboardingCompleted) {
-    redirect("/onboarding/clinic");
+    redirect("/onboarding/doctor");
   }
 
   return (

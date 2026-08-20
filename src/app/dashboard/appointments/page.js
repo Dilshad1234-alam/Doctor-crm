@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Plus, Search, Filter } from "lucide-react";
 import { getAppointments, cancelAppointment, markAppointmentNoShow } from "@/frontend/services/appointmentApi";
 import AppointmentTable from "@/frontend/components/appointments/AppointmentTable";
-import CheckInModal from "@/frontend/components/queue/CheckInModal";
 import { useAuth } from "@/frontend/context/AuthContext";
 
 export default function AppointmentsPage() {
@@ -14,8 +13,6 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
-  // Check-in state
-  const [checkInModalOpen, setCheckInModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   
   // Filters
@@ -76,11 +73,6 @@ export default function AppointmentsPage() {
 
   const handleReschedule = (apt) => {
     alert("Please click 'View Details' to reschedule this appointment.");
-  };
-
-  const handleCheckIn = (apt) => {
-    setSelectedAppointment(apt);
-    setCheckInModalOpen(true);
   };
 
   return (
@@ -161,18 +153,10 @@ export default function AppointmentsPage() {
                 onCancel={handleCancel}
                 onNoShow={handleNoShow}
                 onReschedule={handleReschedule}
-                onCheckIn={handleCheckIn}
               />
             )}
           </div>
         </div>
-
-        <CheckInModal 
-          isOpen={checkInModalOpen}
-          appointment={selectedAppointment}
-          onClose={() => setCheckInModalOpen(false)}
-          onSuccess={() => fetchAppointments()}
-        />
       </div>
     );
   }

@@ -137,7 +137,6 @@ export default function SettingsPage() {
           {activeTab === "hours" && <WorkingHoursTab workingHours={settings?.workingHours} onSave={handleUpdateWorkingHours} />}
           {activeTab === "appointments" && <AppointmentSettingsTab settings={settings?.appointmentSettings} onSave={handleUpdateAppointmentSettings} />}
           {activeTab === "billing" && <BillingSettingsTab settings={settings?.billingSettings} onSave={handleUpdateBillingSettings} />}
-          {activeTab === "prescriptions" && <PrescriptionSettingsTab settings={settings?.prescriptionSettings} onSave={handleUpdatePrescriptionSettings} />}
           {activeTab === "notifications" && <NotificationSettingsTab settings={settings?.notificationSettings} onSave={handleUpdateNotificationSettings} />}
           {activeTab === "security" && <SecurityTab onSave={handleChangePassword} />}
         </main>

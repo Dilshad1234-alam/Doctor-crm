@@ -15,10 +15,6 @@ export default function AppointmentTable({ appointments, role, onReschedule, onC
     );
   }
 
-  const formatVisitType = (type) => {
-    return type ? type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : "N/A";
-  };
-
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
     const date = new Date(dateStr);
@@ -31,10 +27,10 @@ export default function AppointmentTable({ appointments, role, onReschedule, onC
         <thead className="bg-[#F8FAFC] sticky top-0 z-10 shadow-sm">
           <tr>
             <th className="px-5 py-3 text-left text-xs font-bold text-[#64748B] uppercase tracking-wider">Date & Time</th>
-            <th className="px-5 py-3 text-left text-xs font-bold text-[#64748B] uppercase tracking-wider">Appointment ID</th>
+            <th className="px-5 py-3 text-left text-xs font-bold text-[#64748B] uppercase tracking-wider">Booking ID</th>
             <th className="px-5 py-3 text-left text-xs font-bold text-[#64748B] uppercase tracking-wider">Patient</th>
             <th className="px-5 py-3 text-left text-xs font-bold text-[#64748B] uppercase tracking-wider">Doctor</th>
-            <th className="px-5 py-3 text-left text-xs font-bold text-[#64748B] uppercase tracking-wider">Visit Type</th>
+            <th className="px-5 py-3 text-left text-xs font-bold text-[#64748B] uppercase tracking-wider">Service</th>
             <th className="px-5 py-3 text-left text-xs font-bold text-[#64748B] uppercase tracking-wider">Status</th>
             <th className="px-5 py-3 text-right text-xs font-bold text-[#64748B] uppercase tracking-wider">Actions</th>
           </tr>
@@ -44,23 +40,23 @@ export default function AppointmentTable({ appointments, role, onReschedule, onC
             <tr key={apt._id} className="hover:bg-[#F8FAFC] transition-colors group">
               <td className="px-5 py-3 whitespace-nowrap">
                 <div className="text-sm font-bold text-[#0F172A]">{formatDate(apt.appointmentDate)}</div>
-                <div className="text-xs font-semibold text-[#64748B] mt-0.5">{apt.startTime} - {apt.endTime}</div>
+                <div className="text-xs font-semibold text-[#64748B] mt-0.5">{apt.appointmentTime} ({apt.durationMinutes} min)</div>
               </td>
               <td className="px-5 py-3 whitespace-nowrap">
                 <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-[#F1F5F9] text-[#64748B] border border-[#E2E8F0]">
-                  {apt.appointmentCode}
+                  {apt.bookingId || "N/A"}
                 </span>
               </td>
               <td className="px-5 py-3 whitespace-nowrap">
-                <div className="text-sm font-bold text-[#0F172A] group-hover:text-[#2563EB] transition-colors">{apt.patientId?.name || apt.patientId?.fullName || "Unknown"}</div>
-                <div className="text-xs font-semibold text-[#64748B] mt-0.5">{apt.patientId?.phone || "N/A"}</div>
+                <div className="text-sm font-bold text-[#0F172A] group-hover:text-[#2563EB] transition-colors">{apt.patientName || "Unknown"}</div>
+                <div className="text-xs font-semibold text-[#64748B] mt-0.5">{apt.patientPhone || "N/A"}</div>
               </td>
               <td className="px-5 py-3 whitespace-nowrap">
                 <div className="text-sm font-bold text-[#0F172A]">{apt.doctorId?.name || apt.doctorId?.userId?.name || "Unknown"}</div>
                 <div className="text-xs font-semibold text-[#64748B] mt-0.5">{apt.doctorId?.specialization || "N/A"}</div>
               </td>
               <td className="px-5 py-3 whitespace-nowrap text-sm font-bold text-[#64748B]">
-                {formatVisitType(apt.visitType)}
+                {apt.serviceId?.name || "N/A"}
               </td>
               <td className="px-5 py-3 whitespace-nowrap">
                 <AppointmentStatusBadge status={apt.status} />
@@ -70,7 +66,7 @@ export default function AppointmentTable({ appointments, role, onReschedule, onC
                   <Link href={`/dashboard/appointments/${apt._id}`} className="p-1 text-[#2563EB] hover:bg-[#EFF6FF] rounded transition-colors" title="View Details">
                     <Eye className="w-4 h-4" />
                   </Link>
-                  {["scheduled", "confirmed"].includes(apt.status) && (
+                  {["PENDING", "CONFIRMED"].includes(apt.status) && (
                     <>
                       {onCheckIn && (
                         <button onClick={() => onCheckIn(apt)} className="p-1 text-[#2563EB] hover:bg-[#EFF6FF] rounded transition-colors" title="Check In">

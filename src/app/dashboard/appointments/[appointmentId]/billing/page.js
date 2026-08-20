@@ -134,11 +134,11 @@ export default function CreateInvoicePage({ params }) {
         <div className="bg-white border rounded-lg shadow-sm p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
            <div>
              <p className="text-xs text-gray-500">Patient</p>
-             <p className="font-bold text-gray-900">{appointment?.patientId?.name || appointment?.patientId?.fullName}</p>
+             <p className="font-bold text-gray-900">{appointment?.patientName || "Unknown Customer"}</p>
            </div>
            <div>
-             <p className="text-xs text-gray-500">Patient Code</p>
-             <p className="font-bold text-gray-900">{appointment?.patientId?.patientIdString || appointment?.patientId?.patientCode}</p>
+             <p className="text-xs text-gray-500">Patient Phone</p>
+             <p className="font-bold text-gray-900">{appointment?.patientPhone || "N/A"}</p>
            </div>
            <div>
              <p className="text-xs text-gray-500">Doctor</p>
