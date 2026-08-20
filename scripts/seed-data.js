@@ -59,22 +59,332 @@ async function loadModels() {
   };
 }
 
-const CITIES = [
-  { name: "Patna", state: "Bihar", clinicName: "Patna Care Multispeciality Clinic", slug: "patna-demo", address: "Kankarbagh", pincode: "800020", phone: "+91 9000000001" },
-  { name: "Ranchi", state: "Jharkhand", clinicName: "Ranchi Health Plus Clinic", slug: "ranchi-demo", address: "Lalpur", pincode: "834001", phone: "+91 9000000002" },
-  { name: "Kolkata", state: "West Bengal", clinicName: "Kolkata MedCare Clinic", slug: "kolkata-demo", address: "Salt Lake", pincode: "700091", phone: "+91 9000000003" },
-  { name: "Delhi", state: "Delhi", clinicName: "Delhi Prime Health Clinic", slug: "delhi-demo", address: "Saket", pincode: "110017", phone: "+91 9000000004" },
-  { name: "Lucknow", state: "Uttar Pradesh", clinicName: "Lucknow Wellness Care Clinic", slug: "lucknow-demo", address: "Gomti Nagar", pincode: "226010", phone: "+91 9000000005" }
-];
-
-const SPECIALTIES = ["General Physician", "Cardiologist", "Gynecologist", "Pediatrician", "Orthopedic"];
-
-const MOCK_NAMES = [
-  "Dr. Amit Sharma", "Dr. Rahul Kumar", "Dr. Priya Singh", "Dr. Sandeep Verma", "Dr. Neha Gupta",
-  "Dr. Rohit Das", "Dr. Pooja Singh", "Dr. Manish Kumar", "Dr. Anjali Sharma", "Dr. Vivek Verma",
-  "Dr. Arjun Das", "Dr. Sneha Roy", "Dr. Rajiv Kumar", "Dr. Kavita Singh", "Dr. Nitin Gupta",
-  "Dr. Aditya Sharma", "Dr. Riya Verma", "Dr. Karan Singh", "Dr. Meera Gupta", "Dr. Sameer Kumar",
-  "Dr. Mohit Yadav", "Dr. Swati Sharma", "Dr. Akash Singh", "Dr. Nisha Verma", "Dr. Varun Kumar"
+const CLINICS_DATA = [
+    {
+      "name": "BIG Apollo Spectra Hospital",
+      "slug": "big-apollo-spectra-patna",
+      "email": "apollo.demo@clinora.com",
+      "phone": "+91 612 3540100",
+      "password": "12345678",
+      "address": {
+        "line1": "Sheetla Mandir Road, near Sump House",
+        "area": "Agam Kuan",
+        "city": "Patna",
+        "state": "Bihar",
+        "pincode": "800007",
+        "country": "India"
+      },
+      "website": "https://www.apollospectra.com/patna",
+      "logoUrl": "https://ik.imagekit.io/Dilshad/Cafe/doc%201.jpg?updatedAt=1787037057714",
+      "coverImageUrl": "https://ik.imagekit.io/Dilshad/Cafe/doc%201.jpg?updatedAt=1787037057714",
+      "specialties": [
+        "Cardiology", "Critical Care", "Endocrinology", "General Medicine", 
+        "General Surgery", "Gastroenterology", "Nephrology", "Neurology", 
+        "Oncology", "Orthopaedics", "Urology"
+      ],
+      "doctors": [
+        {
+          "name": "Dr Nikesh Kumar Roshan",
+          "email": "nikesh.kumar.roshan@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Critical Care",
+          "qualification": ["MBBS", "DNB"],
+          "experienceYears": 11,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr Sanjay Kumar",
+          "email": "sanjay.kumar.radiology@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Radiology",
+          "qualification": ["MBBS", "MD"],
+          "experienceYears": 7,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr Madhukar Dayal",
+          "email": "madhukar.dayal@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Radiology",
+          "qualification": ["MBBS", "MD", "DNB"],
+          "experienceYears": 10,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Rajiv Ranjan",
+          "email": "rajiv.ranjan@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Rheumatology",
+          "qualification": ["DM Rheumatology"],
+          "experienceYears": 16,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr Vijay Prakash",
+          "email": "vijay.prakash@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Gastroenterology",
+          "qualification": ["MD", "DNB", "MRCP"],
+          "experienceYears": 34,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        }
+      ]
+    },
+    {
+      "name": "Mediversal Multi Super Speciality Hospital",
+      "slug": "mediversal-patna",
+      "email": "mediversal.demo@clinora.com",
+      "phone": "+91 612 3500010",
+      "password": "12345678",
+      "address": {
+        "line1": "Doctors' Colony",
+        "area": "Kankarbagh",
+        "city": "Patna",
+        "state": "Bihar",
+        "pincode": "800020",
+        "country": "India"
+      },
+      "website": "https://www.mediversal.in",
+      "logoUrl": "https://ik.imagekit.io/Dilshad/Cafe/doc%202.avif?updatedAt=1787037057826",
+      "coverImageUrl": "https://ik.imagekit.io/Dilshad/Cafe/doc%202.avif?updatedAt=1787037057826",
+      "specialties": [
+        "Orthopedics", "Cardiac Sciences", "Neurosciences", "Internal Medicine", 
+        "Nephrology", "Critical Care", "Pulmonology", "Gastroenterology", "Hepatology"
+      ],
+      "doctors": [
+        {
+          "name": "Dr. Saquib Azad Siddiqui",
+          "email": "saquib.siddiqui@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Neurosurgery",
+          "qualification": ["MBBS", "MS", "MCh Neurosurgery"],
+          "experienceYears": 10,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Nishikant Kumar",
+          "email": "nishikant.kumar@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Orthopedic & Joint Replacement",
+          "qualification": ["MBBS", "MS Orthopaedics", "DNB Orthopaedics"],
+          "experienceYears": 10,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Vikash Singh",
+          "email": "vikash.singh@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Cardiology",
+          "qualification": ["MBBS", "MD Medicine", "DM Cardiology"],
+          "experienceYears": 10,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Sanjeev Kumar Chhaparia",
+          "email": "sanjeev.chhaparia@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Internal Medicine",
+          "qualification": ["MBBS", "MD Internal Medicine"],
+          "experienceYears": 10,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Asif Iqbal",
+          "email": "asif.iqbal@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Gastroenterology & Hepatology",
+          "qualification": ["MBBS", "MD General Medicine", "MRCP UK", "DM Gastroenterology"],
+          "experienceYears": 10,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        }
+      ]
+    },
+    {
+      "name": "Getwel Hospital",
+      "slug": "getwel-hospital-patna",
+      "email": "getwel.demo@clinora.com",
+      "phone": "+91 612 2296530",
+      "password": "12345678",
+      "address": {
+        "line1": "Pillar No. 51, Bailey Road",
+        "area": "Raza Bazar",
+        "city": "Patna",
+        "state": "Bihar",
+        "pincode": "800014",
+        "country": "India"
+      },
+      "website": "https://getwelhospital.com",
+      "logoUrl": "https://ik.imagekit.io/Dilshad/Cafe/doc%203.png?updatedAt=1787037058472",
+      "coverImageUrl": "https://ik.imagekit.io/Dilshad/Cafe/doc%203.png?updatedAt=1787037058472",
+      "specialties": [
+        "General Medicine", "Critical Care", "Pediatrics", "Gynaecology", 
+        "Obstetrics", "General Surgery", "Orthopedics", "Radiology", "Cardiology"
+      ],
+      "doctors": [
+        {
+          "name": "Dr. Rahul Raj Singh",
+          "email": "rahul.raj.singh@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "General & Critical Care Physician",
+          "qualification": ["MBBS", "CTCCM", "IDCCM"],
+          "experienceYears": 10,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Sujit Kumar Sinha",
+          "email": "sujit.kumar.sinha@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Pediatrics",
+          "qualification": ["MD", "DCH"],
+          "experienceYears": 42,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Kavita Kumari",
+          "email": "kavita.kumari@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Gynaecology, Obstetrics & General Surgery",
+          "qualification": ["MBBS", "DGO", "MS"],
+          "experienceYears": 17,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Mohsin Parvez",
+          "email": "mohsin.parvez@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Orthopedics & Hip/Knee Replacement",
+          "qualification": ["MBBS", "MS"],
+          "experienceYears": 17,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Rishi Raj Singh",
+          "email": "rishi.raj.singh@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Radiology",
+          "qualification": ["MBBS", "DNB Radiodiagnosis", "CIFR Fetal Radiology"],
+          "experienceYears": 17,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        }
+      ]
+    },
+    {
+      "name": "Navya Hospital",
+      "slug": "navya-hospital-patna",
+      "email": "navya.demo@clinora.com",
+      "phone": "+91 9955997474",
+      "password": "12345678",
+      "address": {
+        "line1": "Mustafapur, Opp. Tata Motors",
+        "area": "Gaya Road, Beldari Chak",
+        "city": "Patna",
+        "state": "Bihar",
+        "pincode": "804451",
+        "country": "India"
+      },
+      "website": "https://www.navyahospital.co.in",
+      "logoUrl": "https://ik.imagekit.io/Dilshad/Cafe/doc%204.jpg?updatedAt=1787037057627",
+      "coverImageUrl": "https://ik.imagekit.io/Dilshad/Cafe/doc%204.jpg?updatedAt=1787037057627",
+      "specialties": [
+        "Cardiology", "Neurology", "Orthopaedic Surgery", "Gynaecology & Obstetrics", 
+        "General Medicine", "General & Laparoscopic Surgery", "Nephrology", "Gastroenterology"
+      ],
+      "doctors": [
+        {
+          "name": "Dr. Ishu",
+          "email": "ishu@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Gynaecology & Obstetrics",
+          "qualification": [],
+          "experienceYears": 5,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. M.N. Prasad",
+          "email": "mn.prasad@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Anaesthesia / Hospital Leadership",
+          "qualification": ["DA"],
+          "experienceYears": 10,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Raja Anurag Gautam",
+          "email": "raja.anurag.gautam@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "Orthopaedic Surgery",
+          "qualification": ["MBBS", "MS Orthopaedics"],
+          "experienceYears": 10,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        },
+        {
+          "name": "Dr. Vikas Kumar",
+          "email": "vikas.kumar@clinora.com",
+          "phone": "",
+          "password": "12345678",
+          "specialization": "General Medicine / Diabetes",
+          "qualification": [],
+          "experienceYears": 10,
+          "registrationNumber": "",
+          "consultationFee": 500,
+          "profileImageUrl": ""
+        }
+      ]
+    }
 ];
 
 function generateDeterministicPhone(seed) {
@@ -135,65 +445,65 @@ async function runSeed() {
   });
   ownerCredentials.push({ city: "Global (Admin)", email: "admin@clinora.com" });
 
-  for (let c = 0; c < CITIES.length; c++) {
-    const cityData = CITIES[c];
+  for (let c = 0; c < CLINICS_DATA.length; c++) {
+    const clinicData = CLINICS_DATA[c];
     
     // 1. Create Clinic Account (Owner)
-    const ownerName = `${cityData.name} Owner`;
-    const ownerEmail = getCleanNameEmail(ownerName);
+    const ownerName = `${clinicData.name} Owner`;
+    const ownerEmail = clinicData.email;
     const clinicAccount = await Clinic.create({
-      name: cityData.clinicName,
+      name: clinicData.name,
       email: ownerEmail,
-      phone: cityData.phone,
+      phone: clinicData.phone,
       password: hashedPassword,
       isActive: true
     });
     stats.owners++;
-    ownerCredentials.push({ city: cityData.name, email: ownerEmail });
+    ownerCredentials.push({ clinic: clinicData.name, email: ownerEmail });
 
     // 2. Create Clinic Profile
     const clinicProfile = await ClinicProfile.create({
       clinicId: clinicAccount._id,
-      slug: cityData.slug,
+      slug: clinicData.slug,
       address: {
-        line1: cityData.address,
-        city: cityData.name,
-        state: cityData.state,
-        pincode: cityData.pincode,
-        country: "India"
+        line1: clinicData.address.line1,
+        city: clinicData.address.city,
+        state: clinicData.address.state,
+        pincode: clinicData.address.pincode || "800001",
+        country: clinicData.address.country || "India"
       },
       isPublic: true,
       onboardingCompleted: true,
-      specialties: SPECIALTIES,
+      specialties: clinicData.specialties,
       facilities: ["Pharmacy", "Lab", "X-Ray"],
       status: "active",
-      logoUrl: `https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&q=80&w=400`,
-      coverImageUrl: `https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop`
+      logoUrl: clinicData.logoUrl || `https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&q=80&w=400`,
+      coverImageUrl: clinicData.coverImageUrl || `https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop`
     });
     stats.clinics++;
 
     // 3. Create ClinicSettings
     await ClinicSettings.create({
       clinicId: clinicAccount._id,
-      workingHours: ["monday", "tuesday", "wednesday", "thursday", "friday"].map(day => ({
+      workingHours: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].map(day => ({
         day, isOpen: true, openingTime: "09:00", closingTime: "17:00"
       })).concat([
-        { day: "saturday", isOpen: true, openingTime: "09:00", closingTime: "13:00" },
         { day: "sunday", isOpen: false, openingTime: "09:00", closingTime: "17:00" }
       ]),
       appointmentSettings: { defaultSlotDuration: 15, allowSameDayBooking: true, allowWalkIn: true, allowAppointmentCancellation: true },
       billingSettings: { currency: "INR" }
     });
 
-    // 4. Create Exactly 5 Doctors
-    for (let d = 0; d < 5; d++) {
-      const docName = MOCK_NAMES[c * 5 + d];
-      const docEmail = getCleanNameEmail(docName);
+    // 4. Create Doctors for Clinic
+    for (let d = 0; d < clinicData.doctors.length; d++) {
+      const docRawData = clinicData.doctors[d];
+      const docName = docRawData.name;
+      const docEmail = docRawData.email;
 
       const doctorAccount = await Doctor.create({
         name: docName,
         email: docEmail,
-        phone: generateDeterministicPhone(phoneCounter++),
+        phone: docRawData.phone || generateDeterministicPhone(phoneCounter++),
         password: hashedPassword,
         isActive: true
       });
@@ -201,12 +511,12 @@ async function runSeed() {
       const docProfile = await DoctorProfile.create({
         doctorId: doctorAccount._id,
         clinicId: clinicAccount._id,
-        employeeId: `DOC-${cityData.name.substring(0, 3).toUpperCase()}-00${d + 1}`,
-        specialization: SPECIALTIES[d],
-        qualification: ["MBBS", "MD"],
-        registrationNumber: `REG${10000 + c * 100 + d}`,
-        experienceYears: 5 + d,
-        consultationFee: 500,
+        employeeId: `DOC-${clinicData.name.substring(0, 3).toUpperCase()}-00${d + 1}`,
+        specialization: docRawData.specialization,
+        qualification: docRawData.qualification && docRawData.qualification.length > 0 ? docRawData.qualification : ["MBBS"],
+        registrationNumber: docRawData.registrationNumber || `REG${10000 + c * 100 + d}`,
+        experienceYears: docRawData.experienceYears || 10,
+        consultationFee: docRawData.consultationFee || 500,
         availableDays: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
         startTime: "09:00",
         endTime: "17:00",
@@ -215,18 +525,28 @@ async function runSeed() {
         isAvailable: true,
         isPublic: true,
         isActive: true,
-        profileImageUrl: `https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=200`,
+        profileImageUrl: docRawData.profileImageUrl || (() => {
+          const isFemale = /kavita|ishu|sneha|priya|neha|pooja|anjali|riya|meera|swati|nisha/i.test(docName);
+          const idx = c * 10 + d;
+          if (isFemale) {
+            const fIds = [12, 16, 26, 30, 31, 35, 43, 44, 47, 68];
+            return `https://randomuser.me/api/portraits/women/${fIds[idx % fIds.length]}.jpg`;
+          } else {
+            const mIds = [11, 13, 15, 22, 28, 32, 33, 37, 44, 46, 50, 55, 57, 60, 67, 69, 75, 77];
+            return `https://randomuser.me/api/portraits/men/${mIds[idx % mIds.length]}.jpg`;
+          }
+        })(),
         createdById: clinicAccount._id,
         createdByModel: "Clinic"
       });
       stats.doctors++;
-      if (docCredentials.length < 5) docCredentials.push({ name: docName, email: docEmail, clinic: cityData.name, specialization: SPECIALTIES[d] });
+      docCredentials.push({ name: docName, email: docEmail, clinic: clinicData.name, specialization: docRawData.specialization });
 
-      // 5. Create Exactly 5 Patients per Doctor
+      // 5. Create 5 Patients per Doctor
       for (let p = 0; p < 5; p++) {
         const patientIndex = (d * 5) + p + 1;
         const patFirstName = `Patient${patientIndex}`;
-        const lastName = docName.replace("Dr. ", "").split(" ")[1] || "Doc";
+        const lastName = docName.replace("Dr. ", "").split(" ")[0] || "Doc";
         const patName = `${patFirstName} ${lastName}`;
         const patEmail = getCleanNameEmail(patName);
 
@@ -243,12 +563,12 @@ async function runSeed() {
           clinicId: clinicAccount._id, 
           gender: p % 2 === 0 ? "male" : "female",
           bloodGroup: "O+",
-          address: { city: cityData.name, state: cityData.state },
+          address: { city: clinicData.address.city, state: clinicData.address.state },
           allergies: p % 3 === 0 ? ["Dust", "Peanuts"] : [],
           chronicConditions: []
         });
         stats.patients++;
-        if (patCredentials.length < 5) patCredentials.push({ name: patientAccount.name, email: patEmail });
+        patCredentials.push({ name: patientAccount.name, email: patEmail });
 
         const statuses = ["completed", "scheduled", "checked_in", "cancelled"];
         const apptStatus = statuses[p % statuses.length];
@@ -339,8 +659,7 @@ async function runSeed() {
             pendingAmount: 0,
             paidAmount: docProfile.consultationFee || 500,
             status: "paid",
-            createdById: clinicAccount._id,
-            createdByModel: "Clinic"
+            createdByUserId: clinicAccount._id
           });
           stats.invoices++;
 
@@ -367,6 +686,7 @@ async function runSeed() {
             title: "Routine Blood Test",
             reportType: "blood_test",
             reportDate: apptDate,
+            fileUrl: "https://example.com/dummy_report.pdf",
             fileName: "blood_test.pdf",
             fileType: "application/pdf",
             fileSize: 10240,

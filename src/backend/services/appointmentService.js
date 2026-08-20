@@ -3,6 +3,8 @@ import { getDoctorAvailableSlots } from "./appointmentSlotService.js";
 import { generateAppointmentCode } from "../utils/generateAppointmentCode.js";
 import DoctorProfile from "../models/DoctorProfile.js";
 import Appointment from "../models/Appointment.js";
+import Invoice from "../models/Invoice.js";
+import Payment from "../models/Payment.js";
 import { findPatientById } from "../repositories/patientRepository.js";
 // import AuditLog from "../models/AuditLog.js";
 import { canReschedule, canCancel, APPOINTMENT_STATUSES, ACTIVE_STATUSES } from "../utils/appointmentStatus.js";
@@ -104,6 +106,46 @@ export async function createAppointmentForClinic(authUser, input) {
   };
 
   const appointment = await createAppointment(appointmentData);
+
+  // If patient books it and fee > 0, we simulate that they paid online.
+  if (role === "patient" && consultationFee > 0) {
+    const invoiceCode = `INV-${Date.now()}`;
+    const newInvoice = await Invoice.create({
+      clinicId,
+      invoiceCode,
+      patientId,
+      doctorId,
+      appointmentId: appointment._id,
+      items: [{
+        type: "consultation",
+        description: `Consultation with ${doctor.doctor?.name || "Doctor"}`,
+        quantity: 1,
+        unitPrice: consultationFee,
+        amount: consultationFee
+      }],
+      subtotal: consultationFee,
+      totalAmount: consultationFee,
+      paidAmount: consultationFee,
+      pendingAmount: 0,
+      status: "paid",
+      issuedAt: new Date(),
+      createdByUserId: userId
+    });
+
+    const paymentCode = `PAY-${Date.now()}`;
+    await Payment.create({
+      clinicId,
+      paymentCode,
+      invoiceId: newInvoice._id,
+      patientId,
+      appointmentId: appointment._id,
+      amount: consultationFee,
+      paymentMethod: "online", // Mocking the frontend payment method as 'online'
+      status: "success",
+      receivedById: userId,
+      receivedByModel: "Clinic"
+    });
+  }
 
   await logAudit(clinicId, userId, "appointment.created", appointment._id, `Booked ${appointmentCode} for ${patient.fullName}`);
 

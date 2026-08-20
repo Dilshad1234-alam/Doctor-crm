@@ -41,6 +41,10 @@ export async function GET(request, { params }) {
       Appointment.countDocuments({ clinicId: id })
     ]);
 
+    const doctorsList = await DoctorProfile.find({ clinicId: id }).populate("doctorId", "name email phone").lean();
+    const patientsList = await PatientProfile.find({ clinicId: id }).populate("patientId", "name email phone").lean();
+    const staffList = await StaffProfile.find({ clinicId: id }).lean();
+
     return NextResponse.json({
       success: true,
       clinic: {
@@ -50,7 +54,10 @@ export async function GET(request, { params }) {
           totalPatients,
           totalStaff,
           totalAppointments
-        }
+        },
+        doctorsList,
+        patientsList,
+        staffList
       }
     });
   } catch (error) {

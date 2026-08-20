@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Calendar, Clock, CheckCircle2, User, MapPin, Phone } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Clock, CheckCircle2, User, MapPin, Phone, CreditCard, Smartphone, ShieldCheck } from "lucide-react";
 import { getAvailableSlots, createAppointment } from "@/frontend/services/appointmentApi";
 import { useAuth } from "@/frontend/context/AuthContext";
 
@@ -30,6 +30,7 @@ export default function PatientBookAppointmentPage() {
   const [visitType, setVisitType] = useState("new_consultation");
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("card");
 
   // Initialization: URL -> pendingBooking -> localStorage
   useEffect(() => {
@@ -282,7 +283,7 @@ export default function PatientBookAppointmentPage() {
             <span className={step >= 1 ? 'text-blue-600' : ''}>Doctor</span>
             <span className={step >= 2 ? 'text-blue-600' : ''}>Date</span>
             <span className={step >= 3 ? 'text-blue-600' : ''}>Slot</span>
-            <span className={step >= 4 ? 'text-blue-600' : ''}>Confirm</span>
+            <span className={step >= 4 ? 'text-blue-600' : ''}>Pay & Confirm</span>
           </div>
         </div>
 
@@ -385,7 +386,7 @@ export default function PatientBookAppointmentPage() {
 
           {step === 4 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-bold text-gray-900">Review & Confirm</h2>
+              <h2 className="text-lg font-bold text-gray-900">Review & Payment</h2>
               
               <div className="bg-gray-50 rounded-lg border border-gray-200 p-5 space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -405,45 +406,98 @@ export default function PatientBookAppointmentPage() {
                     <span className="block text-gray-500 mb-1">Time</span>
                     <span className="font-medium text-gray-900">{selectedSlot?.startTime}</span>
                   </div>
-                  <div>
-                    <span className="block text-gray-500 mb-1">Consultation Fee</span>
-                    <span className="font-medium text-gray-900">₹{selectedDoctor?.consultationFee}</span>
+                  <div className="col-span-2 pt-3 border-t border-gray-200 flex justify-between items-center">
+                    <span className="block font-bold text-gray-700">Total Consultation Fee</span>
+                    <span className="font-black text-xl text-blue-600">₹{selectedDoctor?.profile?.consultationFee || selectedDoctor?.consultationFee || 500}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Visit Type</label>
-                  <select
-                    value={visitType}
-                    onChange={(e) => setVisitType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  >
-                    <option value="new_consultation">New Consultation</option>
-                    <option value="follow_up">Follow Up</option>
-                    <option value="regular_checkup">Regular Checkup</option>
-                    <option value="emergency">Emergency</option>
-                  </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Visit Type</label>
+                    <select
+                      value={visitType}
+                      onChange={(e) => setVisitType(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    >
+                      <option value="new_consultation">New Consultation</option>
+                      <option value="follow_up">Follow Up</option>
+                      <option value="regular_checkup">Regular Checkup</option>
+                      <option value="emergency">Emergency</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Visit</label>
+                    <input
+                      type="text"
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      placeholder="E.g., Fever and headache"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Visit</label>
-                  <input
-                    type="text"
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    placeholder="E.g., Fever and headache"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
+
+                {/* Fake Payment UI */}
+                <div className="space-y-4 bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+                  <h3 className="font-bold text-gray-900 mb-2">Payment Details</h3>
+                  <div className="flex gap-3 mb-4">
+                    <label className={`flex-1 flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer ${paymentMethod === 'card' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-200 hover:bg-gray-50'}`}>
+                      <input type="radio" name="payment" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="sr-only" />
+                      <CreditCard className="w-6 h-6 mb-1" />
+                      <span className="text-xs font-medium">Card</span>
+                    </label>
+                    <label className={`flex-1 flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer ${paymentMethod === 'upi' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-200 hover:bg-gray-50'}`}>
+                      <input type="radio" name="payment" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} className="sr-only" />
+                      <Smartphone className="w-6 h-6 mb-1" />
+                      <span className="text-xs font-medium">UPI</span>
+                    </label>
+                  </div>
+
+                  {paymentMethod === 'card' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Card Number</label>
+                        <input type="text" placeholder="XXXX XXXX XXXX XXXX" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex-1">
+                          <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Expiry</label>
+                          <input type="text" placeholder="MM/YY" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">CVV</label>
+                          <input type="password" placeholder="***" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentMethod === 'upi' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">UPI ID</label>
+                        <input type="text" placeholder="username@upi" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm" />
+                      </div>
+                      <p className="text-xs text-gray-500 text-center mt-4">You will receive a payment request on your UPI app.</p>
+                    </div>
+                  )}
+                  
+                  <div className="mt-4 p-3 bg-green-50 border border-green-100 rounded-lg flex gap-2 items-start text-xs text-green-700">
+                    <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <p>Secure payment processing. Your booking will be confirmed immediately after payment.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -485,9 +539,9 @@ export default function PatientBookAppointmentPage() {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="px-6 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-wait transition-colors flex items-center"
+                className="px-6 py-2 text-sm font-medium rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:bg-green-400 disabled:cursor-wait transition-colors flex items-center shadow-md"
               >
-                {loading ? 'Booking...' : 'Book Appointment'}
+                {loading ? 'Processing Payment...' : `Pay ₹${selectedDoctor?.profile?.consultationFee || selectedDoctor?.consultationFee || 500} & Book`}
               </button>
             )}
           </div>

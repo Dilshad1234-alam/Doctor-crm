@@ -203,7 +203,7 @@ export default function ClinicsPage() {
                     {/* Clinic Image */}
                     <div className="sm:w-64 h-48 sm:h-auto bg-[#F8FAFC] relative">
                       {(clinic.coverImageUrl || clinic.coverImage || clinic.logoUrl || clinic.logo) ? (
-                        <img src={clinic.coverImageUrl || clinic.coverImage || clinic.logoUrl || clinic.logo} alt={clinic.name} className="w-full h-full object-cover" />
+                        <img src={clinic.coverImageUrl || clinic.coverImage || clinic.logoUrl || clinic.logo} alt={clinic.name} className="absolute inset-0 w-full h-full object-cover object-center" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-[#2563EB]">
                           <Building2 className="w-16 h-16 opacity-30" />

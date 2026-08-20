@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
-import { updateUserById, findUserById } from "@/backend/repositories/userRepository";
-import { createAuthToken } from "@/backend/utils/auth";
+import { findUserById } from "@/backend/repositories/userRepository";
+import { assignRole } from "@/backend/services/authService";
 import { setAuthCookie } from "@/backend/utils/authCookie";
 
 export const runtime = "nodejs";
@@ -39,16 +39,11 @@ export async function PATCH(request) {
       );
     }
 
-    // Update role
-    await updateUserById(dbUser._id, { role });
+    // Call assignRole service which handles migration and token generation
+    const accountType = role === "clinic_owner" ? "clinic" : role;
+    const { token, user } = await assignRole(dbUser._id, accountType);
 
-    // Generate new token with updated role
-    const newToken = createAuthToken({
-      userId: dbUser._id,
-      role: role,
-    });
-
-    await setAuthCookie(newToken);
+    await setAuthCookie(token);
 
     return NextResponse.json(
       { success: true, message: "Role selected successfully", role },

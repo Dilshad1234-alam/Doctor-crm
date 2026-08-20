@@ -12,26 +12,7 @@ import {
 
 /* ─── Role definitions ───────────────────────────────────────── */
 const ROLES = [
-  {
-    id: "patient",
-    label: "Patient",
-    tagline: "Take control of your health journey",
-    icon: User,
-    gradient: "from-emerald-400 to-teal-500",
-    ringColor: "ring-emerald-400",
-    borderActive: "border-emerald-400",
-    bgActive: "bg-emerald-50",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-600",
-    iconBgActive: "bg-emerald-500",
-    badgeColor: "bg-emerald-100 text-emerald-700",
-    badge: "Most Popular",
-    features: [
-      { icon: Calendar,   text: "Book appointments instantly" },
-      { icon: FileText,   text: "View prescriptions & reports" },
-      { icon: Heart,      text: "Manage your health records" },
-    ],
-  },
+
   {
     id: "doctor",
     label: "Doctor",
@@ -297,8 +278,7 @@ export default function SelectRolePage() {
           </div>
         )}
 
-        {/* Cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-4xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full max-w-4xl">
           {ROLES.map((role) => (
             <RoleCard
               key={role.id}

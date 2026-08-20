@@ -15,7 +15,7 @@ export default async function ClinicOnboardingPage() {
     redirect("/login");
   }
   
-  if (user.onboardingCompleted || user.clinicId) {
+  if (user.onboardingCompleted) {
     redirect("/dashboard");
   }
 

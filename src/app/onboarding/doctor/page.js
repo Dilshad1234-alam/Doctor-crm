@@ -10,7 +10,7 @@ import {
   ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, X,
   Stethoscope, Briefcase, GraduationCap, Award,
   FileText, Upload, ImagePlus, UserCheck, ChevronRight,
-  PenLine, FileCheck
+  PenLine, FileCheck, Building2
 } from "lucide-react";
 
 /* ─── Constants ─────────────────────────────────────────── */
@@ -41,6 +41,7 @@ const INITIAL_DATA = {
   phone: "",
   email: "",
   // Step 2
+  clinicId: "",
   specialty: "",
   subSpecialty: "",
   experienceYears: "",
@@ -78,6 +79,7 @@ function validate(step, data) {
     if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) errors.email = "Enter a valid email";
   }
   if (step === 2) {
+    if (!data.clinicId)             errors.clinicId = "Please select a clinic";
     if (!data.specialty)            errors.specialty = "Specialty is required";
     if (!data.experienceYears)      errors.experienceYears = "Experience is required";
     if (!data.consultationFee)      errors.consultationFee = "Consultation fee is required";
@@ -403,9 +405,28 @@ function Step1Panel({ data, errors, onChange }) {
   );
 }
 
-function Step2Panel({ data, errors, onChange }) {
+function Step2Panel({ data, errors, onChange, clinics }) {
   return (
     <div className="space-y-5">
+      <div className="grid grid-cols-1 gap-5">
+        <div>
+          <FieldLabel required>Clinic</FieldLabel>
+          <SelectField
+            icon={Building2}
+            name="clinicId"
+            value={data.clinicId}
+            onChange={onChange}
+            error={errors.clinicId}
+          >
+            <option value="">Select Clinic</option>
+            {clinics.map((c) => (
+              <option key={c._id} value={c._id}>{c.name}</option>
+            ))}
+          </SelectField>
+          <ErrorText error={errors.clinicId} />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
           <FieldLabel required>Specialty</FieldLabel>
@@ -656,6 +677,23 @@ export default function DoctorOnboardingPage() {
   const [errors, setErrors]   = useState({});
   const [submitErr, setSubmitErr] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [clinics, setClinics] = useState([]);
+
+  // Fetch Clinics on mount
+  useEffect(() => {
+    const fetchClinics = async () => {
+      try {
+        const res = await fetch("/api/public/clinics");
+        const json = await res.json();
+        if (json.success && json.data) {
+          setClinics(json.data);
+        }
+      } catch (err) {
+        console.error("Error fetching clinics:", err);
+      }
+    };
+    fetchClinics();
+  }, []);
 
   // Pre-fill name and email from auth user
   useEffect(() => {
@@ -854,7 +892,7 @@ export default function DoctorOnboardingPage() {
                   transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
                   {step === 1 && <Step1Panel data={data} errors={errors} onChange={handleChange} />}
-                  {step === 2 && <Step2Panel data={data} errors={errors} onChange={handleChange} />}
+                  {step === 2 && <Step2Panel data={data} errors={errors} onChange={handleChange} clinics={clinics} />}
                   {step === 3 && <Step3Panel data={data} onChange={handleDocChange} />}
                   {step === 4 && (
                     <Step4Panel

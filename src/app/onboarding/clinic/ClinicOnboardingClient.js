@@ -55,7 +55,7 @@ const INITIAL = {
   // Step 3
   specialties: [], facilities: [], openingTime: "09:00", closingTime: "18:00", consultationDuration: 15,
   // Step 4
-  logo: "", logoFile: null, coverImage: "", coverFile: null, isPublic: false,
+  logo: "", logoFile: null, coverImage: "", coverFile: null, isPublic: true,
 };
 
 const DRAFT_KEY = "clinora_clinic_draft";

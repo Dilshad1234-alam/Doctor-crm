@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { registerUser } from "@/frontend/services/authApi";
 import {
@@ -45,8 +45,11 @@ const BENEFITS = [
   { icon: Heart, title: "Health Records", desc: "Complete patient history in one place" },
 ];
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedRole = searchParams.get("role") || "unassigned";
+  const callbackUrl = searchParams.get("callbackUrl");
   const { refreshUser } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -104,13 +107,13 @@ export default function RegisterPage() {
         phone: formData.phone,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
-        accountType: "patient"
+        accountType: requestedRole
       });
-      if (refreshUser) await refreshUser(); 
-
-      setToast({ message: "Account created! Redirecting to onboarding…", type: "success" });
+      // We don't need to refresh user since they'll log in next
+      
+      setToast({ message: "Account created! Please log in.", type: "success" });
       setTimeout(() => {
-        router.push("/onboarding/patient");
+        router.push(callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login");
       }, 1500);
     } catch (err) {
       setToast({ message: err.message || "Registration failed. Please try again.", type: "error" });
@@ -201,7 +204,7 @@ export default function RegisterPage() {
 
               <div className="mb-8">
                 <h1 className="text-2xl md:text-3xl font-black text-[#0F172A] mb-1">Create your account</h1>
-                <p className="text-sm text-[#64748B]">Already have one? <Link href="/login" className="font-bold text-[#10B981] hover:underline">Sign in here</Link></p>
+                <p className="text-sm text-[#64748B]">Already have one? <Link href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"} className="font-bold text-[#10B981] hover:underline">Sign in here</Link></p>
               </div>
 
               {/* Google OAuth (UI only) */}
@@ -420,7 +423,7 @@ export default function RegisterPage() {
               <div className="mt-6 pt-6 border-t border-[#F1F5F9] text-center">
                 <p className="text-xs text-[#94A3B8]">
                   Already have an account?{" "}
-                  <Link href="/login" className="font-bold text-[#0F172A] hover:text-[#10B981] transition-colors">Sign in instead</Link>
+                  <Link href={callbackUrl ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"} className="font-bold text-[#0F172A] hover:text-[#10B981] transition-colors">Sign in instead</Link>
                 </p>
               </div>
 
@@ -440,5 +443,13 @@ export default function RegisterPage() {
 
       </div>
     </>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <RegisterPageContent />
+    </Suspense>
   );
 }

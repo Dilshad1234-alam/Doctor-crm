@@ -5,13 +5,18 @@ import {
   Activity, Baby, Smile, Phone, ArrowRight,
   Star, Heart
 } from "lucide-react";
+import { connectDB } from "@/backend/database/connectDB";
+import Clinic from "@/backend/models/Clinic";
 
 export const metadata = {
   title: "Clinora | Premium Healthcare Marketplace",
   description: "Find the best clinics, check availability, and book appointments seamlessly.",
 };
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  await connectDB();
+  const clinics = await Clinic.find({ isActive: true }).limit(5).lean();
+
   return (
     <div className="font-sans w-full overflow-x-hidden bg-[#F8FAFC]">
       
@@ -194,35 +199,47 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="bg-[#FFFFFF] rounded-2xl shadow-sm hover:shadow-lg transition-all border border-[#E2E8F0] overflow-hidden flex flex-col group">
-                <div className="h-48 relative overflow-hidden bg-gray-100">
-                  <img src={`https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=800&auto=format&fit=crop`} alt="Clinic" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute top-4 right-4 bg-[#FFFFFF] px-2.5 py-1 rounded-full text-xs font-bold text-[#10B981] flex items-center gap-1 shadow-sm">
-                    <Star className="w-3 h-3 fill-[#F59E0B] text-[#F59E0B]" /> 4.9
-                  </div>
-                </div>
-                <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="text-lg font-bold text-[#0F172A] mb-1">Apollo Multispeciality</h3>
-                  <div className="flex items-center gap-1.5 text-[#64748B] text-xs mb-3">
-                    <MapPin className="w-3 h-3" /> Mumbai, MH
-                  </div>
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    <span className="bg-[#F8FAFC] text-[#64748B] px-2 py-1 rounded text-xs font-medium">Cardiology</span>
-                    <span className="bg-[#F8FAFC] text-[#64748B] px-2 py-1 rounded text-xs font-medium">+3 more</span>
-                  </div>
-                  <div className="mt-auto pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] text-[#64748B] uppercase tracking-wider">Starting Fee</p>
-                      <p className="font-bold text-[#0F172A]">₹500</p>
+            {clinics.map((clinic, idx) => {
+              // Add some visual variety using predefined images based on index
+              const images = [
+                "https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=800&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?q=80&w=800&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1504813184591-01572f98c85f?q=80&w=800&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1538108149393-fbbd81895907?q=80&w=800&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=800&auto=format&fit=crop"
+              ];
+              const clinicImage = images[idx % images.length];
+
+              return (
+                <div key={clinic._id} className="bg-[#FFFFFF] rounded-2xl shadow-sm hover:shadow-lg transition-all border border-[#E2E8F0] overflow-hidden flex flex-col group">
+                  <div className="h-48 relative overflow-hidden bg-gray-100">
+                    <img src={clinicImage} alt={clinic.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute top-4 right-4 bg-[#FFFFFF] px-2.5 py-1 rounded-full text-xs font-bold text-[#10B981] flex items-center gap-1 shadow-sm">
+                      <Star className="w-3 h-3 fill-[#F59E0B] text-[#F59E0B]" /> {(4.5 + Math.random() * 0.5).toFixed(1)}
                     </div>
-                    <Link href={`/clinics`} className="text-sm font-bold text-[#2563EB] hover:text-[#10B981] transition-colors">
-                      View Clinic
-                    </Link>
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col">
+                    <h3 className="text-lg font-bold text-[#0F172A] mb-1 line-clamp-1">{clinic.name}</h3>
+                    <div className="flex items-center gap-1.5 text-[#64748B] text-xs mb-3">
+                      <MapPin className="w-3 h-3" /> {clinic.city || "New Delhi"}, {clinic.state || "DL"}
+                    </div>
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      <span className="bg-[#F8FAFC] text-[#64748B] px-2 py-1 rounded text-xs font-medium">Multispeciality</span>
+                      <span className="bg-[#F8FAFC] text-[#64748B] px-2 py-1 rounded text-xs font-medium">General</span>
+                    </div>
+                    <div className="mt-auto pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-[#64748B] uppercase tracking-wider">Contact</p>
+                        <p className="font-bold text-[#0F172A] text-xs truncate max-w-[100px]">{clinic.phone || clinic.email}</p>
+                      </div>
+                      <Link href={`/clinics/${clinic.slug || clinic._id}`} className="text-sm font-bold text-[#2563EB] hover:text-[#10B981] transition-colors">
+                        View Clinic
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

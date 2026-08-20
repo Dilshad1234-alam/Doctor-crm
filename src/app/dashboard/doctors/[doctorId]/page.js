@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -167,7 +167,7 @@ export default function DoctorDetailsPage() {
                 </div>
                 <div className="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Languages</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{doctor.languages.join(", ") || "None specified"}</dd>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{doctor.languages?.join(", ") || "None specified"}</dd>
                 </div>
                 <div className="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Bio</dt>
@@ -194,7 +194,7 @@ export default function DoctorDetailsPage() {
                 </div>
                 <div className="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Qualifications</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{doctor.qualification.join(", ")}</dd>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{doctor.qualification?.join(", ") || "None"}</dd>
                 </div>
                 <div className="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Registration Number</dt>
@@ -261,7 +261,7 @@ export default function DoctorDetailsPage() {
             <div className="px-4 py-5">
               <div className="space-y-3">
                 {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map(day => {
-                  const avail = doctor.availability.find(a => a.day === day);
+                  const avail = doctor.availability?.find(a => a.day === day);
                   return (
                     <div key={day} className="flex justify-between items-start border-b border-gray-50 pb-2">
                       <span className="text-sm capitalize font-medium text-gray-700 w-1/3">{day}</span>

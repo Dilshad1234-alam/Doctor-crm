@@ -11,6 +11,7 @@ import { hashPassword, comparePassword, createAuthToken } from "@/backend/utils/
 async function getAccountModel(accountType) {
   switch (accountType) {
     case "admin": return User;
+    case "unassigned": return User;
     case "clinic": return Clinic;
     case "doctor": return Doctor;
     case "patient": return Patient;
@@ -68,13 +69,16 @@ export async function registerUser(input) {
 
   const hashedPassword = await hashPassword(password);
 
-  const newUser = await Model.create({
+  const createPayload = {
     name: name.trim(),
     email: normalizedEmail,
     phone: phone || null,
     password: hashedPassword,
     isActive: true,
-  });
+  };
+  if (accountType === "unassigned") createPayload.role = "unassigned";
+
+  const newUser = await Model.create(createPayload);
 
   const token = createAuthToken({
     accountId: newUser._id,
@@ -113,7 +117,7 @@ export async function loginUser(input) {
     foundAccountType = accountType;
   } else {
     const models = [
-      { type: "admin", model: User },
+      { type: "user", model: User },
       { type: "clinic", model: Clinic },
       { type: "doctor", model: Doctor },
       { type: "patient", model: Patient }
@@ -121,7 +125,11 @@ export async function loginUser(input) {
     for (const { type, model } of models) {
       user = await model.findOne({ email: normalizedEmail }).select("+password").lean();
       if (user) {
-        foundAccountType = type;
+        if (type === "user") {
+          foundAccountType = user.role || "admin";
+        } else {
+          foundAccountType = type;
+        }
         Model = model;
         break;
       }
@@ -214,3 +222,41 @@ export async function changePassword(accountId, accountType, currentPassword, ne
     details: `${accountType} changed their password`,
   });
 }
+
+export async function assignRole(accountId, newRole) {
+  await connectDB();
+  const user = await User.findById(accountId).select("+password").lean();
+  if (!user || user.role !== "unassigned") {
+    throw new Error("Invalid user or already assigned.");
+  }
+  
+  const TargetModel = await getAccountModel(newRole);
+  const newUser = await TargetModel.create({
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    password: user.password,
+    isActive: true,
+  });
+
+  await User.findByIdAndDelete(accountId);
+
+  const token = createAuthToken({
+    accountId: newUser._id,
+    accountType: newRole,
+  });
+
+  const baseUser = {
+    id: newUser._id,
+    name: newUser.name,
+    email: newUser.email,
+    phone: newUser.phone,
+    role: newRole === "clinic" ? "clinic_owner" : newRole,
+    onboardingCompleted: false,
+  };
+
+  const enrichedUser = await enrichUserData(baseUser, newRole);
+
+  return { user: enrichedUser, token };
+}
+

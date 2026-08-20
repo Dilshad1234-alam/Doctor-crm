@@ -156,20 +156,15 @@ export default function ClinicDetailPage() {
                     if (pendingBooking) {
                       const bookUrl = `/patient/book?clinicId=${clinic._id}&doctorId=${pendingBooking.doctorId}&date=${pendingBooking.appointmentDate}&time=${pendingBooking.startTime}`;
                       if (!user) {
-                        router.push(`/login?callbackUrl=${encodeURIComponent(bookUrl)}`);
+                        router.push(`/register?role=patient&callbackUrl=${encodeURIComponent(bookUrl)}`);
                       } else {
                         router.push(bookUrl);
                       }
                     } else {
                       if (!user) {
-                        router.push("/login");
+                        router.push("/register?role=patient");
                       } else {
-                        const doctorsSection = document.getElementById("doctors");
-                        if (doctorsSection) {
-                          doctorsSection.scrollIntoView({ behavior: "smooth" });
-                        } else {
-                          window.scrollTo({top: 800, behavior: 'smooth'});
-                        }
+                        router.push(`/patient/book?clinicId=${clinic._id}`);
                       }
                     }
                   }} className="flex-1 lg:flex-none px-8 py-3.5 rounded-xl bg-[#10B981] text-white font-bold shadow-md hover:bg-[#047857] transition-all flex flex-col items-center justify-center">

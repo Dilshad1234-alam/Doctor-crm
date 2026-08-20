@@ -37,6 +37,7 @@ export default function AdminClinicDetailsPage({ params }) {
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(null); // 'suspend' | 'reject' | 'approve' | 'activate'
+  const [activeTab, setActiveTab] = useState("doctors");
 
   const fetchClinic = useCallback(async () => {
     try {
@@ -247,6 +248,127 @@ export default function AdminClinicDetailsPage({ params }) {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Tabs for Lists */}
+      <div className="mt-8 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="border-b border-slate-100 px-6 pt-4 flex gap-6">
+          <button
+            onClick={() => setActiveTab("doctors")}
+            className={`pb-4 text-sm font-bold border-b-2 transition-colors ${
+              activeTab === "doctors" ? "border-blue-600 text-blue-600" : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            Doctors ({clinic.doctorsList?.length || 0})
+          </button>
+          <button
+            onClick={() => setActiveTab("patients")}
+            className={`pb-4 text-sm font-bold border-b-2 transition-colors ${
+              activeTab === "patients" ? "border-blue-600 text-blue-600" : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            Patients ({clinic.patientsList?.length || 0})
+          </button>
+          <button
+            onClick={() => setActiveTab("staff")}
+            className={`pb-4 text-sm font-bold border-b-2 transition-colors ${
+              activeTab === "staff" ? "border-blue-600 text-blue-600" : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            Staff ({clinic.staffList?.length || 0})
+          </button>
+        </div>
+        
+        <div className="p-0">
+          {activeTab === "doctors" && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-600">
+                <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase border-b border-slate-100">
+                  <tr>
+                    <th className="px-6 py-4">Name</th>
+                    <th className="px-6 py-4">Specialization</th>
+                    <th className="px-6 py-4">Emp ID</th>
+                    <th className="px-6 py-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {clinic.doctorsList?.length > 0 ? clinic.doctorsList.map(doc => (
+                    <tr key={doc._id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-slate-900">{doc.doctorId?.name || 'N/A'}<br/><span className="text-xs text-slate-500 font-normal">{doc.doctorId?.email}</span></td>
+                      <td className="px-6 py-4">{doc.specialization}</td>
+                      <td className="px-6 py-4">{doc.employeeId}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${doc.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                          {doc.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr><td colSpan="4" className="px-6 py-8 text-center text-slate-500">No doctors found for this clinic.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === "patients" && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-600">
+                <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase border-b border-slate-100">
+                  <tr>
+                    <th className="px-6 py-4">Name</th>
+                    <th className="px-6 py-4">Patient Code</th>
+                    <th className="px-6 py-4">Gender</th>
+                    <th className="px-6 py-4">Age</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {clinic.patientsList?.length > 0 ? clinic.patientsList.map(pat => (
+                    <tr key={pat._id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-slate-900">{pat.patientId?.name || 'N/A'}<br/><span className="text-xs text-slate-500 font-normal">{pat.patientId?.email}</span></td>
+                      <td className="px-6 py-4">{pat.patientCode || 'N/A'}</td>
+                      <td className="px-6 py-4 capitalize">{pat.gender || '-'}</td>
+                      <td className="px-6 py-4">{pat.age || '-'}</td>
+                    </tr>
+                  )) : (
+                    <tr><td colSpan="4" className="px-6 py-8 text-center text-slate-500">No patients found for this clinic.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === "staff" && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-600">
+                <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase border-b border-slate-100">
+                  <tr>
+                    <th className="px-6 py-4">Name</th>
+                    <th className="px-6 py-4">Role</th>
+                    <th className="px-6 py-4">Staff Code</th>
+                    <th className="px-6 py-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {clinic.staffList?.length > 0 ? clinic.staffList.map(staff => (
+                    <tr key={staff._id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-slate-900">{staff.name}<br/><span className="text-xs text-slate-500 font-normal">{staff.email}</span></td>
+                      <td className="px-6 py-4 capitalize">{staff.role}</td>
+                      <td className="px-6 py-4">{staff.staffCode}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${staff.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                          {staff.status}
+                        </span>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr><td colSpan="4" className="px-6 py-8 text-center text-slate-500">No staff found for this clinic.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>

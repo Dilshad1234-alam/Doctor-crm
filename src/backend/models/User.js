@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema(
       required: [true, "Password is required"],
       select: false, // Hidden by default
     },
+    role: {
+      type: String,
+      default: "unassigned",
+      enum: ["admin", "unassigned"],
+    },
     isActive: {
       type: Boolean,
       default: true,

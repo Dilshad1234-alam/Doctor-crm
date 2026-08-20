@@ -20,21 +20,25 @@ export async function getAuthenticatedUser() {
   let clinicId = null;
   let doctorId = null;
   let patientId = null;
-  let onboardingCompleted = true; // Default, checking profile might be better
+  let onboardingCompleted = false;
 
-  if (decoded.accountType === "admin") {
+  if (decoded.accountType === "admin" || decoded.accountType === "unassigned") {
     user = await User.findById(decoded.accountId).lean();
     if (!user || !user.isActive) return null;
   } else if (decoded.accountType === "clinic") {
     user = await Clinic.findById(decoded.accountId).lean();
     if (!user || !user.isActive) return null;
     clinicId = user._id.toString();
+    const { default: ClinicProfile } = await import("@/backend/models/ClinicProfile");
+    const profile = await ClinicProfile.findOne({ clinicId }).lean();
+    onboardingCompleted = !!profile;
   } else if (decoded.accountType === "doctor") {
     user = await Doctor.findById(decoded.accountId).lean();
     if (!user || !user.isActive) return null;
     doctorId = user._id.toString();
     const { default: DoctorProfile } = await import("@/backend/models/DoctorProfile");
     const docProfile = await DoctorProfile.findOne({ doctorId: user._id }).lean();
+    onboardingCompleted = !!docProfile;
     if (docProfile) {
       clinicId = docProfile.clinicId ? docProfile.clinicId.toString() : null;
     }
@@ -44,6 +48,7 @@ export async function getAuthenticatedUser() {
     patientId = user._id.toString();
     const { default: PatientProfile } = await import("@/backend/models/PatientProfile");
     const patProfile = await PatientProfile.findOne({ patientId: user._id }).lean();
+    onboardingCompleted = !!patProfile;
     if (patProfile) {
       clinicId = patProfile.clinicId ? patProfile.clinicId.toString() : null;
     }
@@ -61,6 +66,6 @@ export async function getAuthenticatedUser() {
     clinicId,
     doctorId,
     patientId,
-    onboardingCompleted: true, // we assume true for now, can implement granular checks later if needed
+    onboardingCompleted,
   };
 }

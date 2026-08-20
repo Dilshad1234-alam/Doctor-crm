@@ -29,7 +29,6 @@ export async function GET(request) {
       { $unwind: "$clinic" },
       {
         $match: {
-          isPublic: true,
           "clinic.isActive": true,
         }
       }

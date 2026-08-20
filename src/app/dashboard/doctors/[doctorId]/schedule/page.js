@@ -87,14 +87,14 @@ export default function DoctorSchedulePage() {
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
           <div className="flex justify-between items-center mb-4 pb-2 border-b">
             <h2 className="text-lg font-semibold text-gray-900">Standard Availability</h2>
-            <Link href={`/dashboard/doctors/${doctor.id}/availability`}>
+            <Link href={`/dashboard/doctors/${params.doctorId}/availability`}>
                <Button variant="outline" size="sm">Edit</Button>
             </Link>
           </div>
           
           <div className="space-y-3">
             {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map(day => {
-              const avail = doctor.availability.find(a => a.day === day);
+              const avail = doctor.availability?.find(a => a.day === day);
               return (
                 <div key={day} className="flex justify-between items-start border-b border-gray-50 pb-2">
                   <span className="text-sm capitalize font-medium text-gray-700 w-1/3">{day}</span>

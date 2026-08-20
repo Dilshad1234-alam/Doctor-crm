@@ -60,8 +60,11 @@ export async function getDoctorAvailableSlots(clinicId, doctorId, dateStr) {
   let isAvailable = false;
   let scheduleSlots = [];
 
-  // Check top-level availability first (Step 2 Implementation)
-  if (doctor.isAvailable !== false && doctor.availableDays?.includes(dayStr)) {
+  // Use detailed availability if present, otherwise fallback to top-level schema defaults
+  if (doctor.availability && doctor.availability.length > 0) {
+    isAvailable = legacyAvailability ? legacyAvailability.isAvailable : false;
+    scheduleSlots = legacyAvailability ? (legacyAvailability.slots || []) : [];
+  } else if (doctor.isAvailable !== false && doctor.availableDays?.includes(dayStr)) {
     isAvailable = true;
     let mainStartTime = doctor.startTime || "09:00";
     let mainEndTime = doctor.endTime || "17:00";
@@ -74,10 +77,6 @@ export async function getDoctorAvailableSlots(clinicId, doctorId, dateStr) {
     } else {
       scheduleSlots = [{ startTime: mainStartTime, endTime: mainEndTime }];
     }
-  } else if (legacyAvailability) {
-    // Fallback to legacy configuration
-    isAvailable = legacyAvailability.isAvailable;
-    scheduleSlots = legacyAvailability.slots || [];
   }
 
   // 3. Apply Schedule Exceptions

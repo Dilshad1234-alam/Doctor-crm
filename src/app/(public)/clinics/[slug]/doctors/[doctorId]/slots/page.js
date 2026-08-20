@@ -66,7 +66,8 @@ export default function ClinicDoctorSlotsPage() {
       setSelectedSlot(null);
       try {
         const res = await fetch(
-          `/api/public/clinics/${params.slug}/doctors/${params.doctorId}/slots?date=${selectedDate}`
+          `/api/public/clinics/${params.slug}/doctors/${params.doctorId}/slots?date=${selectedDate}`,
+          { cache: 'no-store' }
         );
         const result = await res.json();
         if (result.success) {
@@ -293,7 +294,7 @@ export default function ClinicDoctorSlotsPage() {
               ) : slots.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <AlertCircle className="w-10 h-10 text-[#CBD5E1] mb-3" />
-                  <p className="text-sm font-bold text-[#0F172A]">No Slots Available</p>
+                  <p className="text-sm font-bold text-[#0F172A]">Not Available</p>
                   <p className="text-xs text-[#94A3B8] mt-1.5 max-w-[200px]">
                     Doctor is not available on this day. Try another date.
                   </p>

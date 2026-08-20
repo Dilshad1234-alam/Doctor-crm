@@ -24,6 +24,7 @@ export async function POST(request) {
       phone,
       email,
       // Step 2
+      clinicId,
       specialty,
       subSpecialty,
       experienceYears,
@@ -49,32 +50,24 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: "Doctor profile already setup" }, { status: 400 });
     }
 
-    // A clinicId is technically required by the schema for a doctor profile (since every doctor belongs to a clinic).
-    // For standalone doctors, they shouldn't just "create" a clinic blindly anymore without a proper clinic account.
-    // However, if the business logic expects standalone doctors to have a dummy clinic or they must be invited, 
-    // the previous logic created a Clinic here. Since `OwnerId` no longer exists, we should reconsider this.
-    // For now, let's allow it to create a Clinic account as a standalone practice to maintain old behavior.
+    let finalClinicId = clinicId;
+    
+    // If no clinicId is provided, we can either error out or create a dummy clinic. 
+    // Since the user asked to link them to an existing clinic, we require it.
+    if (!finalClinicId) {
+      return NextResponse.json({ success: false, message: "Clinic selection is required" }, { status: 400 });
+    }
+
+    // Verify the clinic exists
     const { default: Clinic } = await import("@/backend/models/Clinic");
-    const { default: ClinicProfile } = await import("@/backend/models/ClinicProfile");
-    
-    const clinicName = `${fullName || dbDoctor.name}'s Clinic`;
-    const newClinic = await Clinic.create({
-      name: clinicName,
-      email: `clinic_${Date.now()}@clinora.com`, // dummy unique email
-      phone: phone || "",
-      password: "dummy_password_hash_since_not_loginable_directly",
-      isActive: true,
-    });
-    
-    await ClinicProfile.create({
-      clinicId: newClinic._id,
-      address: { city: "Pending", state: "Pending" },
-      onboardingCompleted: true,
-    });
+    const existingClinic = await Clinic.findById(finalClinicId);
+    if (!existingClinic) {
+      return NextResponse.json({ success: false, message: "Selected clinic not found" }, { status: 404 });
+    }
 
     // Create the Doctor Profile
     await DoctorProfile.create({
-      clinicId: newClinic._id,
+      clinicId: finalClinicId,
       doctorId: dbDoctor._id,
       employeeId: `DOC-${Date.now().toString().slice(-6)}`,
       title: "Dr.",
