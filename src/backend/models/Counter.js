@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const counterSchema = new mongoose.Schema(
   {
-    clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
+    clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "ClinicProfile", required: true },
     key: { type: String, required: true },
     sequence: { type: Number, default: 0 }
   },

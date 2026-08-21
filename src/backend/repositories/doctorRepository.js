@@ -1,5 +1,5 @@
 import DoctorProfile from "@/backend/models/DoctorProfile";
-import Doctor from "@/backend/models/Doctor";
+import User from "@/backend/models/User";
 import mongoose from "mongoose";
 
 export async function createDoctorProfile(data, session = null) {

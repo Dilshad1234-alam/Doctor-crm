@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { connectDB } from "@/backend/database/connectDB";
-import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
 
 export async function GET(request) {
   try {
@@ -27,7 +27,7 @@ export async function GET(request) {
     }
     
     if (search) {
-      const matchingClinics = await Clinic.find({ name: { $regex: search, $options: "i" } }).select('_id').lean();
+      const matchingClinics = await ClinicProfile.find({ name: { $regex: search, $options: "i" } }).select('_id').lean();
       const clinicIds = matchingClinics.map(c => c._id);
       
       profileQuery.$or = [

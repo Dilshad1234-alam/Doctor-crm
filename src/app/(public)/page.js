@@ -6,7 +6,7 @@ import {
   Star, Heart
 } from "lucide-react";
 import { connectDB } from "@/backend/database/connectDB";
-import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
 
 export const metadata = {
   title: "Clinora | Premium Healthcare Marketplace",
@@ -15,7 +15,7 @@ export const metadata = {
 
 export default async function LandingPage() {
   await connectDB();
-  const clinics = await Clinic.find({ isActive: true }).limit(5).lean();
+  const clinics = await ClinicProfile.find({ isActive: true }).limit(5).lean();
 
   return (
     <div className="font-sans w-full overflow-x-hidden bg-[#F8FAFC]">

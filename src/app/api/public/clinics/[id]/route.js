@@ -3,7 +3,7 @@ import { connectDB } from "@/backend/database/connectDB";
 import ClinicProfile from "@/backend/models/ClinicProfile";
 import ClinicSettings from "@/backend/models/ClinicSettings";
 import DoctorProfile from "@/backend/models/DoctorProfile";
-import Doctor from "@/backend/models/Doctor";
+import User from "@/backend/models/User";
 
 function slugify(text) {
   if (!text) return "";
@@ -25,29 +25,23 @@ export async function GET(request, { params }) {
     let clinicProfile = null;
     const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
     if (isObjectId) {
-      clinicProfile = await ClinicProfile.findOne({ clinicId: id, isPublic: true }).populate("clinicId", "name email phone isActive").lean();
+      clinicProfile = await ClinicProfile.findOne({ _id: id, isPublic: true }).lean();
     }
     if (!clinicProfile) {
-      clinicProfile = await ClinicProfile.findOne({ slug: id, isPublic: true }).populate("clinicId", "name email phone isActive").lean();
-    }
-    
-    // If not found by slug directly, try to search all public clinics (slow path fallback)
-    if (!clinicProfile) {
-      const allPublic = await ClinicProfile.find({ isPublic: true }).populate("clinicId", "name email phone isActive").lean();
-      clinicProfile = allPublic.find(p => p.clinicId?.name && slugify(p.clinicId.name) === id.toLowerCase());
+      clinicProfile = await ClinicProfile.findOne({ slug: id, isPublic: true }).lean();
     }
 
-    if (!clinicProfile || !clinicProfile.clinicId || !clinicProfile.clinicId.isActive) {
-      return NextResponse.json({ success: false, error: "Clinic not found or not public" }, { status: 404 });
+    if (!clinicProfile || clinicProfile.status !== "active") {
+      return NextResponse.json({ success: false, error: "Clinic not found or not active" }, { status: 404 });
     }
 
     // Flatten clinic data for frontend compatibility
     const clinic = {
-      _id: clinicProfile.clinicId._id,
-      name: clinicProfile.clinicId.name,
-      email: clinicProfile.clinicId.email,
-      phone: clinicProfile.clinicId.phone,
-      slug: clinicProfile.slug || slugify(clinicProfile.clinicId.name),
+      _id: clinicProfile._id,
+      name: clinicProfile.name,
+      email: clinicProfile.email,
+      phone: clinicProfile.phone,
+      slug: clinicProfile.slug,
       logo: clinicProfile.logo,
       logoUrl: clinicProfile.logoUrl,
       coverImage: clinicProfile.coverImage,
@@ -66,18 +60,18 @@ export async function GET(request, { params }) {
     const doctorProfiles = await DoctorProfile.find({ clinicId: clinic._id, isActive: true }).lean();
     
     // Attach user names to doctors
-    const doctorIds = doctorProfiles.map(d => d.doctorId);
-    const doctorsAcc = await Doctor.find({ _id: { $in: doctorIds }, isActive: true }).select("name email phone").lean();
-    const docMap = doctorsAcc.reduce((acc, doc) => {
-      acc[doc._id.toString()] = doc;
+    const userIds = doctorProfiles.map(d => d.userId);
+    const usersAcc = await User.find({ _id: { $in: userIds }, isActive: true }).select("name email phone").lean();
+    const userMap = usersAcc.reduce((acc, user) => {
+      acc[user._id.toString()] = user;
       return acc;
     }, {});
 
-    const doctors = doctorProfiles.filter(profile => docMap[profile.doctorId.toString()]).map(profile => {
-      const docData = docMap[profile.doctorId.toString()];
+    const doctors = doctorProfiles.filter(profile => userMap[profile.userId.toString()]).map(profile => {
+      const userData = userMap[profile.userId.toString()];
       return {
         ...profile,
-        user: docData // Frontend expects `user.name`, so map it to `user`
+        user: userData // Frontend expects `user.name`, so map it to `user`
       };
     });
 

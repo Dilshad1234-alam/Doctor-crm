@@ -4,7 +4,7 @@ const paymentSchema = new mongoose.Schema(
   {
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
+      ref: "ClinicProfile",
       required: true,
     },
     paymentCode: {
@@ -17,10 +17,9 @@ const paymentSchema = new mongoose.Schema(
       ref: "Invoice",
       required: true,
     },
-    patientId: {
+    serviceId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Patient",
-      required: true,
+      ref: "Service",
     },
     appointmentId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -43,7 +42,7 @@ const paymentSchema = new mongoose.Schema(
       default: "success",
       required: true,
     },
-    referenceNumber: {
+    transactionId: {
       type: String,
       trim: true,
     },
@@ -74,6 +73,6 @@ const paymentSchema = new mongoose.Schema(
 // Indexes
 paymentSchema.index({ clinicId: 1, paymentCode: 1 }, { unique: true });
 paymentSchema.index({ clinicId: 1, invoiceId: 1 });
-paymentSchema.index({ clinicId: 1, patientId: 1, createdAt: -1 });
+
 
 export default mongoose.models.Payment || mongoose.model("Payment", paymentSchema);

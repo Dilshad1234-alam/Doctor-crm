@@ -4,7 +4,7 @@ const serviceSchema = new mongoose.Schema(
   {
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
+      ref: "ClinicProfile",
       required: true,
     },
     name: {

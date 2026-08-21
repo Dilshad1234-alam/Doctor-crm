@@ -49,18 +49,18 @@ const doctorProfileSchema = new mongoose.Schema(
   {
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
-      required: true,
-    },
+      ref: "ClinicProfile",
+      },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Doctor",
+      ref: "User",
+      },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
-    },
-    employeeId: {
-      type: String,
-      required: true,
-      trim: true,
+      unique: true,
+      index: true,
     },
     title: {
       type: String,
@@ -232,7 +232,6 @@ const doctorProfileSchema = new mongoose.Schema(
 );
 
 // Indexes
-doctorProfileSchema.index({ clinicId: 1, employeeId: 1 }, { unique: true });
 doctorProfileSchema.index({ clinicId: 1, specialization: 1 });
 doctorProfileSchema.index({ clinicId: 1, isActive: 1 });
 

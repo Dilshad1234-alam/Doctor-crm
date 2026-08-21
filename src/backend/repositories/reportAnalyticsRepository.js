@@ -1,8 +1,6 @@
 import mongoose from "mongoose";
 import Appointment from "../models/Appointment";
-import Consultation from "../models/Consultation";
 import Payment from "../models/Payment";
-import PatientProfile from "../models/PatientProfile";
 import Invoice from "../models/Invoice";
 import DoctorProfile from "../models/DoctorProfile";
 
@@ -51,7 +49,7 @@ export const reportAnalyticsRepository = {
       Appointment.countDocuments(apptMatch),
       Appointment.countDocuments({ ...apptMatch, status: "cancelled" }),
       Appointment.countDocuments({ ...apptMatch, status: "no_show" }),
-      Consultation.countDocuments(consultMatch),
+      Appointment.countDocuments({ ...apptMatch, status: "completed" }),
       Payment.aggregate([
         { $match: paymentMatch },
         { $group: { _id: null, total: { $sum: "$amount" } } }
@@ -62,12 +60,8 @@ export const reportAnalyticsRepository = {
       ])
     ]);
 
-    // New patients (clinic wide, usually not doctor scoped unless created by doctor, but we'll use createdAt)
-    const patientMatch = { clinicId: new mongoose.Types.ObjectId(clinicId) };
-    if (startDate && endDate) {
-      patientMatch.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
-    }
-    const newPatients = await PatientProfile.countDocuments(patientMatch);
+    // Removed old patient counts
+    const newPatients = 0;
 
     return {
       totalAppointments,
@@ -180,15 +174,13 @@ export const reportAnalyticsRepository = {
           _id: "$doctorId",
           appointments: { $sum: 1 },
           noShows: { $sum: { $cond: [{ $eq: ["$status", "no_show"] }, 1, 0] } },
-          patientsSeen: { $addToSet: "$patientId" } // Will count size later
+          patientsSeen: { $addToSet: "$patientPhone" } // Group by phone as pseudo-patient ID
         }
       }
     ]);
 
-    const consultMatch = buildMatchStage(clinicId, null, "createdAt", startDate, endDate);
-    consultMatch.status = "completed";
-    const consultStats = await Consultation.aggregate([
-      { $match: consultMatch },
+    const consultStats = await Appointment.aggregate([
+      { $match: { ...apptMatch, status: "completed" } },
       { $group: { _id: "$doctorId", completedConsultations: { $sum: 1 } } }
     ]);
 
@@ -218,8 +210,8 @@ export const reportAnalyticsRepository = {
 
     // Fetch doctor profiles to get names
     const doctorIds = doctorStats.map(d => d._id).filter(Boolean);
-    const { default: Doctor } = await import("../models/Doctor.js");
-    const doctors = await Doctor.find({ _id: { $in: doctorIds } }, "name").lean();
+    const { default: User } = await import("../models/User.js");
+    const doctors = await User.find({ _id: { $in: doctorIds } }, "name").lean();
 
     const doctorMap = {};
     doctors.forEach(doc => {
@@ -246,29 +238,25 @@ export const reportAnalyticsRepository = {
   async getPatientReport(clinicId, doctorId, startDate, endDate) {
     const apptMatch = buildMatchStage(clinicId, doctorId, "appointmentDate", startDate, endDate);
     
-    // Total patients seen in this period
+    // Total patients seen in this period (approx by phone)
     const totalPatientsAgg = await Appointment.aggregate([
       { $match: apptMatch },
-      { $group: { _id: "$patientId" } },
+      { $group: { _id: "$patientPhone" } },
       { $count: "count" }
     ]);
     const totalPatients = totalPatientsAgg.length > 0 ? totalPatientsAgg[0].count : 0;
 
     // New patients registered in this period
-    const patientMatch = { clinicId: new mongoose.Types.ObjectId(clinicId) };
-    if (startDate && endDate) {
-      patientMatch.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
-    }
-    const newPatients = await PatientProfile.countDocuments(patientMatch);
+    const newPatients = 0; // Deprecated CRM feature
 
-    // Returning Patients: patients who had an appointment in this period AND had an appointment BEFORE this period
+    // Returning Patients
     let returningPatients = 0;
     if (startDate) {
        const returningPatientsAgg = await Appointment.aggregate([
          { $match: { clinicId: new mongoose.Types.ObjectId(clinicId), ...(doctorId ? { doctorId: new mongoose.Types.ObjectId(doctorId) } : {}) } },
          {
            $group: {
-             _id: "$patientId",
+             _id: "$patientPhone",
              firstAppt: { $min: "$appointmentDate" },
              hasApptInPeriod: {
                $max: {

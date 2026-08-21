@@ -3,7 +3,7 @@ import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { connectDB } from "@/backend/database/connectDB";
 import AuditLog from "@/backend/models/AuditLog";
 import User from "@/backend/models/User"; // Ensure registered for populate
-import Clinic from "@/backend/models/Clinic"; // Ensure registered for populate
+import ClinicProfile from "@/backend/models/ClinicProfile"; // Ensure registered for populate
 
 export async function GET(request) {
   try {

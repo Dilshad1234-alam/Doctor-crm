@@ -4,7 +4,7 @@ const clinicSubscriptionSchema = new mongoose.Schema(
   {
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
+      ref: "ClinicProfile",
       required: true,
       unique: true, // Assuming one active/tracked subscription per clinic for simplicity
     },

@@ -37,7 +37,7 @@ export async function GET(request, { params }) {
     // Import the Doctor model locally to avoid circular dependency if any, or just use the imported one.
     const mongoose = require("mongoose");
     const Doctor = mongoose.models.Doctor || mongoose.model("Doctor");
-    const doctorUser = await Doctor.findById(doctor.doctorId).select("name").lean();
+    const doctorUser = await User.findById(doctor.doctorId).select("name").lean();
 
     if (!doctor.isAvailable) {
       return NextResponse.json({ success: true, data: { slots: [], message: "Doctor is currently unavailable" } });

@@ -5,7 +5,8 @@ import Appointment from "../models/Appointment.js";
 
 export async function createAppointmentForClinic(authUser, input) {
   const { id: userId, role } = authUser;
-  const clinicId = authUser.clinicId || input.clinicId;
+  const clinicId = authUser.clinicProfile ? authUser.clinicProfile._id : authUser.clinicId;
+  const legacyClinicId = authUser.clinicId; // For some lookups if needed
   
   if (!clinicId) throw Object.assign(new Error("Clinic ID is required"), { status: 400 });
 
@@ -14,7 +15,8 @@ export async function createAppointmentForClinic(authUser, input) {
     serviceId, appointmentDate, appointmentTime, doctorId = authUser.doctorId 
   } = input;
 
-  if (role === "doctor" && authUser.doctorId !== doctorId) {
+  const effectiveDoctorId = authUser.doctorProfile ? authUser.doctorProfile._id.toString() : doctorId;
+  if (role === "doctor" && authUser.doctorProfile && authUser.doctorProfile._id.toString() !== effectiveDoctorId) {
     throw Object.assign(new Error("Doctors can only book their own appointments"), { status: 403 });
   }
 
@@ -35,8 +37,8 @@ export async function createAppointmentForClinic(authUser, input) {
   const bookingId = `APT-${dateStr}-${randomStr}`;
 
   const appointmentData = {
-    clinicId,
-    doctorId: doctor.doctorId || doctor._id,
+    clinicId, // Now points to ClinicProfile
+    doctorId: doctor._id, // Now points to DoctorProfile
     serviceId,
     bookingId,
     patientName,
@@ -55,13 +57,14 @@ export async function createAppointmentForClinic(authUser, input) {
 }
 
 export async function rescheduleAppointment(authUser, appointmentId, input) {
-  const { clinicId, role } = authUser;
+  const clinicId = authUser.clinicProfile ? authUser.clinicProfile._id : authUser.clinicId;
+  const { role } = authUser;
   const { appointmentDate, appointmentTime } = input;
 
   const appointment = await findAppointmentById(appointmentId, clinicId);
   if (!appointment) throw Object.assign(new Error("Appointment not found"), { status: 404 });
 
-  if (role === "doctor" && authUser.doctorId !== appointment.doctorId._id.toString()) {
+  if (role === "doctor" && authUser.doctorProfile && authUser.doctorProfile._id.toString() !== appointment.doctorId._id.toString()) {
     throw Object.assign(new Error("Unauthorized access to this appointment"), { status: 403 });
   }
 
@@ -80,12 +83,13 @@ export async function rescheduleAppointment(authUser, appointmentId, input) {
 }
 
 export async function updateAppointmentStatus(authUser, appointmentId, status) {
-  const { clinicId, role } = authUser;
+  const clinicId = authUser.clinicProfile ? authUser.clinicProfile._id : authUser.clinicId;
+  const { role } = authUser;
   
   const appointment = await findAppointmentById(appointmentId, clinicId);
   if (!appointment) throw Object.assign(new Error("Appointment not found"), { status: 404 });
 
-  if (role === "doctor" && authUser.doctorId !== appointment.doctorId._id.toString()) {
+  if (role === "doctor" && authUser.doctorProfile && authUser.doctorProfile._id.toString() !== appointment.doctorId._id.toString()) {
     throw Object.assign(new Error("Unauthorized access to this appointment"), { status: 403 });
   }
 
@@ -99,20 +103,31 @@ export async function updateAppointmentStatus(authUser, appointmentId, status) {
 }
 
 export async function getAppointments(authUser, query) {
-  const { clinicId, role } = authUser;
+  const clinicId = authUser.clinicProfile ? authUser.clinicProfile._id : authUser.clinicId;
+  const { role } = authUser;
   if (role === "doctor") {
-    query.doctorId = authUser.doctorId;
+    query.doctorId = authUser.doctorProfile ? authUser.doctorProfile._id : authUser.doctorId;
   }
   return findAppointmentsByClinic(clinicId, query);
 }
 
 export async function getAppointmentDetails(authUser, appointmentId) {
-  const appointment = await findAppointmentById(appointmentId, authUser.clinicId);
+  const clinicId = authUser.clinicProfile ? authUser.clinicProfile._id : authUser.clinicId;
+  const appointment = await findAppointmentById(appointmentId, clinicId);
   if (!appointment) throw Object.assign(new Error("Appointment not found"), { status: 404 });
   
-  if (authUser.role === "doctor" && authUser.doctorId !== appointment.doctorId._id.toString()) {
+  if (authUser.role === "doctor" && authUser.doctorProfile && authUser.doctorProfile._id.toString() !== appointment.doctorId._id.toString()) {
     throw Object.assign(new Error("Unauthorized access to this appointment"), { status: 403 });
   }
 
   return appointment;
+}
+
+export async function cancelAppointment(authUser, appointmentId, reason) {
+  // If we wanted to store the reason, we could update it too.
+  return updateAppointmentStatus(authUser, appointmentId, "CANCELLED");
+}
+
+export async function markAppointmentNoShow(authUser, appointmentId) {
+  return updateAppointmentStatus(authUser, appointmentId, "NO_SHOW");
 }

@@ -4,7 +4,7 @@ const availabilitySchema = new mongoose.Schema(
   {
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
+      ref: "ClinicProfile",
       required: true,
     },
     day: {
@@ -42,6 +42,7 @@ const availabilitySchema = new mongoose.Schema(
   }
 );
 
-availabilitySchema.index({ clinicId: 1, day: 1 });
+// Indexes
+availabilitySchema.index({ clinicId: 1, day: 1 }, { unique: true });
 
 export default mongoose.models.Availability || mongoose.model("Availability", availabilitySchema);

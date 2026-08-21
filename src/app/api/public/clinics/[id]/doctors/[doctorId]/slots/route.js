@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
 import { getDoctorAvailableSlots } from "@/backend/services/appointmentSlotService";
 import { connectDB as connectToDatabase } from "@/backend/database/connectDB";
 
@@ -30,8 +30,8 @@ export async function GET(request, { params }) {
       );
 
       if (!matched) {
-        // Try direct Clinic.slug as last fallback
-        const clinic = await Clinic.findOne({ slug: clinicId });
+        // Try direct ClinicProfile.slug as last fallback
+        const clinic = await ClinicProfile.findOne({ slug: clinicId });
         if (!clinic) {
           return NextResponse.json({ success: false, message: "Clinic not found" }, { status: 404 });
         }

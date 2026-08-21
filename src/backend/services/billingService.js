@@ -5,7 +5,6 @@ import Payment from "../models/Payment.js";
 import AuditLog from "../models/AuditLog.js";
 import Counter from "../models/Counter.js";
 import { findAppointmentById } from "../repositories/appointmentRepository.js";
-import { findConsultationByAppointment } from "../repositories/consultationRepository.js";
 import { 
   createInvoice, findInvoiceById, findInvoicesByClinic, findInvoiceByAppointment 
 } from "../repositories/invoiceRepository.js";
@@ -48,7 +47,6 @@ export async function createNewInvoice(authUser, appointmentId, input) {
     throw new Error("An invoice already exists for this appointment");
   }
 
-  const consultation = await findConsultationByAppointment(appointmentId, authUser.clinicId);
 
   let session = null;
   let invoice = null;
@@ -69,10 +67,9 @@ export async function createNewInvoice(authUser, appointmentId, input) {
     invoice = await createInvoice({
       clinicId: authUser.clinicId,
       invoiceCode,
-      patientId: appointment.patientId._id || appointment.patientId,
       doctorId: appointment.doctorId._id || appointment.doctorId,
       appointmentId: appointment._id,
-      consultationId: consultation ? consultation._id : null,
+      serviceId: appointment.serviceId,
       items: totals.processedItems,
       subtotal: totals.subtotal,
       discount: input.discount,
@@ -252,11 +249,11 @@ export async function recordPayment(authUser, invoiceId, input) {
       clinicId: authUser.clinicId,
       paymentCode,
       invoiceId: invoice._id,
-      patientId: invoice.patientId,
       appointmentId: invoice.appointmentId,
+      serviceId: invoice.serviceId,
       amount,
       paymentMethod: input.paymentMethod,
-      referenceNumber: input.referenceNumber,
+      transactionId: input.transactionId || input.referenceNumber,
       notes: input.notes,
       receivedByUserId: authUser.id || authUser._id,
       status: "success",

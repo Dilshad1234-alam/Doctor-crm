@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { connectDB } from "@/backend/database/connectDB";
-import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
 import DoctorProfile from "@/backend/models/DoctorProfile";
-import PatientProfile from "@/backend/models/PatientProfile";
-import StaffProfile from "@/backend/models/StaffProfile";
 import Appointment from "@/backend/models/Appointment";
 
 export async function GET(request, { params }) {
@@ -18,7 +16,7 @@ export async function GET(request, { params }) {
 
     await connectDB();
 
-    const clinic = await Clinic.findById(id).lean();
+    const clinic = await ClinicProfile.findById(id).lean();
     if (!clinic) {
       return NextResponse.json({ success: false, message: "Clinic not found" }, { status: 404 });
     }
@@ -34,16 +32,17 @@ export async function GET(request, { params }) {
       clinic.about = profile.about;
     }
 
-    const [totalDoctors, totalPatients, totalStaff, totalAppointments] = await Promise.all([
+    const [totalDoctors, totalAppointments] = await Promise.all([
       DoctorProfile.countDocuments({ clinicId: id }),
-      PatientProfile.countDocuments({ clinicId: id }),
-      StaffProfile.countDocuments({ clinicId: id }),
       Appointment.countDocuments({ clinicId: id })
     ]);
 
     const doctorsList = await DoctorProfile.find({ clinicId: id }).populate("doctorId", "name email phone").lean();
-    const patientsList = await PatientProfile.find({ clinicId: id }).populate("patientId", "name email phone").lean();
-    const staffList = await StaffProfile.find({ clinicId: id }).lean();
+
+    const totalPatients = 0;
+    const totalStaff = 0;
+    const patientsList = [];
+    const staffList = [];
 
     return NextResponse.json({
       success: true,

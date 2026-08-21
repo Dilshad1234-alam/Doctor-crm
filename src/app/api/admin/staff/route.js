@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { connectDB } from "@/backend/database/connectDB";
-import StaffProfile from "@/backend/models/StaffProfile";
+
 
 export async function GET(request) {
   try {
@@ -17,26 +17,10 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get("limit") || "20");
     const skip = (page - 1) * limit;
 
-    const profiles = await StaffProfile.find()
-      .populate("clinicId", "name address")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const staff = [];
 
-    const staff = profiles.map(p => ({
-      ...p,
-      userId: {
-        name: p.name,
-        email: p.email,
-        phone: p.phone,
-        isActive: p.status === "active",
-        role: p.role
-      }
-    }));
-
-    const total = await StaffProfile.countDocuments();
-    const pages = Math.ceil(total / limit);
+    const total = 0;
+    const pages = 0;
 
     return NextResponse.json({
       success: true,

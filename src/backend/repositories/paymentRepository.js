@@ -1,5 +1,5 @@
 import Payment from "../models/Payment.js";
-import "../models/PatientProfile.js";
+
 import "../models/Appointment.js";
 import "../models/Invoice.js";
 import "../models/User.js";
@@ -11,7 +11,6 @@ export async function createPayment(data, session = null) {
 
 export async function findPaymentById(paymentId, clinicId) {
   return Payment.findOne({ _id: paymentId, clinicId })
-    .populate("patientId", "firstName lastName fullName patientCode")
     .populate("invoiceId", "invoiceCode totalAmount status")
     .populate("receivedById", "name email phone");
 }
@@ -43,15 +42,12 @@ export async function findPaymentsByClinic(clinicId, query = {}) {
   }
 
   return Payment.find(filter)
-    .populate("patientId", "firstName lastName fullName patientCode")
     .populate("invoiceId", "invoiceCode totalAmount")
     .populate("receivedById", "name email phone")
     .sort({ paidAt: -1 });
 }
 
-export async function findPaymentsByPatient(patientId, clinicId, query = {}) {
-  return findPaymentsByClinic(clinicId, { ...query, patientId });
-}
+// findPaymentsByPatient removed as patientId no longer on Payment
 
 export async function sumSuccessfulPaymentsForInvoice(invoiceId, clinicId) {
   const result = await Payment.aggregate([

@@ -32,32 +32,29 @@ const invoiceSchema = new mongoose.Schema(
   {
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
+      ref: "ClinicProfile",
       required: true,
+      index: true,
     },
     invoiceCode: {
       type: String,
       required: true,
       trim: true,
     },
-    patientId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Patient",
-      required: true,
-    },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Doctor",
+      ref: "DoctorProfile",
       required: true,
+      index: true,
     },
     appointmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Appointment",
       required: true,
     },
-    consultationId: {
+    serviceId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Consultation",
+      ref: "Service",
     },
     items: {
       type: [invoiceItemSchema],
@@ -132,8 +129,6 @@ const invoiceSchema = new mongoose.Schema(
 
 // Indexes
 invoiceSchema.index({ clinicId: 1, invoiceCode: 1 }, { unique: true });
-// One Appointment -> One Main Invoice constraint
 invoiceSchema.index({ clinicId: 1, appointmentId: 1 }, { unique: true });
-invoiceSchema.index({ clinicId: 1, patientId: 1, createdAt: -1 });
 
 export default mongoose.models.Invoice || mongoose.model("Invoice", invoiceSchema);

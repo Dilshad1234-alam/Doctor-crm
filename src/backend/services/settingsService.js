@@ -1,5 +1,5 @@
 import ClinicSettings from "../models/ClinicSettings.js";
-import Clinic from "../models/Clinic.js";
+import ClinicProfile from "../models/ClinicProfile.js";
 import AuditLog from "../models/AuditLog.js";
 
 const DEFAULT_WORKING_HOURS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map(day => ({
@@ -10,7 +10,7 @@ const DEFAULT_WORKING_HOURS = ["monday", "tuesday", "wednesday", "thursday", "fr
 }));
 
 export async function getSettings(clinicId) {
-  const clinic = await Clinic.findById(clinicId).lean();
+  const clinic = await ClinicProfile.findById(clinicId).lean();
   if (!clinic) throw new Error("Clinic not found");
 
   let settings = await ClinicSettings.findOne({ clinicId }).lean();
@@ -32,7 +32,7 @@ export async function getSettings(clinicId) {
 }
 
 export async function updateClinicProfile(clinicId, userId, data) {
-  const updatedClinic = await Clinic.findByIdAndUpdate(
+  const updatedClinic = await ClinicProfile.findByIdAndUpdate(
     clinicId,
     {
       $set: {

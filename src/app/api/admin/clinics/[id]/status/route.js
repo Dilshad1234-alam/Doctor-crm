@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { connectDB } from "@/backend/database/connectDB";
-import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
 
 export async function PATCH(request, { params }) {
   try {
@@ -20,7 +20,7 @@ export async function PATCH(request, { params }) {
 
     await connectDB();
 
-    const clinic = await Clinic.findById(id);
+    const clinic = await ClinicProfile.findById(id);
     if (!clinic) {
       return NextResponse.json({ success: false, message: "Clinic not found" }, { status: 404 });
     }

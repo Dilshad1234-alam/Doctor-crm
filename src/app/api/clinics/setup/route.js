@@ -4,6 +4,8 @@ import { verifyAuthToken } from "@/backend/utils/auth";
 import { clinicSetupSchema } from "@/backend/validations/authValidation";
 import { setupClinicForOwner } from "@/backend/services/clinicService";
 import { ZodError } from "zod";
+import { connectDB } from "@/backend/database/connectDB";
+import DoctorProfile from "@/backend/models/DoctorProfile";
 
 export const runtime = "nodejs";
 
@@ -20,10 +22,20 @@ export async function POST(request) {
     
     const decoded = verifyAuthToken(token);
     
-    if (!decoded || !decoded.accountId || decoded.accountType !== "clinic") {
+    // Auth uses User now, where accountType is 'doctor' for doctors
+    if (!decoded || !decoded.accountId || decoded.accountType !== "doctor") {
       return NextResponse.json(
         { success: false, message: "Invalid token or wrong account type" },
         { status: 401 }
+      );
+    }
+
+    await connectDB();
+    const doctorProfile = await DoctorProfile.findOne({ userId: decoded.accountId });
+    if (!doctorProfile) {
+      return NextResponse.json(
+        { success: false, message: "Doctor profile must be completed first" },
+        { status: 403 }
       );
     }
 
@@ -31,9 +43,9 @@ export async function POST(request) {
     
     const validatedData = clinicSetupSchema.parse(body);
     
-    const { clinic, user, token: newToken } = await setupClinicForOwner(decoded.accountId, validatedData);
+    const { clinic, user, token: newToken } = await setupClinicForOwner(decoded.accountId, doctorProfile, validatedData);
     
-    // Set the new token containing the clinicId
+    // Set the new token
     await setAuthCookie(newToken);
     
     return NextResponse.json(

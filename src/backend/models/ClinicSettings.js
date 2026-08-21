@@ -4,7 +4,7 @@ const clinicSettingsSchema = new mongoose.Schema(
   {
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
+      ref: "ClinicProfile",
       required: true,
       unique: true,
     },

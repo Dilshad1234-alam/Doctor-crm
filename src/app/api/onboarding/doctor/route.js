@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { connectDB } from "@/backend/database/connectDB";
-import Doctor from "@/backend/models/Doctor";
+import User from "@/backend/models/User";
+import mongoose from "mongoose";
 import DoctorProfile from "@/backend/models/DoctorProfile";
-import { createAuthToken } from "@/backend/utils/auth";
-import { setAuthCookie } from "@/backend/utils/authCookie";
 
 export const runtime = "nodejs";
 
@@ -24,7 +23,6 @@ export async function POST(request) {
       phone,
       email,
       // Step 2
-      clinicId,
       specialty,
       subSpecialty,
       experienceYears,
@@ -40,36 +38,22 @@ export async function POST(request) {
     } = body;
 
     await connectDB();
-    const dbDoctor = await Doctor.findById(authUser.accountId);
-    if (!dbDoctor) {
-      return NextResponse.json({ success: false, message: "Doctor account not found" }, { status: 404 });
+    
+    // Auth user is now from User collection
+    const dbUser = await User.findById(authUser.accountId);
+    if (!dbUser) {
+      return NextResponse.json({ success: false, message: "User account not found" }, { status: 404 });
     }
     
-    const existingProfile = await DoctorProfile.findOne({ doctorId: dbDoctor._id });
+    // Prevent duplicate DoctorProfile
+    const existingProfile = await DoctorProfile.findOne({ userId: dbUser._id });
     if (existingProfile) {
       return NextResponse.json({ success: false, message: "Doctor profile already setup" }, { status: 400 });
     }
 
-    let finalClinicId = clinicId;
-    
-    // If no clinicId is provided, we can either error out or create a dummy clinic. 
-    // Since the user asked to link them to an existing clinic, we require it.
-    if (!finalClinicId) {
-      return NextResponse.json({ success: false, message: "Clinic selection is required" }, { status: 400 });
-    }
-
-    // Verify the clinic exists
-    const { default: Clinic } = await import("@/backend/models/Clinic");
-    const existingClinic = await Clinic.findById(finalClinicId);
-    if (!existingClinic) {
-      return NextResponse.json({ success: false, message: "Selected clinic not found" }, { status: 404 });
-    }
-
     // Create the Doctor Profile
     await DoctorProfile.create({
-      clinicId: finalClinicId,
-      doctorId: dbDoctor._id,
-      employeeId: `DOC-${Date.now().toString().slice(-6)}`,
+      userId: dbUser._id,
       title: "Dr.",
       specialization: specialty || "General Medicine",
       subSpecialization: subSpecialty || "",
@@ -77,7 +61,7 @@ export async function POST(request) {
       registrationNumber: registrationNumber || "",
       experienceYears: parseInt(experienceYears) || 0,
       consultationFee: parseInt(consultationFee) || 0,
-      phone: phone || dbDoctor.phone,
+      phone: phone || dbUser.phone,
       gender: gender,
       dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
       profileImage: profilePhoto || "",
@@ -87,30 +71,24 @@ export async function POST(request) {
         degreeCertificate: degreeCertificate || "",
         idProof: idProof || "",
       },
-      createdById: dbDoctor._id,
-      createdByModel: "Doctor",
+      createdById: dbUser._id,
+      createdByModel: "User",
       isActive: true,
     });
 
-    // Update Doctor basic info
-    await Doctor.updateOne(
-      { _id: dbDoctor._id },
+    // Update User basic info
+    await User.updateOne(
+      { _id: dbUser._id },
       {
         $set: {
-          name: fullName || dbDoctor.name,
-          email: email || dbDoctor.email,
-          phone: phone || dbDoctor.phone,
+          name: fullName || dbUser.name,
+          phone: phone || dbUser.phone,
         }
       }
     );
 
-    // Generate new token
-    const newToken = createAuthToken({
-      accountId: dbDoctor._id,
-      accountType: "doctor",
-    });
-
-    await setAuthCookie(newToken);
+    // We no longer need to reissue token just for onboarding since JWT only holds accountId = User._id
+    // getAuthenticatedUser automatically resolves the profile on next request.
 
     return NextResponse.json(
       { success: true, message: "Doctor profile completed" },

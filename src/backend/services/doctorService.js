@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Doctor from "@/backend/models/Doctor";
+import User from "@/backend/models/User";
 import DoctorProfile from "@/backend/models/DoctorProfile";
 import { createDoctorProfile, findDoctorById, updateDoctorById, findDoctorsByClinic } from "@/backend/repositories/doctorRepository";
 import { generateDoctorEmployeeId } from "@/backend/utils/generateDoctorEmployeeId";
@@ -15,12 +15,12 @@ export async function createDoctorForClinic(ownerUser, input) {
   const clinicId = ownerUser.clinicId;
   if (!clinicId) throw new Error("Clinic Owner has no associated clinic");
 
-  const existingDoctor = await Doctor.findOne({ email: input.email.toLowerCase().trim() });
+  const existingDoctor = await User.findOne({ email: input.email.toLowerCase().trim() });
   if (existingDoctor) {
     throw new Error("Email is already in use by another user");
   }
 
-  const employeeId = await generateDoctorEmployeeId(clinicId);
+  // const employeeId = await generateDoctorEmployeeId(clinicId);
   const hashedPassword = await hashPassword(input.temporaryPassword);
 
   let session = null;
@@ -43,14 +43,14 @@ export async function createDoctorForClinic(ownerUser, input) {
       isActive: true,
     };
 
-    const [doctor] = await Doctor.create([docData], session ? { session } : {});
+    const [doctor] = await User.create([docData], session ? { session } : {});
     newDoctor = doctor;
 
     const profileData = {
       ...input,
       clinicId: clinicId,
       doctorId: doctor._id,
-      employeeId: employeeId,
+      userId: doctor._id, // temporarily use doctor._id as userId to satisfy schema
       createdById: ownerUser.id || ownerUser._id,
       createdByModel: "Clinic",
       isActive: true,
@@ -71,7 +71,7 @@ export async function createDoctorForClinic(ownerUser, input) {
     if (session) {
       await session.abortTransaction();
     } else if (newDoctor) {
-      await Doctor.findByIdAndDelete(newDoctor._id);
+      await User.findByIdAndDelete(newDoctor._id);
     }
     
     if (error.code === 11000 && error.message.includes('registrationNumber')) {
@@ -148,14 +148,14 @@ export async function updateDoctorForClinic(ownerUser, doctorId, input) {
     const docUpdate = {};
     if (input.name) docUpdate.name = input.name;
     if (input.phone) docUpdate.phone = input.phone;
-    await Doctor.updateOne({ _id: doctor.doctorId._id }, { $set: docUpdate });
+    await User.updateOne({ _id: doctor.doctorId._id }, { $set: docUpdate });
   }
   
   const safeInput = { ...input };
   delete safeInput.name;
   delete safeInput.email;
   delete safeInput.phone;
-  delete safeInput.employeeId;
+  // delete safeInput.employeeId;
   delete safeInput.clinicId;
   delete safeInput.doctorId;
   delete safeInput.password;
@@ -165,7 +165,7 @@ export async function updateDoctorForClinic(ownerUser, doctorId, input) {
 
   const updatedDoctor = await updateDoctorById(doctorId, ownerUser.clinicId, safeInput);
   
-  const docRef = await Doctor.findById(updatedDoctor.doctorId);
+  const docRef = await User.findById(updatedDoctor.doctorId);
   return getSafeDoctorData(updatedDoctor, docRef);
 }
 
@@ -193,7 +193,7 @@ export async function changeDoctorStatus(ownerUser, doctorId, isActive) {
       session ? { session, new: true } : { new: true }
     );
 
-    await Doctor.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
       doctor.doctorId._id,
       { $set: { isActive } },
       session ? { session } : {}
@@ -201,7 +201,7 @@ export async function changeDoctorStatus(ownerUser, doctorId, isActive) {
 
     if (session) await session.commitTransaction();
 
-    const docRef = await Doctor.findById(updatedDoctor.doctorId);
+    const docRef = await User.findById(updatedDoctor.doctorId);
     return getSafeDoctorData(updatedDoctor, docRef);
   } catch (error) {
     if (session) await session.abortTransaction();

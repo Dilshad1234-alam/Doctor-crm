@@ -4,13 +4,15 @@ const appointmentSchema = new mongoose.Schema(
   {
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
+      ref: "ClinicProfile",
       required: true,
+      index: true,
     },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Doctor",
+      ref: "DoctorProfile",
       required: true,
+      index: true,
     },
     serviceId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -80,7 +82,8 @@ const appointmentSchema = new mongoose.Schema(
 );
 
 // Indexes
-appointmentSchema.index({ clinicId: 1, bookingId: 1 }, { unique: true });
+appointmentSchema.index({ clinicId: 1, appointmentDate: 1 });
+appointmentSchema.index({ doctorId: 1, appointmentDate: 1 });
 appointmentSchema.index({ clinicId: 1, doctorId: 1, appointmentDate: 1 });
 appointmentSchema.index({ patientPhone: 1 });
 

@@ -4,9 +4,35 @@ const clinicProfileSchema = new mongoose.Schema(
   {
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
+      ref: "ClinicProfile",
+      },
+    doctorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DoctorProfile",
+      index: true,
+    },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    slug: {
+      type: String,
       required: true,
       unique: true,
+      index: true,
+      trim: true,
     },
     address: {
       line1: { type: String, trim: true, default: "" },

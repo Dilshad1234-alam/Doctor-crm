@@ -1,8 +1,6 @@
 import Invoice from "../models/Invoice.js";
-import "../models/PatientProfile.js";
 import "../models/DoctorProfile.js";
 import "../models/Appointment.js";
-import "../models/Consultation.js";
 import "../models/User.js";
 
 export async function createInvoice(data, session = null) {
@@ -12,15 +10,13 @@ export async function createInvoice(data, session = null) {
 
 export async function findInvoiceById(invoiceId, clinicId) {
   return Invoice.findOne({ _id: invoiceId, clinicId })
-    .populate("patientId", "name firstName lastName fullName patientCode patientIdString phone")
     .populate("doctorId", "name email phone")
-    .populate("appointmentId", "appointmentCode appointmentDate startTime endTime")
+    .populate("appointmentId", "appointmentCode appointmentDate startTime endTime patientName patientPhone patientEmail serviceId")
     .populate("createdByUserId", "name role");
 }
 
 export async function findInvoiceByAppointment(appointmentId, clinicId) {
   return Invoice.findOne({ appointmentId, clinicId })
-    .populate("patientId", "name firstName lastName fullName patientCode patientIdString")
     .populate("doctorId", "name email phone")
     .populate("createdByUserId", "name role");
 }
@@ -34,9 +30,7 @@ export async function findInvoicesByClinic(clinicId, query = {}) {
   if (query.doctorId) {
     filter.doctorId = query.doctorId;
   }
-  if (query.patientId) {
-    filter.patientId = query.patientId;
-  }
+  // patientId filter removed as it's no longer on invoice directly
 
   if (query.search) {
      filter.$or = [
@@ -55,14 +49,11 @@ export async function findInvoicesByClinic(clinicId, query = {}) {
   }
 
   return Invoice.find(filter)
-    .populate("patientId", "name firstName lastName fullName patientCode patientIdString phone")
     .populate("doctorId", "name email phone")
     .sort({ createdAt: -1 });
 }
 
-export async function findInvoicesByPatient(patientId, clinicId, query = {}) {
-  return findInvoicesByClinic(clinicId, { ...query, patientId });
-}
+// By patient is trickier since patientId is not on invoice. We can filter via appointment if needed, but for now we skip or find by appointment.
 
 export async function updateInvoiceById(invoiceId, clinicId, data, session = null) {
   const options = { new: true };
@@ -72,7 +63,7 @@ export async function updateInvoiceById(invoiceId, clinicId, data, session = nul
     { _id: invoiceId, clinicId },
     { $set: data },
     options
-  ).populate("patientId", "name firstName lastName fullName patientIdString");
+  );
 }
 
 export async function countInvoicesByClinic(clinicId, query = {}) {

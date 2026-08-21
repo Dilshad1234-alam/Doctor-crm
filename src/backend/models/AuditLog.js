@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const auditLogSchema = new mongoose.Schema(
   {
-    clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
+    clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "ClinicProfile", required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     action: { type: String, required: true },
     entityType: { type: String },

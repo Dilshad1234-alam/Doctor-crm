@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { connectDB } from "@/backend/database/connectDB";
-import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
 import DoctorProfile from "@/backend/models/DoctorProfile";
-import PatientProfile from "@/backend/models/PatientProfile";
 import Appointment from "@/backend/models/Appointment";
-import StaffProfile from "@/backend/models/StaffProfile";
 
 export async function GET(request) {
   try {
@@ -18,16 +16,14 @@ export async function GET(request) {
 
     const [
       totalClinics, activeClinics, pendingClinics, suspendedClinics,
-      totalDoctors, totalPatients, totalStaff,
+      totalDoctors,
       totalAppointments, todayAppointments
     ] = await Promise.all([
-      Clinic.countDocuments(),
-      Clinic.countDocuments({ status: "active" }),
-      Clinic.countDocuments({ status: "pending" }),
-      Clinic.countDocuments({ status: "suspended" }),
+      ClinicProfile.countDocuments(),
+      ClinicProfile.countDocuments({ status: "active" }),
+      ClinicProfile.countDocuments({ status: "pending" }),
+      ClinicProfile.countDocuments({ status: "suspended" }),
       DoctorProfile.countDocuments(),
-      PatientProfile.countDocuments(),
-      StaffProfile.countDocuments(),
       Appointment.countDocuments(),
       Appointment.countDocuments({
         appointmentDate: {
@@ -59,8 +55,6 @@ export async function GET(request) {
         pendingClinics,
         suspendedClinics,
         totalDoctors,
-        totalPatients,
-        totalStaff,
         todayAppointments,
         totalAppointments,
         revenue,

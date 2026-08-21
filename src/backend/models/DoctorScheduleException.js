@@ -30,13 +30,15 @@ const doctorScheduleExceptionSchema = new mongoose.Schema(
   {
     clinicId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Clinic",
+      ref: "ClinicProfile",
       required: true,
+      index: true,
     },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "DoctorProfile",
       required: true,
+      index: true,
     },
     date: {
       type: Date,

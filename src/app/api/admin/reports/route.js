@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { connectDB } from "@/backend/database/connectDB";
-import Clinic from "@/backend/models/Clinic";
+import ClinicProfile from "@/backend/models/ClinicProfile";
 import DoctorProfile from "@/backend/models/DoctorProfile";
-import PatientProfile from "@/backend/models/PatientProfile";
-import StaffProfile from "@/backend/models/StaffProfile";
 import Appointment from "@/backend/models/Appointment";
 
 export async function GET(request) {
@@ -20,16 +18,15 @@ export async function GET(request) {
     const [
       totalClinics,
       totalDoctors,
-      totalPatients,
-      totalStaff,
       totalAppointments
     ] = await Promise.all([
-      Clinic.countDocuments(),
+      ClinicProfile.countDocuments(),
       DoctorProfile.countDocuments(),
-      PatientProfile.countDocuments(),
-      StaffProfile.countDocuments(),
       Appointment.countDocuments()
     ]);
+    
+    const totalPatients = 0;
+    const totalStaff = 0;
 
     // 2. Appointment Analytics
     // Aggregate appointment statuses
@@ -58,7 +55,7 @@ export async function GET(request) {
     });
 
     // 3. Recent Growth (Latest 5 Clinics)
-    const recentClinics = await Clinic.find({})
+    const recentClinics = await ClinicProfile.find({})
       .sort({ createdAt: -1 })
       .limit(5)
       .select("name email phone createdAt")

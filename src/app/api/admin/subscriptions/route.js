@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/backend/utils/getAuthenticatedUser";
 import { connectDB } from "@/backend/database/connectDB";
 import ClinicSubscription from "@/backend/models/ClinicSubscription";
-import Clinic from "@/backend/models/Clinic"; // Ensure registered
+import ClinicProfile from "@/backend/models/ClinicProfile"; // Ensure registered
 import SubscriptionPlan from "@/backend/models/SubscriptionPlan"; // Ensure registered
 
 export async function GET(request) {

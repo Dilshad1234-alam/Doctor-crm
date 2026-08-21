@@ -35,3 +35,8 @@ export const appointmentListQuerySchema = z.object({
   dateTo: z.string().optional(),
   status: z.string().optional(),
 });
+
+export const availableSlotsQuerySchema = z.object({
+  doctorId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid doctor ID"),
+  date: z.string().optional()
+});
